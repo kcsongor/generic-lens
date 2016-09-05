@@ -1,6 +1,8 @@
 # generic-records
 Magic record operations using generics (i.e. both type- and morally safe - no TH)
 
+Available on [Hackage](https://hackage.haskell.org/package/generic-records)
+
 This package uses the GHC8 Generic representation of records to derive magic classes (siilar to the OverloadedRecordLabels proposal), and prove structural subtyping relationship between records.
 The latter can be used to upcast the "sub-record" to the more general "interface".
 

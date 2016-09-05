@@ -18,6 +18,8 @@ synopsis:            Magic record operations using generics
 -- A longer description of the package.
 description:         This package uses the GHC8 Generic representation of records to derive magic classes (a la OverloadedRecordLabels), and prove structural subtyping relationship between records. The latter can be used to upcast the "sub-record" to the more general "interface".
 
+homepage:            https://github.com/kcsongor/generic-records
+
 -- The license under which the package is released.
 license:             BSD3
 

@@ -10,8 +10,28 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeOperators #-}
 
+-----------------------------------------------------------------------------
+-- |
+-- Module      :  Records.Generic
+-- Copyright   :  (C) 2016 Csongor Kiss
+-- License     :  BSD3
+-- Maintainer  :  Csongor Kiss <kiss.csongor.kiss@gmail.com>
+-- Stability   :  experimental
+-- Portability :  non-portable
+--
+-- Magic record operations using Generics
+--
+-- These classes need not be instantiated manually, as GHC can automatically
+-- prove valid instances via Generics. Only the `Generic` class needs to
+-- be derived (see examples).
+--
+-----------------------------------------------------------------------------
 module Records.Generic
-  ( HasField (..)
+  (
+    -- * Magic getter
+    HasField (..)
+
+    -- * Subtype relationship
   , Subtype  (..)
   ) where
 
@@ -100,13 +120,14 @@ instance {-# OVERLAPS #-} Convert rep f => Convert rep (M1 i c f) where
 
 -- Exported stuff
 
--- Structural subtype relationship
+-- |Structural subtype relationship
 class Subtype a b where
   upcast :: a -> b
 
 instance (Convert (Rep a) (Rep b), Generic a, Generic b) => Subtype a b where
   upcast = to . convert . from
 
+-- |Records that have a field with a given name
 class Generic rec => HasField rec (field :: Symbol) a where
   getField :: rec -> Proxy field -> a
 
