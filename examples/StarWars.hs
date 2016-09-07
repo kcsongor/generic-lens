@@ -48,8 +48,8 @@ r2d2 :: Droid
 r2d2 = Droid
   { name            = "R2-D2"
   , friends         = [upcast luke]
-  , appearsIn       = [NEWHOPE]
-  , primaryFunction = "destroy"
+  , appearsIn       = [NEWHOPE, EMPIRE, JEDI]
+  , primaryFunction = "repair ships"
   }
 
 c3po :: Droid
@@ -57,7 +57,7 @@ c3po = Droid
   { name            = "C3PO"
   , friends         = [upcast r2d2, upcast luke]
   , appearsIn       = [NEWHOPE, EMPIRE, JEDI]
-  , primaryFunction = "exist"
+  , primaryFunction = "protocol and human relations"
   }
 
 getName :: HasField r "name" a => r -> a
