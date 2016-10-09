@@ -29,6 +29,3 @@ data R2 = R2 { a :: String }
 upcast (R1 "hello" 5) :: R2
 -- => R2 "hello"
 ```
-
-# TODO
-[ ] port to `generics-sop` that now also supports type-level meta-data
