@@ -1,19 +1,19 @@
+{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE PolyKinds #-}
+{-# LANGUAGE Rank2Types #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE UndecidableInstances #-}
 
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Records.Generic
--- Copyright   :  (C) 2016 Csongor Kiss
+-- Copyright   :  (C) 2017 Csongor Kiss
 -- License     :  BSD3
 -- Maintainer  :  Csongor Kiss <kiss.csongor.kiss@gmail.com>
 -- Stability   :  experimental
@@ -28,97 +28,135 @@
 -----------------------------------------------------------------------------
 module Records.Generic
   (
-    -- * Magic getter
+    -- * Magic lens
     HasField (..)
+
+    -- * Getter and setter
+  , getField
+  , setField
 
     -- * Subtype relationship
   , Subtype  (..)
   ) where
 
-import GHC.TypeLits (Symbol, TypeError, ErrorMessage(..))
-import Data.Kind (Type)
-import Data.Proxy (Proxy(..))
+import GHC.TypeLits             (Symbol, TypeError, ErrorMessage(..))
+import Data.Kind                (Type)
 import GHC.Generics
-import Control.Applicative ((<|>))
+
+import Control.Applicative      (Const (..))
+
+-- TODO: cleanup
+
+--------------------------------------------------------------------------------
+-- Lens helpers
+
+newtype Identity a = Identity { runIdentity :: a }
+
+instance Functor Identity where
+  fmap f (Identity a) = Identity (f a)
+
+type Lens' s a = forall f. Functor f => (a -> f a) -> s -> f s
+
+(^.) :: s -> ((a -> Const a a) -> s -> Const a s) -> a
+s ^. l = getConst (l Const s)
+
+set :: ((a -> Identity b) -> s -> Identity t) -> b -> s -> t
+set l b = runIdentity . l (\_ -> Identity b)
+
+first :: Lens' ((a :*: b) x) (a x)
+first f (a :*: b) = fmap (:*: b) (f a)
+
+second :: Lens' ((a :*: b) x) (b x)
+second f (a :*: b) = fmap (a :*:) (f b)
+
+type Iso' s a = forall f. Functor f => (a -> f a) -> (s -> f s)
+
+repIso :: Generic a => Iso' a (Rep a x)
+repIso a = fmap to . a . from
+
+lensM :: Lens' (M1 i c f p) (f p)
+lensM f (M1 x) = fmap M1 (f x)
 
 --------------------------------------------------------------------------------
 
--- |Type-level list append
-type family ((xs :: [k]) ++ (ys :: [k])) :: [k] where
-    '[] ++ ys = ys
-    (x ': xs) ++ ys = x ': (xs ++ ys)
+class GHasField field s a | field s -> a where
+  glabel :: Lens' (s x) a
 
-type family (Collect a) :: [(Symbol, Type)] where
-  Collect (D1 m cs)
-    = Collect cs
-  Collect (C1 mc cs)
-    = Collect cs
-  Collect (a :*: b)
-    = Collect a ++ Collect b
-  Collect (S1 ('MetaSel ('Just n) p f b) (Rec0 t))
-    = '[ '(n, t) ]
-  Collect x = TypeError ('Text "Invalid type")
+instance (GHasFieldProd field s s' a (Contains field s)) => GHasField field (s :*: s') a where
+  glabel = prodLabel @field @_ @_ @a @(Contains field s)
 
-class GHasField rec (field :: Symbol) a where
-  ggetField :: rec x -> Proxy field -> a
+instance GHasField field (S1 ('MetaSel ('Just field) p f b) (Rec0 a)) a where
+  glabel = lensM . glabel @field
 
-instance
-  ( Contains field (Collect rec) ~ 'Just a
-  , LookupField rec field a
-  ) => GHasField rec field a where
-  ggetField rec p = res
-    where Just res = lookupField rec p :: Maybe a
+instance GHasField field (K1 R a) a where
+  glabel f (K1 x) = fmap K1 (f x)
 
--- This could be kind polymorphic, but the error message implies this kind anyway
-type family Contains (sym :: Symbol) (xs :: [(Symbol, Type)]) :: Maybe Type where
-  Contains s ('(s, t) ': _)
-    = 'Just t
-  Contains s (_ ': xs)
-    = Contains s xs
-  Contains s _
-    = TypeError ('Text "Field " ':<>: 'ShowType s ':<>: 'Text " not found in source record")
+instance GHasField field s a => GHasField field (M1 D c s) a where
+  glabel = lensM . glabel @field
 
-{-
-  TODO: It's be possible to determine which branch contains the field
-  (e.g. with a type family) and then we won't need the `Maybe` business.
-
-  That will possibly require an extra argument to differentiate between the two
-  cases in the instance definition (and not just the constraints thereof) to
-  avoid duplicate instances
--}
-class LookupField a field ret where
-  lookupField :: a x -> Proxy field -> Maybe ret
-
-instance (LookupField a field ret, LookupField b field ret) => LookupField (a :*: b) field ret where
-  lookupField (a :*: b) p = lookupField a p <|> lookupField b p
-
-instance LookupField (S1 ('MetaSel ('Just field) p f b) (Rec0 t)) field t where
-  lookupField (M1 x) = lookupField x
-
-instance {-# OVERLAPS #-} LookupField (S1 ('MetaSel ms su ss ds) t) field x where
-  lookupField _ _ = Nothing
-
-instance {-# OVERLAPS #-} LookupField f field ret => LookupField (M1 i c f) field ret where
-  lookupField (M1 x) = lookupField x
-
-instance LookupField (K1 R a) field a where
-  lookupField (K1 x) _ = Just x
+instance GHasField field s a => GHasField field (M1 C c s) a where
+  glabel = lensM . glabel @field
 
 --------------------------------------------------------------------------------
+
+class GHasFieldProd field a b ret (w :: Maybe Type) | field a b -> ret where
+  prodLabel :: Lens' ((a :*: b) x) ret
+
+instance (GHasField field f ret) => GHasFieldProd field f g ret ('Just ret) where
+  prodLabel = first . glabel @field
+
+instance (GHasField field g ret) => GHasFieldProd field f g ret 'Nothing where
+  prodLabel = second . glabel @field
+
+--------------------------------------------------------------------------------
+
 class Convert (rep :: Type -> Type) (f :: Type -> Type) where
   convert :: rep p -> f p
 
 instance (Convert rep a, Convert rep b) => Convert rep (a :*: b) where
-  convert rep = (convert rep) :*: (convert rep)
+  convert rep = convert rep :*: convert rep
 
-instance GHasField rep field t => Convert rep (S1 ('MetaSel ('Just field) p f b) (Rec0 t)) where
-  convert rep = M1 (K1 (ggetField rep (Proxy @field)))
+instance GHasField field rep t => Convert rep (S1 ('MetaSel ('Just field) p f b) (Rec0 t)) where
+  convert rep = M1 (K1 (rep ^. glabel @field))
 
 instance {-# OVERLAPS #-} Convert rep f => Convert rep (M1 i c f) where
   convert = M1 . convert
+
+--------------------------------------------------------------------------------
+
+type family Contains (field :: Symbol) f :: Maybe Type where
+  Contains field (S1 ('MetaSel ('Just field) _ _ _) (Rec0 t))
+    = 'Just t
+  Contains field (S1 _ _)
+    = 'Nothing
+  Contains field (D1 m f)
+    = Contains field f
+  Contains field (C1 m f)
+    = Contains field f
+  Contains field (f :*: g)
+    = Contains field f <|> Contains field g
+  Contains field (Rec0 _)
+    = 'Nothing
+  Contains field U1
+    = 'Nothing
+  Contains field V1
+    = 'Nothing
+  Contains x t = TypeError ('ShowType t)
+
+type family (a :: Maybe k) <|> (b :: Maybe k) :: Maybe k where
+  'Just x <|> _  = 'Just x
+  _ <|> b = b
+
 --------------------------------------------------------------------------------
 
 -- Exported stuff
+
+getField :: forall field a s. HasField field a s => s -> a
+getField s = s ^. label @field
+
+setField :: forall field a s. HasField field a s => a -> s -> s
+setField = set (label @field)
+
 
 -- |Structural subtype relationship
 class Subtype a b where
@@ -128,14 +166,18 @@ instance (Convert (Rep a) (Rep b), Generic a, Generic b) => Subtype a b where
   upcast = to . convert . from
 
 -- |Records that have a field with a given name
-class Generic rec => HasField rec (field :: Symbol) a where
-  getField :: rec -> Proxy field -> a
+class HasField (field :: Symbol) a s | s field -> a where
+  label :: Lens' s a
 
 instance
-  ( Contains field (Collect (Rep rec)) ~ 'Just a
-  , Generic rec
-  , LookupField (Rep rec) field a
-  ) => HasField rec field a where
-  getField rec p = res
-    where Just res = lookupField (from rec) p :: Maybe a
+  ( Generic s
+  , Contains field (Rep s) ~ 'Just a -- this is needed for the fundep for some reason
+  , GHasField field (Rep s) a
+  ) => HasField field a s where
+  label =  repIso . glabel @field
 
+-- Probably not a good idea to export this orphan...
+--{-# LANGUAGE OverloadedLabels #-}
+--import GHC.OverloadedLabels
+--instance HasField field a s => IsLabel field (s -> a) where
+--  fromLabel _ = (^. label @field)
