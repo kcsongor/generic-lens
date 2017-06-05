@@ -9,7 +9,6 @@
 -- (although I would be really surprised if it did, I haven't seen the films)
 module StarWars where
 
-import Data.Proxy
 import GHC.Generics
 import Records.Generic
 
@@ -60,8 +59,8 @@ c3po = Droid
   , primaryFunction = "protocol and human relations"
   }
 
-getName :: HasField r "name" a => r -> a
-getName r = getField r (Proxy @"name")
+getName :: HasField "name" a r => r -> a
+getName = getField @"name"
 
 -- upcast :: Subtype a b => a -> b
 characters :: [Character]
