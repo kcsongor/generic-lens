@@ -1,0 +1,13 @@
+
+resolver: lts-8.17
+
+packages:
+- '.'
+
+extra-deps: []
+
+flags: {}
+
+extra-package-dbs: []
+
+system-ghc: true
