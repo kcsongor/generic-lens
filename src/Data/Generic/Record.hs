@@ -1,6 +1,6 @@
 -----------------------------------------------------------------------------
 -- |
--- Module      :  Records.Generic
+-- Module      :  Data.Generic.Record
 -- Copyright   :  (C) 2017 Csongor Kiss
 -- License     :  BSD3
 -- Maintainer  :  Csongor Kiss <kiss.csongor.kiss@gmail.com>
@@ -14,7 +14,7 @@
 -- be derived (see examples).
 --
 -----------------------------------------------------------------------------
-module Records.Generic
+module Data.Generic.Record
   (
     -- * Subtype relationship
     Subtype  (..)
@@ -28,5 +28,5 @@ module Records.Generic
 
   ) where
 
-import Records.Generic.HasField
-import Records.Generic.Subtype
+import Data.Generic.Record.HasField
+import Data.Generic.Record.Subtype

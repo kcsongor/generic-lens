@@ -12,7 +12,7 @@
 
 -----------------------------------------------------------------------------
 -- |
--- Module      :  Records.Generic.Subtype
+-- Module      :  Data.Generic.Record.Subtype
 -- Copyright   :  (C) 2017 Csongor Kiss
 -- License     :  BSD3
 -- Maintainer  :  Csongor Kiss <kiss.csongor.kiss@gmail.com>
@@ -22,12 +22,12 @@
 -- Structural subtyping
 --
 -----------------------------------------------------------------------------
-module Records.Generic.Subtype
+module Data.Generic.Record.Subtype
   ( Subtype (..)
   ) where
 
-import Records.Generic.HasField
-import Records.Generic.Lens
+import Data.Generic.Record.HasField
+import Data.Generic.Record.Lens
 
 import Data.Kind                (Type)
 import GHC.Generics
@@ -39,7 +39,7 @@ import GHC.Generics
 --   module Test where
 --
 --   import GHC.Generics
---   import Record.Generic
+--   import Data.Generic.Record
 --
 --   data Human = Human
 --     { name    :: String

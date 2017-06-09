@@ -29,11 +29,11 @@ cabal-version:       >= 1.10
 
 
 library
-  exposed-modules:   Records.Generic
-                   , Records.Generic.Subtype
-                   , Records.Generic.HasField
+  exposed-modules:   Data.Generic.Record
+                   , Data.Generic.Record.Subtype
+                   , Data.Generic.Record.HasField
 
-  other-modules:     Records.Generic.Lens
+  other-modules:     Data.Generic.Record.Lens
 
   other-extensions:  AllowAmbiguousTypes
                    , DataKinds

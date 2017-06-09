@@ -12,7 +12,7 @@
 
 -----------------------------------------------------------------------------
 -- |
--- Module      :  Records.Generic.HasField
+-- Module      :  Data.Generic.Record.HasField
 -- Copyright   :  (C) 2017 Csongor Kiss
 -- License     :  BSD3
 -- Maintainer  :  Csongor Kiss <kiss.csongor.kiss@gmail.com>
@@ -23,7 +23,7 @@
 --
 -----------------------------------------------------------------------------
 
-module Records.Generic.HasField
+module Data.Generic.Record.HasField
   ( -- * Lens
     -- $example
     HasField (..)
@@ -34,7 +34,7 @@ module Records.Generic.HasField
   , GHasField (..)
   ) where
 
-import Records.Generic.Lens
+import Data.Generic.Record.Lens
 
 import GHC.TypeLits             (Symbol, TypeError, ErrorMessage(..))
 import Data.Kind                (Type)
@@ -47,7 +47,7 @@ import GHC.Generics
 --   module Example where
 --
 --   import GHC.Generics
---   import Record.Generic
+--   import Data.Generic.Record
 --
 --   data Human = Human
 --     { name    :: String

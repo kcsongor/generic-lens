@@ -3,7 +3,7 @@
 
 -----------------------------------------------------------------------------
 -- |
--- Module      :  Records.Generic.Lens
+-- Module      :  Data.Generic.Record.Lens
 -- Copyright   :  (C) 2017 Csongor Kiss
 -- License     :  BSD3
 -- Maintainer  :  Csongor Kiss <kiss.csongor.kiss@gmail.com>
@@ -13,7 +13,7 @@
 -- Unexported lens helpers
 --
 -----------------------------------------------------------------------------
-module Records.Generic.Lens where
+module Data.Generic.Record.Lens where
 
 import Control.Applicative  ( Const (..) )
 import GHC.Generics         ( (:*:) (..), Generic (..), M1 (..), Rep )
