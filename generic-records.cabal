@@ -33,7 +33,7 @@ library
                    , Data.Generic.Record.Subtype
                    , Data.Generic.Record.HasField
 
-  other-modules:     Data.Generic.Record.Internal.Lens
+  other-modules:     Data.Generic.Internal.Lens
 
   other-extensions:  AllowAmbiguousTypes
                    , DataKinds

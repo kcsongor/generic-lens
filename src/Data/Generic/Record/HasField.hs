@@ -34,7 +34,7 @@ module Data.Generic.Record.HasField
   , GHasField (..)
   ) where
 
-import Data.Generic.Record.Internal.Lens
+import Data.Generic.Internal.Lens
 
 import GHC.TypeLits             (Symbol, TypeError, ErrorMessage(..))
 import Data.Kind                (Type)
