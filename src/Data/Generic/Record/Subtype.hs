@@ -27,7 +27,7 @@ module Data.Generic.Record.Subtype
   ) where
 
 import Data.Generic.Record.HasField
-import Data.Generic.Record.Lens
+import Data.Generic.Record.Internal.Lens
 
 import Data.Kind                (Type)
 import GHC.Generics
