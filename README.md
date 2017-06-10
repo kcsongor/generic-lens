@@ -10,6 +10,8 @@ at the type-level (previously only value-level meta-data was available).
 
 An example can be found in the `examples` folder.
 
+(The library makes heavy use of [Visible Type Applications](https://ghc.haskell.org/trac/ghc/wiki/TypeApplication))
+
 ## Record fields
 
 Record fields can be accessed by their label.
