@@ -78,7 +78,7 @@ class HasFieldAt (index :: Nat) a s | s index -> a where
   --    = forall f. Functor f => (a -> f a) -> s -> f s
   -- @
   --
-  -- >>> human & label @1 .~ "Tamas"
+  -- >>> human & itemAt @1 .~ "Tamas"
   -- Human "Tamas" 50 "London"
   itemAt :: Lens' s a
 
