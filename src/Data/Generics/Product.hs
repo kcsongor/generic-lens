@@ -7,27 +7,22 @@
 -- Stability   :  experimental
 -- Portability :  non-portable
 --
--- Magic record operations using Generics
+-- Magic product operations using Generics
 --
 -- These classes need not be instantiated manually, as GHC can automatically
 -- prove valid instances via Generics. Only the `Generic` class needs to
 -- be derived (see examples).
 --
 -----------------------------------------------------------------------------
-module Data.Generics.Record
+module Data.Generics.Product
   (
-    -- * Subtype relationship
-    Subtype  (..)
-  , subtype
-
     -- * Magic lens
-  , HasField (..)
+    HasFieldAt  (..)
 
     -- * Getter and setter
-  , getField
-  , setField
+  , getFieldAt
+  , setFieldAt
 
   ) where
 
-import Data.Generics.Record.HasField
-import Data.Generics.Record.Subtype
+import Data.Generics.Product.HasFieldAt
