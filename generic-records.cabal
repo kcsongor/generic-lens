@@ -33,8 +33,9 @@ library
                    , Data.Generic.Record.Subtype
                    , Data.Generic.Record.HasField
                    , Data.Generic.Product.HasFieldAt
+                   , Data.Generic.Internal.Lens
 
-  other-modules:     Data.Generic.Internal.Lens
+  other-modules:     Data.Generic.Record.Internal.Contains
 
   other-extensions:  AllowAmbiguousTypes
                    , DataKinds
