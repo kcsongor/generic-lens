@@ -32,8 +32,9 @@ library
   exposed-modules:   Data.Generic.Record
                    , Data.Generic.Record.Subtype
                    , Data.Generic.Record.HasField
+                   , Data.Generic.Internal.Lens
 
-  other-modules:     Data.Generic.Internal.Lens
+  other-modules:     Data.Generic.Record.Internal.Contains
 
   other-extensions:  AllowAmbiguousTypes
                    , DataKinds

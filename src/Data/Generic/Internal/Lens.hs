@@ -10,7 +10,7 @@
 -- Stability   :  experimental
 -- Portability :  non-portable
 --
--- Unexported lens helpers
+-- Internal lens helpers. Only exported for Haddock
 --
 -----------------------------------------------------------------------------
 module Data.Generic.Internal.Lens where

@@ -34,9 +34,11 @@ module Data.Generic.Record.HasField
   , GHasField (..)
   ) where
 
+import Data.Generic.Record.Internal.Contains
+
 import Data.Generic.Internal.Lens
 
-import GHC.TypeLits             (Symbol, TypeError, ErrorMessage(..))
+import GHC.TypeLits             (Symbol)
 import Data.Kind                (Type)
 import GHC.Generics
 
@@ -106,34 +108,6 @@ instance (GHasField field f ret) => GHasFieldProd field f g ret ('Just ret) wher
 
 instance (GHasField field g ret) => GHasFieldProd field f g ret 'Nothing where
   prodLabel = second . glabel @field
-
---------------------------------------------------------------------------------
-
--- | Look up a record field by name in the generic representation, and return
---   its corresponding type, if exists.
-type family Contains (field :: Symbol) f :: Maybe Type where
-  Contains field (S1 ('MetaSel ('Just field) _ _ _) (Rec0 t))
-    = 'Just t
-  Contains field (f :*: g)
-    = Contains field f <|> Contains field g
-  Contains field (S1 _ _)
-    = 'Nothing
-  Contains field (C1 m f)
-    = Contains field f
-  Contains field (D1 m f)
-    = Contains field f
-  Contains field (Rec0 _)
-    = 'Nothing
-  Contains field U1
-    = 'Nothing
-  Contains field V1
-    = 'Nothing
-  Contains x t = TypeError ('ShowType t)
-
--- | Type-level alternative
-type family (a :: Maybe k) <|> (b :: Maybe k) :: Maybe k where
-  'Just x <|> _  = 'Just x
-  _ <|> b = b
 
 --------------------------------------------------------------------------------
 
