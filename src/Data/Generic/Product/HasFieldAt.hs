@@ -23,7 +23,14 @@
 --
 -----------------------------------------------------------------------------
 
-module Data.Generic.Product.HasFieldAt where
+module Data.Generic.Product.HasFieldAt
+  ( -- * Lens
+    -- $example
+    HasFieldAt (..)
+    -- * Getter and setter functions
+  , getFieldAt
+  , setFieldAt
+  ) where
 
 import Data.Generic.Internal.Lens
 
