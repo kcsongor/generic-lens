@@ -22,7 +22,9 @@
 -- Look up fields in the generic representation
 --
 -----------------------------------------------------------------------------
-module Data.Generic.Record.Internal.Contains where
+module Data.Generic.Record.Internal.Contains
+  ( Contains
+  ) where
 
 import Data.Kind                (Type)
 import GHC.Generics

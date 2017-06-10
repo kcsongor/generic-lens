@@ -13,32 +13,14 @@
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Data.Generic.Product.HasFieldAt
--- Copyright   :  (C) 2017 Toby Shaw
+-- Copyright   :  (C) 2017 Csongor Kiss
 -- License     :  BSD3
--- Maintainer  :  Toby Shaw <toby.shaw.96@gmail.com>
+-- Maintainer  :  Csongor Kiss <kiss.csongor.kiss@gmail.com>
 -- Stability   :  experimental
 -- Portability :  non-portable
 --
 -- Derive product items lenses generically.
 --
------------------------------------------------------------------------------
-
-module Data.Generic.Product.HasFieldAt
-  ( -- * Lens
-    -- $example
-    HasFieldAt (..)
-    -- * Getter and setter functions
-  , getFieldAt
-  , setFieldAt
-  ) where
-
-import Data.Generic.Internal.Lens
-
-import GHC.TypeLits
-import Data.Kind                (Type)
-import GHC.Generics
-
--- $example
 -- @
 --
 --   module Example where
@@ -53,6 +35,21 @@ import GHC.Generics
 --   human = Human \"Tunyasz\" 50 \"London\"
 --
 -- @
+--
+-----------------------------------------------------------------------------
+
+module Data.Generic.Product.HasFieldAt
+  ( HasFieldAt (..)
+    -- * Getter and setter functions
+  , getFieldAt
+  , setFieldAt
+  ) where
+
+import Data.Generic.Internal.Lens
+
+import GHC.TypeLits
+import Data.Kind                (Type)
+import GHC.Generics
 
 -- | Get positional field
 --
@@ -72,11 +69,6 @@ setFieldAt = set (itemAt @index)
 class HasFieldAt (index :: Nat) a s | s index -> a where
   -- ^ Lens focusing on a field at a given index.
   --   Compatible with the lens package.
-  --
-  -- @
-  --  type Lens' s a
-  --    = forall f. Functor f => (a -> f a) -> s -> f s
-  -- @
   --
   -- >>> human & itemAt @1 .~ "Tamas"
   -- Human "Tamas" 50 "London"
