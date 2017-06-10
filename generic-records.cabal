@@ -32,6 +32,7 @@ library
   exposed-modules:   Data.Generic.Record
                    , Data.Generic.Record.Subtype
                    , Data.Generic.Record.HasField
+                   , Data.Generic.Product.HasFieldAt
                    , Data.Generic.Internal.Lens
 
   other-modules:     Data.Generic.Record.Internal.Contains
