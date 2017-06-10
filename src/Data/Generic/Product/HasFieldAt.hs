@@ -31,17 +31,55 @@ import GHC.TypeLits
 import Data.Kind                (Type)
 import GHC.Generics
 
+-- $example
+-- @
+--
+--   module Example where
+--
+--   import GHC.Generics
+--   import Data.Generic.Product
+--
+--   data Human = Human String Int String
+--     deriving (Generic, Show)
+--
+--   human :: Human
+--   human = Human \"Tunyasz\" 50 \"London\"
+--
+-- @
+
+-- | Get positional field
+--
+-- >>> getFieldAt @1 human
+-- "Tunyasz"
 getFieldAt :: forall index a s. HasFieldAt index a s => s -> a
 getFieldAt s = s ^. itemAt @index
 
+-- | Set positional field
+--
+-- >>> setFieldAt @2 (setField @1 "Tamas" human) 30
+-- Human "Tamas" 30 "London"
 setFieldAt :: forall index a s. HasFieldAt index a s => a -> s -> s
 setFieldAt = set (itemAt @index)
 
+-- | Types that have a field at given position.
 class HasFieldAt (index :: Nat) a s | s index -> a where
+  -- ^ Lens focusing on a field at a given index.
+  --   Compatible with the lens package.
+  --
+  -- @
+  --  type Lens' s a
+  --    = forall f. Functor f => (a -> f a) -> s -> f s
+  -- @
+  --
+  -- >>> human & label @1 .~ "Tamas"
+  -- Human "Tamas" 50 "London"
   itemAt :: Lens' s a
 
+-- | Fields are indexed from BaseIndex upwards.
 type BaseIndex = 1
 
+-- | Instances are generated on the fly for all types that have the required
+--   positional field.
 instance
   ( Generic s
   , ContainsAt BaseIndex index (Rep s) ~ 'True -- this is needed for the fundep
@@ -70,6 +108,7 @@ type family Choose f g :: Choice where
   Choose _ 'True = 'GoRight
   Choose _ _ = TypeError ('Text "Could not find type") 
 
+-- | Try find a field by position in the generic representation.
 type family ContainsAt (offset :: Nat) (index :: Nat) f :: Bool where
   ContainsAt offset index (D1 m f)
     = ContainsAt offset index f
@@ -89,34 +128,30 @@ type family ContainsAt (offset :: Nat) (index :: Nat) f :: Bool where
     = 'False
   ContainsAt offset index t = TypeError ('ShowType offset ':<>: 'Text " " ':<>: 'ShowType index)
 
+-- | Returns the count of terminal nodes in the generic representation.
 type family Size f :: Nat where
   Size (D1 m f)
     = Size f
-  Size (S1 _ _)
-    = 1
   Size (f :*: g)
     = Size f + Size g
   Size (C1 m f)
     = Size f
-  Size (Rec0 _)
-    = 0
-  Size U1
-    = 1
-  Size V1
-    = 1
-  Size t = TypeError ('ShowType t)
+  Size t = 1
 
+-- | If traversing to the left, offset does not change.
+--   If traversing to the right, offset is incremented by size of left subtree.
 type family Offset (offset :: Nat) (choice :: Choice) (size :: Nat) :: Nat where
   Offset n 'GoLeft _ = n
   Offset n 'GoRight s = n + s
 
--- | Type-level alternative
+-- | Type-level or
 type family (a :: Bool) || (b :: Bool) :: Bool where
   'True || _  = 'True
   _ || b = b
 
 --------------------------------------------------------------------------------
 
+-- | Like 'HasFieldAt', but on the generic representation
 class GHasFieldAt (offset :: Nat) (index :: Nat) (s :: Type -> Type) a | offset index s -> a where
   gItemAt :: Lens' (s x) a
 
