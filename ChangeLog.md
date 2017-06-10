@@ -1,4 +1,4 @@
-# Revision history for generic-records
+# Revision history for generic-lens
 
 ## 0.1.0.0  -- YYYY-mm-dd
 
