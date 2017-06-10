@@ -3,7 +3,7 @@
 
 -----------------------------------------------------------------------------
 -- |
--- Module      :  Data.Generic.Internal.Lens
+-- Module      :  Data.Generics.Internal.Lens
 -- Copyright   :  (C) 2017 Csongor Kiss
 -- License     :  BSD3
 -- Maintainer  :  Csongor Kiss <kiss.csongor.kiss@gmail.com>
@@ -13,7 +13,7 @@
 -- Internal lens helpers. Only exported for Haddock
 --
 -----------------------------------------------------------------------------
-module Data.Generic.Internal.Lens where
+module Data.Generics.Internal.Lens where
 
 import Control.Applicative  ( Const (..) )
 import GHC.Generics         ( (:*:) (..), Generic (..), M1 (..), Rep )

@@ -12,7 +12,7 @@
 
 -----------------------------------------------------------------------------
 -- |
--- Module      :  Data.Generic.Record.Subtype
+-- Module      :  Data.Generics.Record.Subtype
 -- Copyright   :  (C) 2017 Csongor Kiss
 -- License     :  BSD3
 -- Maintainer  :  Csongor Kiss <kiss.csongor.kiss@gmail.com>
@@ -28,7 +28,7 @@
 --   module Test where
 --
 --   import GHC.Generics
---   import Data.Generic.Record
+--   import Data.Generics.Record
 --
 --   data Human = Human
 --     { name    :: String
@@ -47,15 +47,15 @@
 -- @
 --
 -----------------------------------------------------------------------------
-module Data.Generic.Record.Subtype
+module Data.Generics.Record.Subtype
   ( Subtype (..)
   , subtype
   ) where
 
-import Data.Generic.Record.HasField
-import Data.Generic.Record.Internal.Contains
+import Data.Generics.Record.HasField
+import Data.Generics.Record.Internal.Contains
 
-import Data.Generic.Internal.Lens
+import Data.Generics.Internal.Lens
 
 import Data.Kind                (Type)
 import GHC.Generics

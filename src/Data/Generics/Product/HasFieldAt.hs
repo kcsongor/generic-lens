@@ -12,7 +12,7 @@
 
 -----------------------------------------------------------------------------
 -- |
--- Module      :  Data.Generic.Product.HasFieldAt
+-- Module      :  Data.Generics.Product.HasFieldAt
 -- Copyright   :  (C) 2017 Csongor Kiss
 -- License     :  BSD3
 -- Maintainer  :  Csongor Kiss <kiss.csongor.kiss@gmail.com>
@@ -26,7 +26,7 @@
 --   module Example where
 --
 --   import GHC.Generics
---   import Data.Generic.Product
+--   import Data.Generics.Product
 --
 --   data Human = Human String Int String
 --     deriving (Generic, Show)
@@ -38,14 +38,14 @@
 --
 -----------------------------------------------------------------------------
 
-module Data.Generic.Product.HasFieldAt
+module Data.Generics.Product.HasFieldAt
   ( HasFieldAt (..)
     -- * Getter and setter functions
   , getFieldAt
   , setFieldAt
   ) where
 
-import Data.Generic.Internal.Lens
+import Data.Generics.Internal.Lens
 
 import GHC.TypeLits
 import Data.Kind                (Type)

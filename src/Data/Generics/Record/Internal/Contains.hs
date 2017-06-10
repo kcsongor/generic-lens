@@ -12,7 +12,7 @@
 
 -----------------------------------------------------------------------------
 -- |
--- Module      :  Data.Generic.Record.Internal.Contains
+-- Module      :  Data.Generics.Record.Internal.Contains
 -- Copyright   :  (C) 2017 Csongor Kiss
 -- License     :  BSD3
 -- Maintainer  :  Csongor Kiss <kiss.csongor.kiss@gmail.com>
@@ -22,7 +22,7 @@
 -- Look up fields in the generic representation
 --
 -----------------------------------------------------------------------------
-module Data.Generic.Record.Internal.Contains
+module Data.Generics.Record.Internal.Contains
   ( Contains
   ) where
 

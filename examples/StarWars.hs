@@ -10,7 +10,7 @@
 module StarWars where
 
 import GHC.Generics
-import Data.Generic.Record
+import Data.Generics.Record
 
 data Episode = NEWHOPE | EMPIRE | JEDI
   deriving (Generic, Show, Eq)
