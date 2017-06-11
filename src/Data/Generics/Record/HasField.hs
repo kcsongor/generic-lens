@@ -118,6 +118,9 @@ class GHasField (field :: Symbol) (s :: Type -> Type) a | field s -> a where
 instance (GHasFieldProd field s s' a (Contains field s)) => GHasField field (s :*: s') a where
   glabel = prodLabel @field @_ @_ @_ @(Contains field s)
 
+instance (GHasField field s a, GHasField field s' a) => GHasField field (s :+: s') a where
+  glabel = combine (glabel @field @s) (glabel @field @s')
+
 instance GHasField field (S1 ('MetaSel ('Just field) p f b) (Rec0 a)) a where
   glabel = lensM . glabel @field
 
