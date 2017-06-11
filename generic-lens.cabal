@@ -1,6 +1,6 @@
 name:                generic-lens
 
-version:             0.2.0.0
+version:             0.1.0.0
 
 synopsis:            Generic data-structure operations exposed as lenses.
 
@@ -23,6 +23,7 @@ build-type:          Simple
 -- Extra files to be distributed with the package, such as examples or a
 -- README.
 extra-source-files:  ChangeLog.md
+                   , examples/StarWars.hs
 
 -- Constraint on the version of Cabal needed to build this package.
 cabal-version:       >= 1.10
@@ -30,6 +31,7 @@ cabal-version:       >= 1.10
 
 library
   exposed-modules:   Data.Generics.Record
+                   , Data.Generics.Product
                    , Data.Generics.Record.Subtype
                    , Data.Generics.Record.HasField
                    , Data.Generics.Product.HasFieldAt
@@ -59,3 +61,7 @@ library
   -- Base language which the package is written in.
   default-language:  Haskell2010
   ghc-options:       -Wall
+
+source-repository head
+  type:     git
+  location: https://github.com/kcsongor/generic-lens
