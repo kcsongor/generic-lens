@@ -1,11 +1,9 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE Rank2Types #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
@@ -38,6 +36,8 @@ type family Contains (field :: Symbol) f :: Maybe Type where
     = 'Just t
   Contains field (f :*: g)
     = Contains field f <|> Contains field g
+  Contains field (f :+: g)
+    = Contains field f <&> Contains field g
   Contains field (S1 _ _)
     = 'Nothing
   Contains field (C1 m f)
@@ -56,4 +56,8 @@ type family Contains (field :: Symbol) f :: Maybe Type where
 type family (a :: Maybe k) <|> (b :: Maybe k) :: Maybe k where
   'Just x <|> _  = 'Just x
   _ <|> b = b
+
+type family (a :: Maybe k) <&> (b :: Maybe k) :: Maybe k where
+  'Just x <&> 'Just x  = 'Just x
+  _ <&> _ = 'Nothing
 

@@ -16,7 +16,7 @@
 module Data.Generics.Internal.Lens where
 
 import Control.Applicative  ( Const (..) )
-import GHC.Generics         ( (:*:) (..), Generic (..), M1 (..), Rep )
+import GHC.Generics         ( (:*:) (..), Generic (..), M1 (..), Rep, (:+:) (..) )
 
 -- | Identity functor
 newtype Identity a
@@ -50,6 +50,10 @@ first f (a :*: b)
 second :: Lens' ((a :*: b) x) (b x)
 second f (a :*: b)
   = fmap (a :*:) (f b)
+
+combine :: Lens' (s x) a -> Lens' (t x) a -> Lens' ((:+:) s t x) a
+combine sa _ f (L1 s) = fmap (\a -> L1 (set sa a s)) (f (s ^. sa))
+combine _ ta f (R1 t) = fmap (\a -> R1 (set ta a t)) (f (t ^. ta))
 
 -- | A type and its generic representation are isomorphic
 repIso :: Generic a => Lens' a (Rep a x)

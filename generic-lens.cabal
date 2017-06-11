@@ -53,8 +53,6 @@ library
 
   -- Other library packages from which modules are imported.
   build-depends:     base >= 4.9 && <= 5.0
-                   , lens
-                   , kan-extensions
 
   -- Directories containing source files.
   hs-source-dirs:    src
