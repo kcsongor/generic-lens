@@ -24,6 +24,7 @@ build-type:          Simple
 -- README.
 extra-source-files:  ChangeLog.md
                    , examples/StarWars.hs
+                   , README.md
 
 -- Constraint on the version of Cabal needed to build this package.
 cabal-version:       >= 1.10
