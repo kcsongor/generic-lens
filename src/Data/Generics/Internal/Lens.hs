@@ -34,6 +34,7 @@ type Lens' s a
 -- | Getting
 (^.) :: s -> ((a -> Const a a) -> s -> Const a s) -> a
 s ^. l = getConst (l Const s)
+infixl 8 ^.
 
 -- | Setting
 set :: ((a -> Identity b) -> s -> Identity t) -> b -> s -> t

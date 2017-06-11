@@ -18,7 +18,7 @@ module Data.Generics.Record
   (
     -- * Subtype relationship
     Subtype  (..)
-  , subtype
+  , super
 
     -- * Magic lens
   , HasField (..)

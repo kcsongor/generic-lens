@@ -49,7 +49,7 @@
 -----------------------------------------------------------------------------
 module Data.Generics.Record.Subtype
   ( Subtype (..)
-  , subtype
+  , super
   ) where
 
 import Data.Generics.Record.HasField
@@ -86,13 +86,13 @@ instance (GSmash (Rep a) (Rep b), GUpcast (Rep a) (Rep b), Generic a, Generic b)
 -- | Structural subtype lens. Given a subtype relationship @sub :< sup@,
 --   we can focus on the @sub@ structure of @sup@.
 --
--- >>> human ^. subtype @Animal
+-- >>> human ^. super @Animal
 -- Animal {name = "Tunyasz", age = 50}
 --
--- >>> set (subtype @Animal) (Animal "dog" 10) human
+-- >>> set (super @Animal) (Animal "dog" 10) human
 -- Human {name = "dog", age = 10, address = "London"}
-subtype :: forall sup sub. Subtype sub sup => Lens' sub sup
-subtype f sub = fmap (flip smash sub) (f (upcast sub))
+super :: forall sup sub. Subtype sub sup => Lens' sub sup
+super f sub = fmap (flip smash sub) (f (upcast sub))
 
 --------------------------------------------------------------------------------
 -- * Generic upcasting

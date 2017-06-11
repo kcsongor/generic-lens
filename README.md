@@ -75,7 +75,7 @@ True
 
 ## Structural subtyping
 
-A record is a (structural) `subtype' of another, if its fields are a subset of
+A record is a (structural) `subtype' of another, if its fields are a superset of
 those of the other.
 
 ```haskell
@@ -103,18 +103,18 @@ Animal {name = "Tunyasz", age = 50}
 >>> smash (Animal "dog" 10) human
 Human {name = "dog", age = 10, address = "London"}
 
--- 'subtype' is a lens that focuses on a subrecord of a larger record:
->>> human ^. subtype @Animal
+-- 'super' is a lens that focuses on a subrecord of a larger record:
+>>> human ^. super @Animal
 Animal {name = "Tunyasz", age = 50}
 ```
 
-We can apply a function that operates on a subtype to the larger structure,
-by focusing on the subtype first:
+We can apply a function that operates on a supertype to the larger (subtype)
+structure, by focusing on the supertype first:
 
 ```haskell
 growUp :: Animal -> Animal
 growUp (Animal name age) = Animal name (age + 50)
 
->>> human & subtype @Animal %~ growUp
+>>> human & super @Animal %~ growUp
 Human {name = "Tunyasz", age = 60, address = "London"}
 ```
