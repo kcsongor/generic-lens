@@ -1,6 +1,6 @@
 name:                generic-lens
 
-version:             0.1.0.0
+version:             0.2.0.0
 
 synopsis:            Generic data-structure operations exposed as lenses.
 
