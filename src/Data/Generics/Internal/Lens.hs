@@ -17,7 +17,6 @@ module Data.Generics.Internal.Lens where
 
 import Control.Applicative  ( Const (..) )
 import GHC.Generics         ( (:*:) (..), Generic (..), M1 (..), Rep, (:+:) (..) )
-import Data.Profunctor      ( dimap, Choice (..) )
 
 -- | Identity functor
 newtype Identity a
@@ -31,9 +30,6 @@ instance Functor Identity where
 -- | Type alias for lens
 type Lens' s a
   = forall f. Functor f => (a -> f a) -> s -> f s
-
-type Prism' s a
-  = forall p f. (Choice p, Applicative f) => p a (f a) -> p s (f s)
 
 -- | Getting
 (^.) :: s -> ((a -> Const a a) -> s -> Const a s) -> a
@@ -54,19 +50,6 @@ first f (a :*: b)
 second :: Lens' ((a :*: b) x) (b x)
 second f (a :*: b)
   = fmap (a :*:) (f b)
-
-prism :: (a -> s) -> (s -> Either s a) -> Prism' s a
-prism bt seta = dimap seta (either pure (fmap bt)) . right'
-
-either' :: (f x -> c) -> (g x -> c) -> (:+:) f g x -> c
-either' f _ (L1 x) = f x
-either' _ g (R1 x) = g x
-
-firstMaybe :: Prism' ((a :+: b) x) (a x)
-firstMaybe = prism L1 (either' Right (Left . R1))
-
-secondMaybe :: Prism' ((a :+: b) x) (b x)
-secondMaybe = prism R1 (either' (Left . L1) Right)
 
 combine :: Lens' (s x) a -> Lens' (t x) a -> Lens' ((:+:) s t x) a
 combine sa _ f (L1 s) = fmap (\a -> L1 (set sa a s)) (f (s ^. sa))
