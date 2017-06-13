@@ -1,4 +1,8 @@
 # generic-lens
+
+[![Build
+Status](https://travis-ci.org/kcsongor/generic-lens.svg?branch=master)](https://travis-ci.org/kcsongor/generic-lens)
+
 Generically derive lenses for accessing fields of data types.
 
 Available on [Hackage](https://hackage.haskell.org/package/generic-lens)
