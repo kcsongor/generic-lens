@@ -122,3 +122,7 @@ growUp (Animal name age) = Animal name (age + 50)
 >>> human & super @Animal %~ growUp
 Human {name = "Tunyasz", age = 60, address = "London"}
 ```
+
+## Contributors
+
++ [Toby Shaw](https://github.com/TobyShaw)
