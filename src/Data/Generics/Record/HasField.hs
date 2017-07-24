@@ -1,14 +1,14 @@
-{-# LANGUAGE AllowAmbiguousTypes #-}
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE AllowAmbiguousTypes    #-}
+{-# LANGUAGE DataKinds              #-}
+{-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE FunctionalDependencies #-}
-{-# LANGUAGE PolyKinds #-}
-{-# LANGUAGE Rank2Types #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE PolyKinds              #-}
+{-# LANGUAGE Rank2Types             #-}
+{-# LANGUAGE ScopedTypeVariables    #-}
+{-# LANGUAGE TypeApplications       #-}
+{-# LANGUAGE TypeFamilies           #-}
+{-# LANGUAGE TypeOperators          #-}
+{-# LANGUAGE UndecidableInstances   #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -94,7 +94,7 @@ class HasField (field :: Symbol) a s | s field -> a where
 --   field.
 instance
   ( Generic s
-  , Contains field (Rep s) ~ 'Just a -- this is needed for the fundep for some reason
+  , Contains field (Rep s) ~ 'Just a -- this is needed for the fundep
   , GHasField field (Rep s) a
   ) => HasField field a s where
   label =  repIso . glabel @field
@@ -122,13 +122,13 @@ instance (GHasField field s a, GHasField field s' a) => GHasField field (s :+: s
   glabel = combine (glabel @field @s) (glabel @field @s')
 
 instance GHasField field (S1 ('MetaSel ('Just field) p f b) (Rec0 a)) a where
-  glabel = lensM . glabel @field
+  glabel = mIso . glabel @field
 
 instance GHasField field (K1 R a) a where
   glabel f (K1 x) = fmap K1 (f x)
 
 instance GHasField field s a => GHasField field (M1 D c s) a where
-  glabel = lensM . glabel @field
+  glabel = mIso . glabel @field
 
 instance GHasField field s a => GHasField field (M1 C c s) a where
-  glabel = lensM . glabel @field
+  glabel = mIso . glabel @field

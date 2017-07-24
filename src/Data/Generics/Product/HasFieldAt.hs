@@ -166,11 +166,11 @@ instance GHasFieldAt offset index (K1 R a) a where
   gItemAt f (K1 x) = fmap K1 (f x)
 
 instance GHasFieldAt n n (S1 ('MetaSel m p f b) (Rec0 a)) a where
-  gItemAt = lensM . gItemAt @n @n
+  gItemAt = mIso . gItemAt @n @n
 
 instance GHasFieldAt offset index s a => GHasFieldAt offset index (M1 D c s) a where
-  gItemAt = lensM . gItemAt @offset @index
+  gItemAt = mIso . gItemAt @offset @index
 
 instance GHasFieldAt offset index s a => GHasFieldAt offset index (M1 C c s) a where
-  gItemAt = lensM . gItemAt @offset @index
+  gItemAt = mIso . gItemAt @offset @index
 

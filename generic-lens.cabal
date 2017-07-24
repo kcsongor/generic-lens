@@ -24,6 +24,7 @@ build-type:          Simple
 -- README.
 extra-source-files:  ChangeLog.md
                    , examples/StarWars.hs
+                   , examples/Examples.hs
                    , README.md
 
 -- Constraint on the version of Cabal needed to build this package.
@@ -37,6 +38,7 @@ library
                    , Data.Generics.Record.HasField
                    , Data.Generics.Product.HasFieldAt
                    , Data.Generics.Internal.Lens
+                   , Data.Generics.Sum.HasConstructor
 
   other-modules:     Data.Generics.Record.Internal.Contains
 
@@ -54,6 +56,7 @@ library
 
   -- Other library packages from which modules are imported.
   build-depends:     base >= 4.9 && <= 5.0
+                   , profunctors >= 5.0 && <= 6.0
 
   -- Directories containing source files.
   hs-source-dirs:    src

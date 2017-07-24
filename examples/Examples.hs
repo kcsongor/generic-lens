@@ -5,12 +5,20 @@
 {-# LANGUAGE TypeApplications      #-}
 {-# LANGUAGE UndecidableInstances  #-}
 
+{-# OPTIONS_GHC -fno-warn-unused-imports  #-}
+
 module Examples where
 
 import GHC.Generics
 import Data.Generics.Record
 import Data.Generics.Product
-import Control.Lens
+--import Control.Lens
+
+data Animal = Animal
+  { name :: String
+  , age  :: Int
+  , eats :: String
+  } deriving (Show, Generic)
 
 data Human = Human
   { name    :: String
@@ -19,24 +27,18 @@ data Human = Human
   , eats    :: String
   } deriving (Show, Generic)
 
-human :: Human
-human = Human { name = "Tunyasz", age = 10, address = "London", eats = "Bread" }
+data Living
+  = Animal' { name :: String, eats :: String, age :: Int }
+  | Human'  { name :: String, age :: Int, address :: String, eats :: String }
+  deriving (Show, Generic)
 
-data Animal = Animal
-  { name :: String
-  , age  :: Int
-  , eats :: String
-  } deriving (Show, Generic)
+toby :: Human
+toby = Human { name = "Toby", age = 10, address = "London", eats = "Bread" }
 
 growUp :: Animal -> Animal
-growUp (Animal name age _) = Animal name (age + 10) "raw meat"
+growUp (Animal n a _) = Animal n (a + 10) "raw meat"
 
-data WildAnimal = WildAnimal
-  { name  :: String
-  , age   :: Int
-  , eats  :: String
-  , hunts :: Animal
-  } deriving (Show, Generic)
+data MyRecord = MyRecord { field1 :: Int, field2 :: String } deriving Generic
 
-raiseByWolves :: Human -> Human
-raiseByWolves human = human & super %~ growUp
+--g :: Subtype s MyRecord => s -> String
+--g s = s ^. super @MyRecord . label @"field2"
