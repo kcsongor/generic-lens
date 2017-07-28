@@ -32,6 +32,8 @@
 --   | Qux
 --   deriving (Show, Generic)
 --
+-- @
+--
 -- >>> Bar 5 "coconut" ^? as @"Bar"
 -- Just (5, "coconut")
 --
@@ -41,16 +43,12 @@
 -- >>> as @"Bar" # (5, "asd") :: FooBar
 -- Bar 5 "asd"
 --
--- >>> as @"Barz" # (5, "asd") :: FooBar
---
--- <interactive>:264:1: error:
---     • FooBar has no constructor with name "Barz"
--- @
---
 
 -----------------------------------------------------------------------------
 
-module Data.Generics.Sum.HasConstructor where
+module Data.Generics.Sum.HasConstructor
+  ( HasConstructor (..)
+  ) where
 
 import Data.Generics.Internal.Lens
 
