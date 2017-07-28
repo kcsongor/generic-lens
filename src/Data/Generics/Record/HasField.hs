@@ -94,20 +94,11 @@ class HasField (field :: Symbol) a s | s field -> a where
 --   field.
 instance
   ( Generic s
-  , Contains field (Rep s) ~ 'Just a -- this is needed for the fundep
+  , ContainsField field (Rep s) ~ 'Just a -- this is needed for the fundep
   , GHasField field (Rep s) a
   ) => HasField field a s where
   label =  repIso . glabel @field
 
-
-class GHasFieldProd field a b ret (w :: Maybe Type) | field a b -> ret where
-  prodLabel :: Lens' ((a :*: b) x) ret
-
-instance (GHasField field f ret) => GHasFieldProd field f g ret ('Just ret) where
-  prodLabel = first . glabel @field
-
-instance (GHasField field g ret) => GHasFieldProd field f g ret 'Nothing where
-  prodLabel = second . glabel @field
 
 --------------------------------------------------------------------------------
 
@@ -115,8 +106,8 @@ instance (GHasField field g ret) => GHasFieldProd field f g ret 'Nothing where
 class GHasField (field :: Symbol) (s :: Type -> Type) a | field s -> a where
   glabel :: Lens' (s x) a
 
-instance (GHasFieldProd field s s' a (Contains field s)) => GHasField field (s :*: s') a where
-  glabel = prodLabel @field @_ @_ @_ @(Contains field s)
+instance (GHasFieldProd field s s' a (ContainsField field s)) => GHasField field (s :*: s') a where
+  glabel = prodLabel @field @_ @_ @_ @(ContainsField field s)
 
 instance (GHasField field s a, GHasField field s' a) => GHasField field (s :+: s') a where
   glabel = combine (glabel @field @s) (glabel @field @s')
@@ -132,3 +123,12 @@ instance GHasField field s a => GHasField field (M1 D c s) a where
 
 instance GHasField field s a => GHasField field (M1 C c s) a where
   glabel = mIso . glabel @field
+
+class GHasFieldProd field a b ret (w :: Maybe Type) | field a b -> ret where
+  prodLabel :: Lens' ((a :*: b) x) ret
+
+instance (GHasField field f ret) => GHasFieldProd field f g ret ('Just ret) where
+  prodLabel = first . glabel @field
+
+instance (GHasField field g ret) => GHasFieldProd field f g ret 'Nothing where
+  prodLabel = second . glabel @field

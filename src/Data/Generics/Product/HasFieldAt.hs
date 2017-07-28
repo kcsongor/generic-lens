@@ -1,14 +1,14 @@
-{-# LANGUAGE AllowAmbiguousTypes #-}
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE AllowAmbiguousTypes    #-}
+{-# LANGUAGE DataKinds              #-}
+{-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE FunctionalDependencies #-}
-{-# LANGUAGE PolyKinds #-}
-{-# LANGUAGE Rank2Types #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE PolyKinds              #-}
+{-# LANGUAGE Rank2Types             #-}
+{-# LANGUAGE ScopedTypeVariables    #-}
+{-# LANGUAGE TypeApplications       #-}
+{-# LANGUAGE TypeFamilies           #-}
+{-# LANGUAGE TypeOperators          #-}
+{-# LANGUAGE UndecidableInstances   #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -103,9 +103,9 @@ type family Search offset index f g :: Choice where
   Search offset index f g = Choose (ContainsAt offset index f) (ContainsAt (offset + Size f) index g)
 
 type family Choose f g :: Choice where
-  Choose 'True _ = 'GoLeft 
+  Choose 'True _ = 'GoLeft
   Choose _ 'True = 'GoRight
-  Choose _ _ = TypeError ('Text "Could not find type") 
+  Choose _ _ = TypeError ('Text "Could not find type")
 
 -- | Try find a field by position in the generic representation.
 type family ContainsAt (offset :: Nat) (index :: Nat) f :: Bool where
@@ -157,8 +157,8 @@ class GHasFieldAt (offset :: Nat) (index :: Nat) (s :: Type -> Type) a | offset 
 instance
     ( choice ~ (Search offset index s s')
     , offset' ~ Offset offset choice (Size s)
-    , GHasFieldAtProd offset' index s s' a choice 
-    ) 
+    , GHasFieldAtProd offset' index s s' a choice
+    )
     => GHasFieldAt offset index (s :*: s') a where
   gItemAt = prodItemAt @offset' @index @_ @_ @_ @choice
 

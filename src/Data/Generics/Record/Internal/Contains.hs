@@ -1,11 +1,11 @@
-{-# LANGUAGE AllowAmbiguousTypes #-}
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE PolyKinds #-}
-{-# LANGUAGE Rank2Types #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE AllowAmbiguousTypes  #-}
+{-# LANGUAGE DataKinds            #-}
+{-# LANGUAGE FlexibleInstances    #-}
+{-# LANGUAGE PolyKinds            #-}
+{-# LANGUAGE Rank2Types           #-}
+{-# LANGUAGE ScopedTypeVariables  #-}
+{-# LANGUAGE TypeFamilies         #-}
+{-# LANGUAGE TypeOperators        #-}
 {-# LANGUAGE UndecidableInstances #-}
 
 -----------------------------------------------------------------------------
@@ -21,43 +21,45 @@
 --
 -----------------------------------------------------------------------------
 module Data.Generics.Record.Internal.Contains
-  ( Contains
+  ( ContainsField
   ) where
 
-import Data.Kind                (Type)
+import Data.Kind    (Type)
 import GHC.Generics
-
 import GHC.TypeLits
 
 -- | Look up a record field by name in the generic representation, and return
 --   its corresponding type, if exists.
-type family Contains (field :: Symbol) f :: Maybe Type where
-  Contains field (S1 ('MetaSel ('Just field) _ _ _) (Rec0 t))
+type family ContainsField (field :: Symbol) f :: Maybe Type where
+  ContainsField field (S1 ('MetaSel ('Just field) _ _ _) (Rec0 t))
     = 'Just t
-  Contains field (f :*: g)
-    = Contains field f <|> Contains field g
-  Contains field (f :+: g)
-    = Contains field f <&> Contains field g
-  Contains field (S1 _ _)
+  ContainsField field (f :*: g)
+    = ContainsField field f <|> ContainsField field g
+  ContainsField field (f :+: g)
+    = ContainsField field f <&> ContainsField field g
+  ContainsField field (S1 _ _)
     = 'Nothing
-  Contains field (C1 m f)
-    = Contains field f
-  Contains field (D1 m f)
-    = Contains field f
-  Contains field (Rec0 _)
+  ContainsField field (C1 m f)
+    = ContainsField field f
+  ContainsField field (D1 m f)
+    = ContainsField field f
+  ContainsField field (Rec0 _)
     = 'Nothing
-  Contains field U1
+  ContainsField field U1
     = 'Nothing
-  Contains field V1
+  ContainsField field V1
     = 'Nothing
-  Contains x t = TypeError ('ShowType t)
+  ContainsField x t
+    = TypeError
+        (     'ShowType t
+        ':<>: 'Text " is not a valid GHC.Generics representation type"
+        )
 
 -- | Type-level alternative
 type family (a :: Maybe k) <|> (b :: Maybe k) :: Maybe k where
-  'Just x <|> _  = 'Just x
-  _ <|> b = b
+  'Just x <|> _ = 'Just x
+  _       <|> b = b
 
 type family (a :: Maybe k) <&> (b :: Maybe k) :: Maybe k where
-  'Just x <&> 'Just x  = 'Just x
-  _ <&> _ = 'Nothing
-
+  'Just x <&> 'Just x = 'Just x
+  _       <&> _       = 'Nothing

@@ -32,15 +32,22 @@ cabal-version:       >= 1.10
 
 
 library
-  exposed-modules:   Data.Generics.Record
-                   , Data.Generics.Product
+  exposed-modules:   Data.Generics.Product
+                   , Data.Generics.Product.Fields
+                   , Data.Generics.Product.Typed
+
+                   , Data.Generics.Record
                    , Data.Generics.Record.Subtype
                    , Data.Generics.Record.HasField
                    , Data.Generics.Product.HasFieldAt
                    , Data.Generics.Internal.Lens
                    , Data.Generics.Sum.HasConstructor
 
-  other-modules:     Data.Generics.Record.Internal.Contains
+  other-modules:     Data.Generics.Internal.Families
+                   , Data.Generics.Internal.Families.Count
+                   , Data.Generics.Internal.Families.Find
+
+                   , Data.Generics.Record.Internal.Contains
 
   other-extensions:  AllowAmbiguousTypes
                    , DataKinds

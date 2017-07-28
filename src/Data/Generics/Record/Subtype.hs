@@ -121,9 +121,9 @@ instance (GSmash a sup, GSmash b sup) => GSmash (a :*: b) sup where
 
 instance {-# OVERLAPPING #-}
   ( leaf ~ (S1 ('MetaSel ('Just field) p f b) t)
-  , GSmashLeaf leaf sup (Contains field sup)
+  , GSmashLeaf leaf sup (ContainsField field sup)
   ) => GSmash (S1 ('MetaSel ('Just field) p f b) t) sup where
-  gsmash = gsmashLeaf @_ @_ @(Contains field sup)
+  gsmash = gsmashLeaf @_ @_ @(ContainsField field sup)
 
 instance GSmash sub sup => GSmash (M1 i c sub) sup where
   gsmash sup (M1 sub) = M1 (gsmash sup sub)

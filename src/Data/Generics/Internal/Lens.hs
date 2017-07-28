@@ -15,18 +15,10 @@
 -----------------------------------------------------------------------------
 module Data.Generics.Internal.Lens where
 
-import Control.Applicative  ( Const (..) )
-import GHC.Generics         ( (:*:) (..), Generic (..), M1 (..), Rep, (:+:) (..) )
-import Data.Profunctor      ( Choice (right'), Profunctor (dimap) )
-
--- | Identity functor
-newtype Identity a
-  = Identity { runIdentity :: a }
-
--- | Functor instance
-instance Functor Identity where
-  fmap f (Identity a)
-    = Identity (f a)
+import Control.Applicative   (Const(..))
+import Data.Functor.Identity (Identity(..))
+import Data.Profunctor       (Choice(right'), Profunctor(dimap))
+import GHC.Generics          ((:*:)(..), Generic(..), M1(..), Rep, (:+:)(..))
 
 -- | Type alias for lens
 type Lens' s a
@@ -35,7 +27,6 @@ type Lens' s a
 -- | Type alias for prism
 type Prism' s a
   = forall p f. (Choice p, Applicative f) => p a (f a) -> p s (f s)
-
 
 type Iso' s a
   = forall p f. (Profunctor p, Functor f) => p a (f a) -> p s (f s)
@@ -70,7 +61,7 @@ right = prism R1 $ \x -> case x of
   L1 _ -> Left x
   R1 a -> Right a
 
-combine :: Lens' (s x) a -> Lens' (t x) a -> Lens' ((:+:) s t x) a
+combine :: Lens' (s x) a -> Lens' (t x) a -> Lens' ((s :+: t) x) a
 combine sa _ f (L1 s) = fmap (\a -> L1 (set sa a s)) (f (s ^. sa))
 combine _ ta f (R1 t) = fmap (\a -> R1 (set ta a t)) (f (t ^. ta))
 
@@ -97,4 +88,3 @@ _Left = prism Left $ either Right (Left . Right)
 
 _Right :: Prism' (Either c a) a
 _Right = prism Right $ either (Left . Left) Right
-
