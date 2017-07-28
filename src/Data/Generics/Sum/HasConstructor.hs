@@ -12,7 +12,6 @@
 {-# LANGUAGE TypeOperators          #-}
 {-# LANGUAGE UndecidableInstances   #-}
 
-{-# LANGUAGE DeriveGeneric #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Data.Generics.Sum.HasConstructor
@@ -24,7 +23,31 @@
 --
 -- Derive prisms generically
 --
--- TODO: add examples
+-- @
+--
+-- data FooBar
+--   = Foo Int
+--   | Bar Int String
+--   | Baz (Int, String)
+--   | Qux
+--   deriving (Show, Generic)
+--
+-- >>> Bar 5 "coconut" ^? as @"Bar"
+-- Just (5, "coconut")
+--
+-- >>> Qux ^? as @"Qux"
+-- Just ()
+--
+-- >>> as @"Bar" # (5, "asd") :: FooBar
+-- Bar 5 "asd"
+--
+-- >>> as @"Barz" # (5, "asd") :: FooBar
+--
+-- <interactive>:264:1: error:
+--     • FooBar has no constructor with name "Barz"
+-- @
+--
+
 -----------------------------------------------------------------------------
 
 module Data.Generics.Sum.HasConstructor where
@@ -36,14 +59,16 @@ import Data.Kind                (Type, Constraint)
 import GHC.Generics
 
 class HasConstructor (con :: Symbol) a s | s con -> a where
-  is :: Prism' s a
+  as :: Prism' s a
 
 instance
   ( Generic s
   , ErrorUnless (ContainsC con (Rep s)) con s
   , GHasConstructor con (Rep s) a
   ) => HasConstructor con a s where
-  is =  repIso . gconstruct @con
+  as =  repIso . gconstruct @con
+
+--------------------------------------------------------------------------------
 
 type family ErrorUnless (contains :: Bool) (con :: Symbol) (s :: *) :: Constraint where
   ErrorUnless 'False con s
@@ -52,6 +77,8 @@ type family ErrorUnless (contains :: Bool) (con :: Symbol) (s :: *) :: Constrain
                 ':<>: 'ShowType con)
   ErrorUnless _ _ _
     = ()
+
+--------------------------------------------------------------------------------
 
 data HList (xs :: [Type]) where
   Nil  :: HList '[]
@@ -66,6 +93,13 @@ append (x :> xs) ys = x :> (xs `append` ys)
 class AsList (tup :: *) (xs :: [*]) | xs -> tup where
   asList  :: tup -> HList xs
   asTuple :: HList xs -> tup
+
+instance AsList () '[] where
+  asList _
+    = Nil
+
+  asTuple _
+    = ()
 
 instance AsList a '[a] where
   asList a
@@ -127,6 +161,8 @@ type family ((xs :: [k]) ++ (ys :: [k])) :: [k] where
     '[] ++ ys = ys
     (x ': xs) ++ ys = x ': xs ++ ys
 
+--------------------------------------------------------------------------------
+
 class GHasConstructor (con :: Symbol) (s :: Type -> Type) a | con s -> a where
   gconstruct :: Prism' (s x) a
 
@@ -151,28 +187,44 @@ instance GHasConstructor con r a => GHasConstructorSum con l r a 'False where
 instance GHasConstructorSum con l r a (ContainsC con l) => GHasConstructor con (l :+: r) a where
   gconstruct = gconstructSum @con @l @r @a @(ContainsC con l)
 
-class Partition xs ys zs | xs ys -> zs, xs zs -> ys where
-  partition :: HList zs -> (HList xs, HList ys)
+--------------------------------------------------------------------------------
+-- * Split is the inverse of append
 
-instance Partition '[] xs xs where
-  partition xs = (Nil, xs)
+class Split xs ys zs | xs ys -> zs, xs zs -> ys where
+  split :: HList zs -> (HList xs, HList ys)
 
-instance Partition xs ys zs => Partition (x ': xs) ys (x ': zs) where
-  partition (x :> xs) = (x :> xs', ys')
-    where (xs', ys') = partition xs
+instance Split '[] xs xs where
+  split xs = (Nil, xs)
 
+instance Split xs ys zs => Split (x ': xs) ys (x ': zs) where
+  split (x :> xs) = (x :> xs', ys')
+    where (xs', ys') = split xs
+
+--------------------------------------------------------------------------------
+
+-- | Collect parameters of a constructor into an HList
 class GCollect (s :: Type -> Type) (xs :: [Type]) | s -> xs where
   gfrom :: s x -> HList xs
   gto :: HList xs -> s x
 
-instance (GCollect a as, GCollect b bs, xs ~ (as ++ bs), Partition as bs xs) => GCollect (a :*: b) xs where
+instance
+  ( GCollect a as
+  , GCollect b bs
+  , xs ~ (as ++ bs)
+  , Split as bs xs
+  ) => GCollect (a :*: b) xs where
+
   gfrom (a :*: b) = gfrom a `append` gfrom b
   gto xs = gto l :*: gto r
-    where (l, r) = partition @as @bs xs
+    where (l, r) = split @as @bs xs
 
 instance GCollect (K1 R a) '[a] where
   gfrom (K1 x) = x :> Nil
   gto (x :> Nil) = K1 x
+
+instance GCollect U1 '[] where
+  gfrom U1 = Nil
+  gto Nil  = U1
 
 instance GCollect s a => GCollect (M1 S c s) a where
   gfrom (M1 x) = gfrom x
