@@ -6,6 +6,7 @@
 {-# LANGUAGE MultiParamTypeClasses  #-}
 {-# LANGUAGE ScopedTypeVariables    #-}
 {-# LANGUAGE TypeApplications       #-}
+{-# LANGUAGE TypeFamilies           #-}
 {-# LANGUAGE TypeOperators          #-}
 {-# LANGUAGE UndecidableInstances   #-}
 
@@ -24,6 +25,14 @@ import GHC.TypeLits
 
 class HasField (field :: Symbol) a s | s field -> a where
   field :: Lens' s a
+
+instance (Generic s,
+          FindField field (Rep s) ~ 'Just a,
+          GHasField field (Rep s) a)
+
+      =>  HasField field a s where
+
+  field = repIso . gfield @field
 
 class GHasField (field :: Symbol) (f :: Type -> Type) a | field f -> a where
   gfield :: Lens' (f x) a
@@ -50,7 +59,7 @@ instance GHasField field f a => GHasField field (M1 D meta f) a where
 instance GHasField field f a => GHasField field (M1 C meta f) a where
   gfield = mIso . gfield @field
 
-class GProductHasField (field :: Symbol) l r a (contains :: Maybe Type) | field l r -> a where
+class GProductHasField (field :: Symbol) l r a (found :: Maybe Type) | field l r -> a where
   gproductField :: Lens' ((l :*: r) x) a
 
 instance GHasField field l a => GProductHasField field l r a ('Just a) where

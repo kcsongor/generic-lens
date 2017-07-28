@@ -6,6 +6,7 @@
 
 module Data.Generics.Internal.Families.Count
   ( CountType
+  , Counted (..)
   ) where
 
 import GHC.Generics
