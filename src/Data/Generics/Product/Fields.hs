@@ -10,9 +10,26 @@
 {-# LANGUAGE TypeOperators          #-}
 {-# LANGUAGE UndecidableInstances   #-}
 
-module Data.Generics.Product.Fields
-  ( HasField (..)
+-----------------------------------------------------------------------------
+-- |
+-- Module      :  Data.Generics.Record.HasField
+-- Copyright   :  (C) 2017 Csongor Kiss
+-- License     :  BSD3
+-- Maintainer  :  Csongor Kiss <kiss.csongor.kiss@gmail.com>
+-- Stability   :  experimental
+-- Portability :  non-portable
+--
+-- Derive record field getters and setters generically.
+--
+-----------------------------------------------------------------------------
 
+module Data.Generics.Product.Fields
+  ( --  * Lenses
+    --
+    --    $example
+    HasField (..)
+
+    --  * Internals
   , GHasField (..)
   ) where
 
@@ -23,7 +40,33 @@ import Data.Kind    (Constraint, Type)
 import GHC.Generics
 import GHC.TypeLits
 
+--  $example
+--  @
+--    module Example where
+--
+--    import Data.Generics.Product
+--    import GHC.Generics
+--
+--    data Human = Human
+--      { name    :: String
+--      , age     :: Int
+--      , address :: String
+--      }
+--      deriving (Generic, Show)
+--
+--    human :: Human
+--    human = Human \"Tunyasz\" 50 \"London\"
+--  @
+
+--  | Records that have a field with a given name.
 class HasField (field :: Symbol) a s | s field -> a where
+  --  | A lens that focuses on a field with a given name. Compatible with the
+  --    lens package's 'Control.Lens.Lens' type.
+  --
+  --    >>> human ^. field @"age"
+  --    50
+  --    >>> human & field @"name" .~ "Tamas"
+  --    Human {name = "Tamas", age = 50, address = "London"}
   field :: Lens' s a
 
 instance (Generic s,
@@ -48,6 +91,8 @@ type family ErrorUnlessJust (field :: Symbol) (s :: Type) (found :: Maybe Type) 
   ErrorUnlessJust _ _ ('Just _)
     = ()
 
+--  | As 'HasField' but over generic representations as defined by
+--    "GHC.Generics".
 class GHasField (field :: Symbol) (f :: Type -> Type) a | field f -> a where
   gfield :: Lens' (f x) a
 

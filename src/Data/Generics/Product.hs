@@ -15,14 +15,12 @@
 --
 -----------------------------------------------------------------------------
 module Data.Generics.Product
-  (
-    -- * Magic lens
-    HasFieldAt  (..)
-
-    -- * Getter and setter
-  , getFieldAt
-  , setFieldAt
-
+  ( --  * Lenses
+    HasField (..)
+  , HasPosition (..)
+  , HasType (..)
   ) where
 
-import Data.Generics.Product.HasFieldAt
+import Data.Generics.Product.Fields
+import Data.Generics.Product.Numbered
+import Data.Generics.Product.Typed

@@ -10,9 +10,26 @@
 {-# LANGUAGE TypeOperators         #-}
 {-# LANGUAGE UndecidableInstances  #-}
 
-module Data.Generics.Product.Typed
-  ( HasType (..)
+-----------------------------------------------------------------------------
+-- |
+-- Module      :  Data.Generics.Record.HasField
+-- Copyright   :  (C) 2017 Csongor Kiss
+-- License     :  BSD3
+-- Maintainer  :  Csongor Kiss <kiss.csongor.kiss@gmail.com>
+-- Stability   :  experimental
+-- Portability :  non-portable
+--
+-- Derive record field getters and setters generically.
+--
+-----------------------------------------------------------------------------
 
+module Data.Generics.Product.Typed
+  ( --  * Lenses
+    --
+    --    $example
+    HasType (..)
+
+    --  * Internals
   , GHasType (..)
   ) where
 
@@ -23,7 +40,31 @@ import Data.Kind    (Constraint, Type)
 import GHC.Generics
 import GHC.TypeLits
 
+--  $example
+--  @
+--    module Example where
+--
+--    import Data.Generics.Product
+--    import GHC.Generics
+--
+--    data Human = Human
+--      { name    :: String
+--      , age     :: Int
+--      , address :: String
+--      }
+--      deriving (Generic, Show)
+--
+--    human :: Human
+--    human = Human \"Tunyasz\" 50 \"London\"
+--  @
+
+--  | Records that have a field with a unique type.
 class HasType a s where
+  --  | A lens that focuses on a field with a unique type in its parent type.
+  --    Compatible with the lens package's 'Control.Lens.Lens' type.
+  --
+  --    >>> human ^. @typed Int
+  --    50
   typed :: Lens' s a
 
 instance (Generic s,
@@ -56,6 +97,8 @@ type family ErrorUnlessOne (a :: Type) (s :: Type) (count :: Count) :: Constrain
   ErrorUnlessOne _ _ 'One
     = ()
 
+--  | As 'HasType' but over generic representations as defined by
+--    "GHC.Generics".
 class GHasType (f :: Type -> Type) a where
   gtyped :: Lens' (f x) a
 

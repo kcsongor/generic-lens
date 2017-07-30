@@ -10,9 +10,26 @@
 {-# LANGUAGE TypeOperators          #-}
 {-# LANGUAGE UndecidableInstances   #-}
 
-module Data.Generics.Product.Numbered
-  ( HasPosition (..)
+-----------------------------------------------------------------------------
+-- |
+-- Module      :  Data.Generics.Record.HasField
+-- Copyright   :  (C) 2017 Csongor Kiss
+-- License     :  BSD3
+-- Maintainer  :  Csongor Kiss <kiss.csongor.kiss@gmail.com>
+-- Stability   :  experimental
+-- Portability :  non-portable
+--
+-- Derive positional product type getters and setters generically.
+--
+-----------------------------------------------------------------------------
 
+module Data.Generics.Product.Numbered
+  ( --  * Lenses
+    --
+    --    $example
+    HasPosition (..)
+
+    --  * Internals
   , GHasPosition (..)
   ) where
 
@@ -22,9 +39,36 @@ import Data.Kind    (Constraint, Type)
 import GHC.Generics
 import GHC.TypeLits
 
+--  $example
+--  @
+--    module Example where
+--
+--    import Data.Generics.Product
+--    import GHC.Generics
+--
+--    data Human = Human
+--      { name    :: String
+--      , age     :: Int
+--      , address :: String
+--      }
+--      deriving (Generic, Show)
+--
+--    human :: Human
+--    human = Human \"Tunyasz\" 50 \"London\"
+--  @
+
+--  | Records that have a field at a given position.
 class HasPosition (i :: Nat) a s | s i -> a where
+  --  | A lens that focuses on a field at a given position. Compatible with the
+  --    lens package's 'Control.Lens.Lens' type.
+  --
+  --    >>> human ^. numbered @1
+  --    "Tunyasz"
+  --    >>> human & numbered @2 .~ "Berlin"
+  --    Human {name = "Tunyasz", age = 50, address = "Berlin"}
   numbered :: Lens' s a
 
+--  | The base index from which positions are counted.
 type BaseIndex
   = 1
 
@@ -50,6 +94,8 @@ type family ErrorUnlessTrue (i :: Nat) (s :: Type) (hasP :: Bool) :: Constraint 
   ErrorUnlessTrue _ _ 'True
     = ()
 
+--  | As 'HasPosition' but over generic representations as defined by
+--    "GHC.Generics".
 class GHasPosition (offset :: Nat) (i :: Nat) (f :: Type -> Type) a | offset i f -> a where
   gnumbered :: Lens' (f x) a
 

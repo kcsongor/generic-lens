@@ -20,14 +20,6 @@ module Data.Generics.Record
     Subtype  (..)
   , super
 
-    -- * Magic lens
-  , HasField (..)
-
-    -- * Getter and setter
-  , getField
-  , setField
-
   ) where
 
-import Data.Generics.Record.HasField
 import Data.Generics.Record.Subtype

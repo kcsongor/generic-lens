@@ -52,7 +52,7 @@ module Data.Generics.Record.Subtype
   , super
   ) where
 
-import Data.Generics.Record.HasField
+import Data.Generics.Product.Fields
 import Data.Generics.Record.Internal.Contains
 
 import Data.Generics.Internal.Lens
@@ -105,7 +105,7 @@ instance (GUpcast sub a, GUpcast sub b) => GUpcast sub (a :*: b) where
   gupcast rep = gupcast rep :*: gupcast rep
 
 instance {-# OVERLAPPING #-} GHasField field sub t => GUpcast sub (S1 ('MetaSel ('Just field) p f b) (Rec0 t)) where
-  gupcast r = M1 (K1 (r ^. glabel @field))
+  gupcast r = M1 (K1 (r ^. gfield @field))
 
 instance GUpcast sub sup => GUpcast sub (M1 i c sup) where
   gupcast = M1 . gupcast
@@ -132,7 +132,7 @@ class GSmashLeaf sub sup (w :: Maybe Type) where
   gsmashLeaf :: sup p -> sub p -> sub p
 
 instance (GHasField field sup t) => GSmashLeaf (S1 ('MetaSel ('Just field) p f b) (Rec0 t)) sup ('Just t) where
-  gsmashLeaf sup (M1 (K1 _)) = M1 (K1 (sup ^. glabel @field))
+  gsmashLeaf sup (M1 (K1 _)) = M1 (K1 (sup ^. gfield @field))
 
 instance GSmashLeaf (S1 ('MetaSel ('Just field) p f b) (Rec0 t)) sup 'Nothing where
   gsmashLeaf _ = id
