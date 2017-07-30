@@ -144,7 +144,7 @@ type family Size f :: Nat where
   Size (l :*: r)
     = Size l + Size r
   Size (l :+: r)
-    = Size l + Size r
+    = Min (Size l) (Size r)
   Size (D1 meta f)
     = Size f
   Size (C1 meta f)
