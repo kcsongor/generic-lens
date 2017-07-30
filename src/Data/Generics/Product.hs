@@ -31,5 +31,5 @@ module Data.Generics.Product
 
 import Data.Generics.Product.Any
 import Data.Generics.Product.Fields
-import Data.Generics.Product.Numbered
+import Data.Generics.Product.Positions
 import Data.Generics.Product.Typed

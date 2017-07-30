@@ -34,10 +34,10 @@ sally = Person "Sally" 25
 >>> setField @"age" 26 sally
 Person { name = "Sally", age = 26 }
 
->>> sally ^. label @"name"
+>>> sally ^. field @"name"
 "Sally"
 
->>> sally & label @"name" .~ "Tamas"
+>>> sally & field @"name" .~ "Tamas"
 Person { name = "Tamas", age = 25 }
 
 ```
@@ -56,16 +56,16 @@ polygon = Polygon (Point 1 5 3) (Point 2 4 2) (Point 5 7 (-2))
 
 ```haskell
 
->>> getFieldAt @2 polygon
+>>> getPosition @2 polygon
 Point 2 4 2
 
->>> setFieldAt @1 (Point 26 5 3) polygon
+>>> setPosition @1 (Point 26 5 3) polygon
 Polygon (Point 26 5 3) (Point 2 4 2) (Point 5 7 (-2))
 
->>> polygon ^. itemAt @1 . itemAt @2
+>>> polygon ^. position @1 . position @2
 5
 
->>> polygon & itemAt @3 . itemAt @2 %~ (+10)
+>>> polygon & position @3 . position @2 %~ (+10)
 Polygon (Point 1 5 3) (Point 2 4 2) (Point 5 17 (-2))
 
 ```
@@ -73,9 +73,12 @@ Polygon (Point 1 5 3) (Point 2 4 2) (Point 5 17 (-2))
 Since tuples are an instance of Generic, positional lenses can be used with them.
 
 ```haskell
->>> (("hello", True), 5) ^. itemAt @1 . itemAt @2
+>>> (("hello", True), 5) ^. position @1 . position @2
 True
 ```
+
+## Typed fields
+- TODO
 
 ## Structural subtyping
 

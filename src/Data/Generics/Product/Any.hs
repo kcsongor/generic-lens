@@ -9,14 +9,14 @@
 
 -----------------------------------------------------------------------------
 -- |
--- Module      :  Data.Generics.Record.HasField
+-- Module      :  Data.Generics.Product.Any
 -- Copyright   :  (C) 2017 Csongor Kiss
 -- License     :  BSD3
 -- Maintainer  :  Csongor Kiss <kiss.csongor.kiss@gmail.com>
 -- Stability   :  experimental
 -- Portability :  non-portable
 --
--- Derive a variety of record lenses generically.
+-- Derive a variety of lenses generically.
 --
 -----------------------------------------------------------------------------
 
@@ -29,7 +29,7 @@ module Data.Generics.Product.Any
 
 import Data.Generics.Internal.Lens
 import Data.Generics.Product.Fields
-import Data.Generics.Product.Numbered
+import Data.Generics.Product.Positions
 import Data.Generics.Product.Typed
 
 --  $example
@@ -66,7 +66,7 @@ class HasAny (sel :: k) a s | s sel k -> a where
   the :: Lens' s a
 
 instance HasPosition i a s => HasAny i a s where
-  the = numbered @i
+  the = position @i
 
 instance HasField field a s => HasAny field a s where
   the = field @field

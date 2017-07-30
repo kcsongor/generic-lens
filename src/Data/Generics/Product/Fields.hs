@@ -134,7 +134,7 @@ instance GHasField field f a => GHasField field (M1 D meta f) a where
 instance GHasField field f a => GHasField field (M1 C meta f) a where
   gfield = mIso . gfield @field
 
-class GProductHasField (field :: Symbol) l r a (contains :: Bool) | contains field l r -> a where
+class GProductHasField (field :: Symbol) l r a (left :: Bool) | left field l r -> a where
   gproductField :: Lens' ((l :*: r) x) a
 
 instance GHasField field l a => GProductHasField field l r a 'True where
