@@ -67,12 +67,11 @@ class HasType a s where
   --  50
   typed :: Lens' s a
 
-instance (Generic s,
-          FindType a (Rep s) ~ 'Just a,
-          ErrorUnlessOne a s (CountType a (Rep s)),
-          GHasType (Rep s) a)
-
-      =>  HasType a s where
+instance
+  ( Generic s
+  , ErrorUnlessOne a s (CountType a (Rep s))
+  , GHasType (Rep s) a
+  ) => HasType a s where
 
   typed = repIso . gtyped
 
@@ -102,10 +101,10 @@ type family ErrorUnlessOne (a :: Type) (s :: Type) (count :: Count) :: Constrain
 class GHasType (f :: Type -> Type) a where
   gtyped :: Lens' (f x) a
 
-instance GProductHasType l r a (FindType a l)
+instance GProductHasType l r a (HasTypeP a l)
       => GHasType (l :*: r) a where
 
-  gtyped = gproductTyped @_ @_ @_ @(FindType a l)
+  gtyped = gproductTyped @_ @_ @_ @(HasTypeP a l)
 
 instance (GHasType l a, GHasType r a) => GHasType (l :+: r) a where
   gtyped = combine (gtyped @l) (gtyped @r)
@@ -122,11 +121,11 @@ instance GHasType f a => GHasType (M1 D meta f) a where
 instance GHasType f a => GHasType (M1 C meta f) a where
   gtyped = mIso . gtyped
 
-class GProductHasType l r a (found :: Maybe Type) where
+class GProductHasType l r a (contains :: Bool) where
   gproductTyped :: Lens' ((l :*: r) x) a
 
-instance GHasType l a => GProductHasType l r a ('Just a) where
+instance GHasType l a => GProductHasType l r a 'True where
   gproductTyped = first . gtyped
 
-instance GHasType r a => GProductHasType l r a 'Nothing where
+instance GHasType r a => GProductHasType l r a 'False where
   gproductTyped = second . gtyped

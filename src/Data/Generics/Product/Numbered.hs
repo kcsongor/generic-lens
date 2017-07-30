@@ -25,9 +25,11 @@
 
 module Data.Generics.Product.Numbered
   ( -- *Lenses
-    --
+
     --  $example
     HasPosition (..)
+  , setPosition
+  , getPosition
 
     -- *Internals
   , GHasPosition (..)
@@ -57,6 +59,20 @@ import GHC.TypeLits
 --    human = Human \"Tunyasz\" 50 \"London\"
 --  @
 
+-- | Get positional field
+--
+-- >>> getPosition @1 human
+-- "Tunyasz"
+getPosition :: forall i a s. HasPosition i a s => s -> a
+getPosition s = s ^. numbered @i
+
+-- | Set positional field
+--
+-- >>> setPosition @2 (setField @1 "Tamas" human) 30
+-- Human "Tamas" 30 "London"
+setPosition :: forall i a s. HasPosition i a s => a -> s -> s
+setPosition = set (numbered @i)
+
 -- |Records that have a field at a given position.
 class HasPosition (i :: Nat) a s | s i -> a where
   -- |A lens that focuses on a field at a given position. Compatible with the
@@ -72,13 +88,11 @@ class HasPosition (i :: Nat) a s | s i -> a where
 type BaseIndex
   = 1
 
-instance (Generic s,
-          hasP ~ HasPositionP BaseIndex i (Rep s),
-          ErrorUnlessTrue i s hasP,
-          hasP ~ 'True,
-          GHasPosition BaseIndex i (Rep s) a)
-
-      =>  HasPosition i a s where
+instance
+  ( Generic s
+  , ErrorUnlessTrue i s (HasPositionP BaseIndex i (Rep s))
+  , GHasPosition BaseIndex i (Rep s) a
+  ) => HasPosition i a s where
 
   numbered = repIso . gnumbered @BaseIndex @i
 

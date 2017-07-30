@@ -25,9 +25,13 @@
 
 module Data.Generics.Product.Fields
   ( -- *Lenses
-    --
+
     --  $example
     HasField (..)
+
+    -- *Getter and setter functions
+  , getField
+  , setField
 
     -- *Internals
   , GHasField (..)
@@ -58,6 +62,20 @@ import GHC.TypeLits
 --    human = Human \"Tunyasz\" 50 \"London\"
 --  @
 
+-- | Get 'field'
+--
+-- >>> getField @"name" human
+-- "Tunyasz"
+getField :: forall field a s. HasField field a s => s -> a
+getField s = s ^. field @field
+
+-- | Set 'field'
+--
+-- >>> setField @"age" (setField @"name" "Tamas" human) 30
+-- Human {name = "Tamas", age = 30, address = "London"}
+setField :: forall field a s. HasField field a s => a -> s -> s
+setField = set (field @field)
+
 --  | Records that have a field with a given name.
 class HasField (field :: Symbol) a s | s field -> a where
   -- |A lens that focuses on a field with a given name. Compatible with the
@@ -69,18 +87,16 @@ class HasField (field :: Symbol) a s | s field -> a where
   --  Human {name = "Tamas", age = 50, address = "London"}
   field :: Lens' s a
 
-instance (Generic s,
-          found ~ FindField field (Rep s),
-          ErrorUnlessJust field s found,
-          found ~ 'Just a,
-          GHasField field (Rep s) a)
-
-      =>  HasField field a s where
+instance
+  ( Generic s
+  , ErrorUnlessJust field s (HasFieldP field (Rep s))
+  , GHasField field (Rep s) a
+  ) => HasField field a s where
 
   field = repIso . gfield @field
 
-type family ErrorUnlessJust (field :: Symbol) (s :: Type) (found :: Maybe Type) :: Constraint where
-  ErrorUnlessJust field s 'Nothing
+type family ErrorUnlessJust (field :: Symbol) (s :: Type) (contains :: Bool) :: Constraint where
+  ErrorUnlessJust field s 'False
     = TypeError
         (     'Text "The type "
         ':<>: 'ShowType s
@@ -88,7 +104,7 @@ type family ErrorUnlessJust (field :: Symbol) (s :: Type) (found :: Maybe Type) 
         ':<>: 'ShowType field
         )
 
-  ErrorUnlessJust _ _ ('Just _)
+  ErrorUnlessJust _ _ 'True
     = ()
 
 -- |As 'HasField' but over generic representations as defined by
@@ -96,10 +112,10 @@ type family ErrorUnlessJust (field :: Symbol) (s :: Type) (found :: Maybe Type) 
 class GHasField (field :: Symbol) (f :: Type -> Type) a | field f -> a where
   gfield :: Lens' (f x) a
 
-instance GProductHasField field l r a (FindField field l)
+instance GProductHasField field l r a (HasFieldP field l)
       => GHasField field (l :*: r) a where
 
-  gfield = gproductField @field @_ @_ @_ @(FindField field l)
+  gfield = gproductField @field @_ @_ @_ @(HasFieldP field l)
 
 instance (GHasField field l a, GHasField field r a)
       =>  GHasField field (l :+: r) a where
@@ -118,11 +134,11 @@ instance GHasField field f a => GHasField field (M1 D meta f) a where
 instance GHasField field f a => GHasField field (M1 C meta f) a where
   gfield = mIso . gfield @field
 
-class GProductHasField (field :: Symbol) l r a (found :: Maybe Type) | field l r -> a where
+class GProductHasField (field :: Symbol) l r a (contains :: Bool) | contains field l r -> a where
   gproductField :: Lens' ((l :*: r) x) a
 
-instance GHasField field l a => GProductHasField field l r a ('Just a) where
+instance GHasField field l a => GProductHasField field l r a 'True where
   gproductField = first . gfield @field
 
-instance GHasField field r a => GProductHasField field l r a 'Nothing where
+instance GHasField field r a => GProductHasField field l r a 'False where
   gproductField = second . gfield @field

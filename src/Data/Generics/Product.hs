@@ -17,8 +17,15 @@
 module Data.Generics.Product
   ( --  * Lenses
     HasAny (..)
+
   , HasField (..)
+  , setField
+  , getField
+
   , HasPosition (..)
+  , setPosition
+  , getPosition
+
   , HasType (..)
   ) where
 

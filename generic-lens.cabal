@@ -1,6 +1,6 @@
 name:                generic-lens
 
-version:             0.2.0.0
+version:             0.3.0.0
 
 synopsis:            Generic data-structure operations exposed as lenses.
 
@@ -45,7 +45,7 @@ library
 
   other-modules:     Data.Generics.Internal.Families
                    , Data.Generics.Internal.Families.Count
-                   , Data.Generics.Internal.Families.Find
+                   , Data.Generics.Internal.Families.Has
 
                    , Data.Generics.Record.Internal.Contains
 

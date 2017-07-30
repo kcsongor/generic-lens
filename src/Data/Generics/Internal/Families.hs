@@ -3,4 +3,4 @@ module Data.Generics.Internal.Families
   ) where
 
 import Data.Generics.Internal.Families.Count as Families
-import Data.Generics.Internal.Families.Find  as Families
+import Data.Generics.Internal.Families.Has   as Families
