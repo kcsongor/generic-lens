@@ -6,13 +6,13 @@
 
 module Data.Generics.Internal.Families.Count
   ( CountType
-  , Counted (..)
+  , Count (..)
   ) where
 
 import GHC.Generics
 import GHC.TypeLits
 
-type family CountType t f :: Counted where
+type family CountType t f :: Count where
   CountType t (S1 _ (Rec0 t))
     = 'One
   CountType t (l :*: r)
@@ -37,16 +37,16 @@ type family CountType t f :: Counted where
         ':<>: 'Text " is not a valid GHC.Generics representation type"
         )
 
-data Counted
+data Count
   = None
   | One
   | Multiple
 
-type family (a :: Counted) <|> (b :: Counted) :: Counted where
+type family (a :: Count) <|> (b :: Count) :: Count where
   'None <|> b     = b
   a     <|> 'None = a
   a     <|> b     = 'Multiple
 
-type family (a :: Counted) <&> (b :: Counted) :: Counted where
+type family (a :: Count) <&> (b :: Count) :: Count where
   a <&> a = a
   _ <&> _ = 'Multiple

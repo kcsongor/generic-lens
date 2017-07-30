@@ -13,25 +13,48 @@
 module Data.Generics.Product.Typed
   ( HasType (..)
 
+  , GHasType (..)
   ) where
 
 import Data.Generics.Internal.Families
 import Data.Generics.Internal.Lens
 
-import Data.Kind    (Type)
+import Data.Kind    (Constraint, Type)
 import GHC.Generics
+import GHC.TypeLits
 
 class HasType a s where
   typed :: Lens' s a
 
 instance (Generic s,
           FindType a (Rep s) ~ 'Just a,
-          CountType a (Rep s) ~ 'One,
+          ErrorUnlessOne a s (CountType a (Rep s)),
           GHasType (Rep s) a)
 
       =>  HasType a s where
 
   typed = repIso . gtyped
+
+type family ErrorUnlessOne (a :: Type) (s :: Type) (count :: Count) :: Constraint where
+  ErrorUnlessOne a s 'None
+    = TypeError
+        (     'Text "The type "
+        ':<>: 'ShowType s
+        ':<>: 'Text " does not contain a value of type "
+        ':<>: 'ShowType a
+        )
+
+  ErrorUnlessOne a s 'Multiple
+    = TypeError
+        (     'Text "The type "
+        ':<>: 'ShowType s
+        ':<>: 'Text " contains multiple values of type "
+        ':<>: 'ShowType a
+        ':<>: 'Text "; the choice of value is thus ambiguous"
+        )
+
+  ErrorUnlessOne _ _ 'One
+    = ()
 
 class GHasType (f :: Type -> Type) a where
   gtyped :: Lens' (f x) a

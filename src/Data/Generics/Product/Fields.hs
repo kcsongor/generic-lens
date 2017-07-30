@@ -19,7 +19,7 @@ module Data.Generics.Product.Fields
 import Data.Generics.Internal.Families
 import Data.Generics.Internal.Lens
 
-import Data.Kind    (Type)
+import Data.Kind    (Constraint, Type)
 import GHC.Generics
 import GHC.TypeLits
 
@@ -27,12 +27,26 @@ class HasField (field :: Symbol) a s | s field -> a where
   field :: Lens' s a
 
 instance (Generic s,
-          FindField field (Rep s) ~ 'Just a,
+          found ~ FindField field (Rep s),
+          ErrorUnlessJust field s found,
+          found ~ 'Just a,
           GHasField field (Rep s) a)
 
       =>  HasField field a s where
 
   field = repIso . gfield @field
+
+type family ErrorUnlessJust (field :: Symbol) (s :: Type) (found :: Maybe Type) :: Constraint where
+  ErrorUnlessJust field s 'Nothing
+    = TypeError
+        (     'Text "The type "
+        ':<>: 'ShowType s
+        ':<>: 'Text " does not contain a field named "
+        ':<>: 'ShowType field
+        )
+
+  ErrorUnlessJust _ _ ('Just _)
+    = ()
 
 class GHasField (field :: Symbol) (f :: Type -> Type) a | field f -> a where
   gfield :: Lens' (f x) a
