@@ -63,7 +63,7 @@ class HasType a s where
   -- |A lens that focuses on a field with a unique type in its parent type.
   --  Compatible with the lens package's 'Control.Lens.Lens' type.
   --
-  --  >>> human ^. @typed Int
+  --  >>> human ^. typed @Int
   --  50
   typed :: Lens' s a
 
