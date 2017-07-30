@@ -37,17 +37,15 @@ library
                    , Data.Generics.Product.Fields
                    , Data.Generics.Product.Positions
                    , Data.Generics.Product.Typed
+                   , Data.Generics.Product.Subtype
 
-                   , Data.Generics.Record
-                   , Data.Generics.Record.Subtype
-                   , Data.Generics.Internal.Lens
                    , Data.Generics.Sum.HasConstructor
+
+                   , Data.Generics.Internal.Lens
 
   other-modules:     Data.Generics.Internal.Families
                    , Data.Generics.Internal.Families.Count
                    , Data.Generics.Internal.Families.Has
-
-                   , Data.Generics.Record.Internal.Contains
 
   other-extensions:  AllowAmbiguousTypes
                    , DataKinds

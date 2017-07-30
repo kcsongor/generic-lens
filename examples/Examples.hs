@@ -10,7 +10,6 @@
 module Examples where
 
 import GHC.Generics
-import Data.Generics.Record
 import Data.Generics.Product
 --import Control.Lens
 

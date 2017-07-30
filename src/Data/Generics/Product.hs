@@ -1,6 +1,6 @@
 -----------------------------------------------------------------------------
 -- |
--- Module      :  Data.Generics.Record
+-- Module      :  Data.Generics.Product
 -- Copyright   :  (C) 2017 Csongor Kiss
 -- License     :  BSD3
 -- Maintainer  :  Csongor Kiss <kiss.csongor.kiss@gmail.com>
@@ -27,9 +27,14 @@ module Data.Generics.Product
   , getPosition
 
   , HasType (..)
+
+    -- * Subtype relationship
+  , Subtype  (..)
+  , super
   ) where
 
 import Data.Generics.Product.Any
 import Data.Generics.Product.Fields
 import Data.Generics.Product.Positions
 import Data.Generics.Product.Typed
+import Data.Generics.Product.Subtype

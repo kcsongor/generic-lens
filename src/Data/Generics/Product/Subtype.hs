@@ -12,7 +12,7 @@
 
 -----------------------------------------------------------------------------
 -- |
--- Module      :  Data.Generics.Record.Subtype
+-- Module      :  Data.Generics.Product.Subtype
 -- Copyright   :  (C) 2017 Csongor Kiss
 -- License     :  BSD3
 -- Maintainer  :  Csongor Kiss <kiss.csongor.kiss@gmail.com>
@@ -47,13 +47,13 @@
 -- @
 --
 -----------------------------------------------------------------------------
-module Data.Generics.Record.Subtype
+module Data.Generics.Product.Subtype
   ( Subtype (..)
   , super
   ) where
 
 import Data.Generics.Product.Fields
-import Data.Generics.Record.Internal.Contains
+import Data.Generics.Internal.Families.Has (HasFieldP)
 
 import Data.Generics.Internal.Lens
 
@@ -121,18 +121,18 @@ instance (GSmash a sup, GSmash b sup) => GSmash (a :*: b) sup where
 
 instance {-# OVERLAPPING #-}
   ( leaf ~ (S1 ('MetaSel ('Just field) p f b) t)
-  , GSmashLeaf leaf sup (ContainsField field sup)
+  , GSmashLeaf leaf sup (HasFieldP field sup)
   ) => GSmash (S1 ('MetaSel ('Just field) p f b) t) sup where
-  gsmash = gsmashLeaf @_ @_ @(ContainsField field sup)
+  gsmash = gsmashLeaf @_ @_ @(HasFieldP field sup)
 
 instance GSmash sub sup => GSmash (M1 i c sub) sup where
   gsmash sup (M1 sub) = M1 (gsmash sup sub)
 
-class GSmashLeaf sub sup (w :: Maybe Type) where
+class GSmashLeaf sub sup (w :: Bool) where
   gsmashLeaf :: sup p -> sub p -> sub p
 
-instance (GHasField field sup t) => GSmashLeaf (S1 ('MetaSel ('Just field) p f b) (Rec0 t)) sup ('Just t) where
+instance (GHasField field sup t) => GSmashLeaf (S1 ('MetaSel ('Just field) p f b) (Rec0 t)) sup 'True where
   gsmashLeaf sup (M1 (K1 _)) = M1 (K1 (sup ^. gfield @field))
 
-instance GSmashLeaf (S1 ('MetaSel ('Just field) p f b) (Rec0 t)) sup 'Nothing where
+instance GSmashLeaf (S1 ('MetaSel ('Just field) p f b) (Rec0 t)) sup 'False where
   gsmashLeaf _ = id
