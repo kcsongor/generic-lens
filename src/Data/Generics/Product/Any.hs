@@ -57,19 +57,19 @@ class HasAny (sel :: k) a s | s sel k -> a where
   --  unique types. Compatible with the lens package's 'Control.Lens.Lens'
   --  type.
   --
-  --  >>> human ^. its @Int
+  --  >>> human ^. the @Int
   --  50
-  --  >>> human ^. its @"name"
+  --  >>> human ^. the @"name"
   --  "Tunyasz"
-  --  >>> human ^. its @3
+  --  >>> human ^. the @3
   --  "London"
-  its :: Lens' s a
+  the :: Lens' s a
 
 instance HasPosition i a s => HasAny i a s where
-  its = numbered @i
+  the = numbered @i
 
 instance HasField field a s => HasAny field a s where
-  its = field @field
+  the = field @field
 
 instance HasType a s => HasAny a a s where
-  its = typed @a
+  the = typed @a
