@@ -81,12 +81,57 @@ type BaseIndex = 1
 --   positional field.
 instance
   ( Generic s
-  , ContainsAt BaseIndex index (Rep s) ~ 'True -- this is needed for the fundep
   , GHasFieldAt BaseIndex index (Rep s) a
   ) => HasFieldAt index a s where
   itemAt =  repIso . gItemAt @BaseIndex @index
 
+--------------------------------------------------------------------------------
+type family Not (b :: Bool) where
+  Not 'True = 'False
+  Not 'False = 'True
+
+type family (<) (x :: Nat) (y :: Nat) :: Bool where
+  x < y = Not (y <=? x)
+
+type family If (c :: Bool) (x :: k) (y :: k) :: k where
+  If 'True  x _ = x
+  If 'False _ y = y
+
+type family Min (a :: Nat) (b :: Nat) :: Nat where
+  Min a b = If (a < b) a b
+
+-- | Returns the count of terminal nodes in the generic representation.
+type family Size f :: Nat where
+  Size (D1 m f)
+    = Size f
+  Size (f :*: g)
+    = Size f + Size g
+  Size (f :+: g)
+    = Min (Size f) (Size g)
+  Size (C1 m f)
+    = Size f
+  Size t = 1
+
+
 data Choice = GoLeft | GoRight
+
+type family Search offset index f g :: Choice where
+  Search offset index f g =
+    If (index < offset)
+      (TypeError ('Text "Type does not have specified field."))
+      (If (index < (Size f + offset))
+        'GoLeft
+        (If (index < (Size f + Size g + offset))
+          'GoRight
+          (TypeError ('Text "Type does not have specified field."))))
+
+-- | If traversing to the left, offset does not change.
+--   If traversing to the right, offset is incremented by size of left subtree.
+type family NewOffset (offset :: Nat) (choice :: Choice) (size :: Nat) :: Nat where
+  NewOffset n 'GoLeft _ = n
+  NewOffset n 'GoRight s = n + s
+
+--------------------------------------------------------------------------------
 
 class GHasFieldAtProd offset index a b ret (w :: Choice) | offset index a b w -> ret where
   prodItemAt :: Lens' ((a :*: b) x) ret
@@ -97,58 +142,6 @@ instance (GHasFieldAt offset index f ret) => GHasFieldAtProd offset index f g re
 instance (GHasFieldAt offset index g ret) => GHasFieldAtProd offset index f g ret 'GoRight where
   prodItemAt = second . gItemAt @offset @index
 
---------------------------------------------------------------------------------
-
-type family Search offset index f g :: Choice where
-  Search offset index f g = Choose (ContainsAt offset index f) (ContainsAt (offset + Size f) index g)
-
-type family Choose f g :: Choice where
-  Choose 'True _ = 'GoLeft 
-  Choose _ 'True = 'GoRight
-  Choose _ _ = TypeError ('Text "Could not find type") 
-
--- | Try find a field by position in the generic representation.
-type family ContainsAt (offset :: Nat) (index :: Nat) f :: Bool where
-  ContainsAt offset index (D1 m f)
-    = ContainsAt offset index f
-  ContainsAt n n (S1 _ _)
-    = 'True
-  ContainsAt _ _ (S1 _ _)
-    = 'False
-  ContainsAt offset index  (f :*: g)
-    = ContainsAt offset index f || ContainsAt (Size f + offset) index g
-  ContainsAt offset index (C1 m f)
-    = ContainsAt offset index f
-  ContainsAt offset index (Rec0 _)
-    = 'False
-  ContainsAt offset index  U1
-    = 'False
-  ContainsAt offset index V1
-    = 'False
-  ContainsAt offset index t = TypeError ('ShowType offset ':<>: 'Text " " ':<>: 'ShowType index)
-
--- | Returns the count of terminal nodes in the generic representation.
-type family Size f :: Nat where
-  Size (D1 m f)
-    = Size f
-  Size (f :*: g)
-    = Size f + Size g
-  Size (C1 m f)
-    = Size f
-  Size t = 1
-
--- | If traversing to the left, offset does not change.
---   If traversing to the right, offset is incremented by size of left subtree.
-type family Offset (offset :: Nat) (choice :: Choice) (size :: Nat) :: Nat where
-  Offset n 'GoLeft _ = n
-  Offset n 'GoRight s = n + s
-
--- | Type-level or
-type family (a :: Bool) || (b :: Bool) :: Bool where
-  'True || _  = 'True
-  _ || b = b
-
---------------------------------------------------------------------------------
 
 -- | Like 'HasFieldAt', but on the generic representation
 class GHasFieldAt (offset :: Nat) (index :: Nat) (s :: Type -> Type) a | offset index s -> a where
@@ -156,11 +149,18 @@ class GHasFieldAt (offset :: Nat) (index :: Nat) (s :: Type -> Type) a | offset 
 
 instance
     ( choice ~ (Search offset index s s')
-    , offset' ~ Offset offset choice (Size s)
-    , GHasFieldAtProd offset' index s s' a choice 
-    ) 
+    , offset' ~ NewOffset offset choice (Size s)
+    , GHasFieldAtProd offset' index s s' a choice
+    )
     => GHasFieldAt offset index (s :*: s') a where
   gItemAt = prodItemAt @offset' @index @_ @_ @_ @choice
+
+instance
+  ( GHasFieldAt offset index s a
+  , GHasFieldAt offset index s' a
+  )
+  => GHasFieldAt offset index (s :+: s') a where
+  gItemAt = combine (gItemAt @offset @index @s) (gItemAt @offset @index @s')
 
 instance GHasFieldAt offset index (K1 R a) a where
   gItemAt f (K1 x) = fmap K1 (f x)
