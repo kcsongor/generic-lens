@@ -29,8 +29,6 @@ module Data.Generics.Product.Positions
 
     --  $example
     HasPosition (..)
-  , setPosition
-  , getPosition
 
     -- *Internals
   , GHasPosition (..)
@@ -60,20 +58,6 @@ import GHC.TypeLits
 --    human = Human \"Tunyasz\" 50 \"London\"
 --  @
 
--- | Get positional field
---
--- >>> getPosition @1 human
--- "Tunyasz"
-getPosition :: forall i a s. HasPosition i a s => s -> a
-getPosition s = s ^. position @i
-
--- | Set positional field
---
--- >>> setPosition @2 (setField @1 "Tamas" human) 30
--- Human "Tamas" 30 "London"
-setPosition :: forall i a s. HasPosition i a s => a -> s -> s
-setPosition = set (position @i)
-
 -- |Records that have a field at a given position.
 class HasPosition (i :: Nat) a s | s i -> a where
   -- |A lens that focuses on a field at a given position. Compatible with the
@@ -84,6 +68,25 @@ class HasPosition (i :: Nat) a s | s i -> a where
   --  >>> human & position @2 .~ "Berlin"
   --  Human {name = "Tunyasz", age = 50, address = "Berlin"}
   position :: Lens' s a
+  position f s
+    = fmap (flip (setPosition @i) s) (f (getPosition @i s))
+    -- = fmap (setPosition s) (f (getPosition s))
+
+  -- |Get positional field
+  --
+  -- >>> getPosition @1 human
+  -- "Tunyasz"
+  getPosition :: s -> a
+  getPosition s = s ^. position @i
+
+  -- |Set positional field
+  --
+  -- >>> setPosition @2 (setField @1 "Tamas" human) 30
+  -- Human "Tamas" 30 "London"
+  setPosition :: a -> s -> s
+  setPosition = set (position @i)
+
+  {-# MINIMAL position | setPosition, getPosition #-}
 
 instance
   ( Generic s

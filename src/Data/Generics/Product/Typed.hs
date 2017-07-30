@@ -66,6 +66,18 @@ class HasType a s where
   --  >>> human ^. typed @Int
   --  50
   typed :: Lens' s a
+  typed f t
+    = fmap (flip (setTyped @a) t) (f (getTyped @a t))
+
+  -- |Get field at type
+  getTyped :: s -> a
+  getTyped s = s ^. typed @a
+
+  -- |Set field at type
+  setTyped :: a -> s -> s
+  setTyped = set (typed @a)
+
+  {-# MINIMAL typed | setTyped, getTyped #-}
 
 instance
   ( Generic s

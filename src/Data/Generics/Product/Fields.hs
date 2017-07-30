@@ -29,10 +29,6 @@ module Data.Generics.Product.Fields
     --  $example
     HasField (..)
 
-    -- *Getter and setter functions
-  , getField
-  , setField
-
     -- *Internals
   , GHasField (..)
   ) where
@@ -62,20 +58,6 @@ import GHC.TypeLits
 --    human = Human \"Tunyasz\" 50 \"London\"
 --  @
 
--- | Get 'field'
---
--- >>> getField @"name" human
--- "Tunyasz"
-getField :: forall field a s. HasField field a s => s -> a
-getField s = s ^. field @field
-
--- | Set 'field'
---
--- >>> setField @"age" (setField @"name" "Tamas" human) 30
--- Human {name = "Tamas", age = 30, address = "London"}
-setField :: forall field a s. HasField field a s => a -> s -> s
-setField = set (field @field)
-
 --  | Records that have a field with a given name.
 class HasField (field :: Symbol) a s | s field -> a where
   -- |A lens that focuses on a field with a given name. Compatible with the
@@ -86,6 +68,24 @@ class HasField (field :: Symbol) a s | s field -> a where
   --  >>> human & field @"name" .~ "Tamas"
   --  Human {name = "Tamas", age = 50, address = "London"}
   field :: Lens' s a
+  field f s
+    = fmap (flip (setField @field) s) (f (getField @field s))
+
+  -- | Get 'field'
+  --
+  -- >>> getField @"name" human
+  -- "Tunyasz"
+  getField :: s -> a
+  getField s = s ^. field @field
+
+  -- | Set 'field'
+  --
+  -- >>> setField @"age" (setField @"name" "Tamas" human) 30
+  -- Human {name = "Tamas", age = 30, address = "London"}
+  setField :: a -> s -> s
+  setField = set (field @field)
+
+  {-# MINIMAL field | setField, getField #-}
 
 instance
   ( Generic s

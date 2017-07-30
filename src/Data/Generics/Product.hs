@@ -19,18 +19,12 @@ module Data.Generics.Product
     HasAny (..)
 
   , HasField (..)
-  , setField
-  , getField
-
   , HasPosition (..)
-  , setPosition
-  , getPosition
-
   , HasType (..)
 
     -- * Subtype relationship
   , Subtype  (..)
-  , super
+
   ) where
 
 import Data.Generics.Product.Any
