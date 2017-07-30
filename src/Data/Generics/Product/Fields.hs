@@ -24,12 +24,12 @@
 -----------------------------------------------------------------------------
 
 module Data.Generics.Product.Fields
-  ( --  * Lenses
+  ( -- *Lenses
     --
-    --    $example
+    --  $example
     HasField (..)
 
-    --  * Internals
+    -- *Internals
   , GHasField (..)
   ) where
 
@@ -60,13 +60,13 @@ import GHC.TypeLits
 
 --  | Records that have a field with a given name.
 class HasField (field :: Symbol) a s | s field -> a where
-  --  | A lens that focuses on a field with a given name. Compatible with the
-  --    lens package's 'Control.Lens.Lens' type.
+  -- |A lens that focuses on a field with a given name. Compatible with the
+  --  lens package's 'Control.Lens.Lens' type.
   --
-  --    >>> human ^. field @"age"
-  --    50
-  --    >>> human & field @"name" .~ "Tamas"
-  --    Human {name = "Tamas", age = 50, address = "London"}
+  --  >>> human ^. field @"age"
+  --  50
+  --  >>> human & field @"name" .~ "Tamas"
+  --  Human {name = "Tamas", age = 50, address = "London"}
   field :: Lens' s a
 
 instance (Generic s,
@@ -91,8 +91,8 @@ type family ErrorUnlessJust (field :: Symbol) (s :: Type) (found :: Maybe Type) 
   ErrorUnlessJust _ _ ('Just _)
     = ()
 
---  | As 'HasField' but over generic representations as defined by
---    "GHC.Generics".
+-- |As 'HasField' but over generic representations as defined by
+--  "GHC.Generics".
 class GHasField (field :: Symbol) (f :: Type -> Type) a | field f -> a where
   gfield :: Lens' (f x) a
 

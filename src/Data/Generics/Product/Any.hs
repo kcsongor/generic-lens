@@ -21,9 +21,9 @@
 -----------------------------------------------------------------------------
 
 module Data.Generics.Product.Any
-  ( --  * Lenses
+  ( -- *Lenses
     --
-    --    $example
+    --  $example
     HasAny (..)
   ) where
 
@@ -50,19 +50,19 @@ import Data.Generics.Product.Typed
 --    human = Human \"Tunyasz\" 50 \"London\"
 --  @
 
---  | Records that have generic lenses.
+-- |Records that have generic lenses.
 class HasAny (sel :: k) a s | s sel k -> a where
-  --  | A lens that focuses on a part of a product as identified by some
-  --    selector. Currently supported selectors are field names, positions and
-  --    unique types. Compatible with the lens package's 'Control.Lens.Lens'
-  --    type.
+  -- |A lens that focuses on a part of a product as identified by some
+  --  selector. Currently supported selectors are field names, positions and
+  --  unique types. Compatible with the lens package's 'Control.Lens.Lens'
+  --  type.
   --
-  --    >>> human ^. its @Int
-  --    50
-  --    >>> human ^. its @"name"
-  --    "Tunyasz"
-  --    >>> human ^. its @3
-  --    "London"
+  --  >>> human ^. its @Int
+  --  50
+  --  >>> human ^. its @"name"
+  --  "Tunyasz"
+  --  >>> human ^. its @3
+  --  "London"
   its :: Lens' s a
 
 instance HasPosition i a s => HasAny i a s where

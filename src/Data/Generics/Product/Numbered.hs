@@ -24,12 +24,12 @@
 -----------------------------------------------------------------------------
 
 module Data.Generics.Product.Numbered
-  ( --  * Lenses
+  ( -- *Lenses
     --
-    --    $example
+    --  $example
     HasPosition (..)
 
-    --  * Internals
+    -- *Internals
   , GHasPosition (..)
   ) where
 
@@ -57,18 +57,18 @@ import GHC.TypeLits
 --    human = Human \"Tunyasz\" 50 \"London\"
 --  @
 
---  | Records that have a field at a given position.
+-- |Records that have a field at a given position.
 class HasPosition (i :: Nat) a s | s i -> a where
-  --  | A lens that focuses on a field at a given position. Compatible with the
-  --    lens package's 'Control.Lens.Lens' type.
+  -- |A lens that focuses on a field at a given position. Compatible with the
+  --  lens package's 'Control.Lens.Lens' type.
   --
-  --    >>> human ^. numbered @1
-  --    "Tunyasz"
-  --    >>> human & numbered @2 .~ "Berlin"
-  --    Human {name = "Tunyasz", age = 50, address = "Berlin"}
+  --  >>> human ^. numbered @1
+  --  "Tunyasz"
+  --  >>> human & numbered @2 .~ "Berlin"
+  --  Human {name = "Tunyasz", age = 50, address = "Berlin"}
   numbered :: Lens' s a
 
---  | The base index from which positions are counted.
+-- |The base index from which positions are counted.
 type BaseIndex
   = 1
 
@@ -94,8 +94,8 @@ type family ErrorUnlessTrue (i :: Nat) (s :: Type) (hasP :: Bool) :: Constraint 
   ErrorUnlessTrue _ _ 'True
     = ()
 
---  | As 'HasPosition' but over generic representations as defined by
---    "GHC.Generics".
+-- |As 'HasPosition' but over generic representations as defined by
+--  "GHC.Generics".
 class GHasPosition (offset :: Nat) (i :: Nat) (f :: Type -> Type) a | offset i f -> a where
   gnumbered :: Lens' (f x) a
 

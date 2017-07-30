@@ -24,12 +24,12 @@
 -----------------------------------------------------------------------------
 
 module Data.Generics.Product.Typed
-  ( --  * Lenses
+  ( -- *Lenses
     --
-    --    $example
+    --  $example
     HasType (..)
 
-    --  * Internals
+    -- *Internals
   , GHasType (..)
   ) where
 
@@ -60,11 +60,11 @@ import GHC.TypeLits
 
 --  | Records that have a field with a unique type.
 class HasType a s where
-  --  | A lens that focuses on a field with a unique type in its parent type.
-  --    Compatible with the lens package's 'Control.Lens.Lens' type.
+  -- |A lens that focuses on a field with a unique type in its parent type.
+  --  Compatible with the lens package's 'Control.Lens.Lens' type.
   --
-  --    >>> human ^. @typed Int
-  --    50
+  --  >>> human ^. @typed Int
+  --  50
   typed :: Lens' s a
 
 instance (Generic s,
@@ -97,8 +97,8 @@ type family ErrorUnlessOne (a :: Type) (s :: Type) (count :: Count) :: Constrain
   ErrorUnlessOne _ _ 'One
     = ()
 
---  | As 'HasType' but over generic representations as defined by
---    "GHC.Generics".
+-- |As 'HasType' but over generic representations as defined by
+--  "GHC.Generics".
 class GHasType (f :: Type -> Type) a where
   gtyped :: Lens' (f x) a
 
