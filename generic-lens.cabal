@@ -33,14 +33,13 @@ cabal-version:       >= 1.10
 
 library
   exposed-modules:   Data.Generics.Product
+                   , Data.Generics.Product.Any
                    , Data.Generics.Product.Fields
                    , Data.Generics.Product.Numbered
                    , Data.Generics.Product.Typed
 
                    , Data.Generics.Record
                    , Data.Generics.Record.Subtype
-                   , Data.Generics.Record.HasField
-                   , Data.Generics.Product.HasFieldAt
                    , Data.Generics.Internal.Lens
                    , Data.Generics.Sum.HasConstructor
 

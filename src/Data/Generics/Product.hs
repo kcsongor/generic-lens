@@ -16,11 +16,13 @@
 -----------------------------------------------------------------------------
 module Data.Generics.Product
   ( --  * Lenses
-    HasField (..)
+    HasAny (..)
+  , HasField (..)
   , HasPosition (..)
   , HasType (..)
   ) where
 
+import Data.Generics.Product.Any
 import Data.Generics.Product.Fields
 import Data.Generics.Product.Numbered
 import Data.Generics.Product.Typed
