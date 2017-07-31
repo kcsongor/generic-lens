@@ -14,21 +14,21 @@
 -- be derived (see examples).
 --
 -----------------------------------------------------------------------------
+
 module Data.Generics.Product
-  ( --  * Lenses
+  ( -- *Lenses
     HasAny (..)
 
   , HasField (..)
   , HasPosition (..)
   , HasType (..)
 
-    -- * Subtype relationship
+    -- *Subtype relationships
   , Subtype  (..)
-
   ) where
 
 import Data.Generics.Product.Any
 import Data.Generics.Product.Fields
 import Data.Generics.Product.Positions
-import Data.Generics.Product.Typed
 import Data.Generics.Product.Subtype
+import Data.Generics.Product.Typed
