@@ -102,3 +102,36 @@ test-suite generic-lens-test
                    , UndecidableInstances
   default-language:
     Haskell2010
+
+benchmark generic-lens-bench
+  type:
+    exitcode-stdio-1.0
+  hs-source-dirs:
+    benchmarks
+  main-is:
+    Bench.hs
+
+  build-depends:     generic-lens
+
+                    , QuickCheck
+                    , base
+                    , criterion
+                    , deepseq
+                    , lens
+
+  ghc-options:
+    -Wall
+  other-extensions:  AllowAmbiguousTypes
+                   , DataKinds
+                   , FlexibleInstances
+                   , FunctionalDependencies
+                   , PolyKinds
+                   , Rank2Types
+                   , ScopedTypeVariables
+                   , TypeApplications
+                   , TypeFamilies
+                   , TypeOperators
+                   , UndecidableInstances
+
+  default-language:
+    Haskell2010
