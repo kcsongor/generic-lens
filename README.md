@@ -129,3 +129,4 @@ Human {name = "Tunyasz", age = 60, address = "London"}
 ## Contributors
 
 + [Toby Shaw](https://github.com/TobyShaw)
++ [Will Jones](https://github.com/lunaris)
