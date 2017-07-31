@@ -58,7 +58,7 @@ import GHC.TypeLits
 --    human = Human \"Tunyasz\" 50 \"London\"
 --  @
 
---  | Records that have a field with a given name.
+-- |Records that have a field with a given name.
 class HasField (field :: Symbol) a s | s field -> a where
   -- |A lens that focuses on a field with a given name. Compatible with the
   --  lens package's 'Control.Lens.Lens' type.
@@ -71,14 +71,14 @@ class HasField (field :: Symbol) a s | s field -> a where
   field f s
     = fmap (flip (setField @field) s) (f (getField @field s))
 
-  -- | Get 'field'
+  -- |Get 'field'
   --
   -- >>> getField @"name" human
   -- "Tunyasz"
   getField :: s -> a
   getField s = s ^. field @field
 
-  -- | Set 'field'
+  -- |Set 'field'
   --
   -- >>> setField @"age" (setField @"name" "Tamas" human) 30
   -- Human {name = "Tamas", age = 30, address = "London"}

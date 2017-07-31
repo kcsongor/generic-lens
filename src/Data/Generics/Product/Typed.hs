@@ -81,7 +81,7 @@ class HasType a s where
 
 instance
   ( Generic s
-  , ErrorUnlessOne a s (CountType a (Rep s))
+  , ErrorUnlessOne a s (CountTotalType a (Rep s))
   , GHasType (Rep s) a
   ) => HasType a s where
 

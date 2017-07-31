@@ -10,9 +10,26 @@
 {-# LANGUAGE TypeOperators          #-}
 {-# LANGUAGE UndecidableInstances   #-}
 
-module Data.Generics.Sum.Constructors
-  ( AsConstructor (..)
+-----------------------------------------------------------------------------
+-- |
+-- Module      :  Data.Generics.Product.Any
+-- Copyright   :  (C) 2017 Csongor Kiss
+-- License     :  BSD3
+-- Maintainer  :  Csongor Kiss <kiss.csongor.kiss@gmail.com>
+-- Stability   :  experimental
+-- Portability :  non-portable
+--
+-- Derive constructor-name-based prisms generically.
+--
+-----------------------------------------------------------------------------
 
+module Data.Generics.Sum.Constructors
+  ( -- *Prisms
+
+    --  $example
+    AsConstructor (..)
+
+    -- *Internals
   , GAsConstructor (..)
   ) where
 
@@ -24,7 +41,48 @@ import Data.Kind
 import GHC.Generics
 import GHC.TypeLits
 
+--  $example
+--  @
+--    module Example where
+--
+--    import Data.Generics.Sum
+--    import GHC.Generics
+--
+--    data Animal
+--      = Dog Dog
+--      | Cat (Name, Age)
+--      | Duck Age
+--      deriving (Generic, Show)
+--
+--    data Dog = MkDog
+--      { name :: Name
+--      , age  :: Age
+--      }
+--      deriving (Generic, Show)
+--
+--    type Name = String
+--    type Age  = Int
+--
+--    dog, cat, duck :: Animal
+--
+--    dog = Dog (MkDog "Shep" 3)
+--    cat = Cat ("Mog", 5)
+--    duck = Duck 2
+--  @
+
+-- |Sums that have a constructor with a given name.
 class AsConstructor (ctor :: Symbol) a s | s ctor -> a where
+  -- |A prism that projects a named constructor from a sum. Compatible with the
+  --  lens package's 'Control.Lens.Prism' type.
+  --
+  --  >>> dog ^? _Ctor @"Dog"
+  --  Just (MkDog {name = "Shep", age = 3})
+  --  >>> dog ^? _Ctor @"Cat"
+  --  Nothing
+  --  >>> cat ^? _Ctor @"Cat"
+  --  Just ("Mog", 5)
+  --  >>> _Ctor @"Cat" # ("Garfield", 6) :: Animal
+  --  Cat ("Garfield", 6)
   _Ctor :: Prism' s a
 
 instance
@@ -47,6 +105,8 @@ type family ErrorUnless (ctor :: Symbol) (s :: Type) (contains :: Bool) :: Const
   ErrorUnless _ _ 'True
     = ()
 
+-- |As 'AsConstructor' but over generic representations as defined by
+--  "GHC.Generics".
 class GAsConstructor (ctor :: Symbol) (f :: Type -> Type) a | ctor f -> a where
   _GCtor :: Prism' (f x) a
 
