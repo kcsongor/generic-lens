@@ -18,7 +18,7 @@ module Data.Generics.Internal.Lens where
 import Control.Applicative   (Const(..))
 import Data.Functor.Identity (Identity(..))
 import Data.Profunctor       (Choice(right'), Profunctor(dimap))
-import GHC.Generics          ((:*:)(..), Generic(..), M1(..), Rep, (:+:)(..))
+import GHC.Generics          ((:*:)(..), Generic(..), K1(..), M1(..), Rep, (:+:)(..))
 
 -- | Type alias for lens
 type Lens' s a
@@ -75,6 +75,9 @@ repIso = dimap from (fmap to)
 -- | 'M1' is just a wrapper around `f p`
 mIso :: Iso' (M1 i c f p) (f p)
 mIso = dimap unM1 (fmap M1)
+
+kIso :: Iso' (K1 t a x) a
+kIso = dimap unK1 (fmap K1)
 
 sumIso :: Iso' ((a :+: b) x) (Either (a x) (b x))
 sumIso = dimap f (fmap t)

@@ -90,14 +90,14 @@ class HasPosition (i :: Nat) a s | s i -> a where
 
 instance
   ( Generic s
-  , ErrorUnlessTrue i s (0 <? i && i <=? Size (Rep s))
+  , ErrorUnless i s (0 <? i && i <=? Size (Rep s))
   , GHasPosition 1 i (Rep s) a
   ) => HasPosition i a s where
 
   position = repIso . gposition @1 @i
 
-type family ErrorUnlessTrue (i :: Nat) (s :: Type) (hasP :: Bool) :: Constraint where
-  ErrorUnlessTrue i s 'False
+type family ErrorUnless (i :: Nat) (s :: Type) (hasP :: Bool) :: Constraint where
+  ErrorUnless i s 'False
     = TypeError
         (     'Text "The type "
         ':<>: 'ShowType s
@@ -105,7 +105,7 @@ type family ErrorUnlessTrue (i :: Nat) (s :: Type) (hasP :: Bool) :: Constraint 
         ':<>: 'ShowType i
         )
 
-  ErrorUnlessTrue _ _ 'True
+  ErrorUnless _ _ 'True
     = ()
 
 -- |As 'HasPosition' but over generic representations as defined by
@@ -114,10 +114,7 @@ class GHasPosition (offset :: Nat) (i :: Nat) (f :: Type -> Type) a | offset i f
   gposition :: Lens' (f x) a
 
 instance GHasPosition i i (S1 meta (Rec0 a)) a where
-  gposition = mIso . gposition @i @i
-
-instance GHasPosition offset i (K1 R a) a where
-  gposition f (K1 x) = fmap K1 (f x)
+  gposition = mIso . kIso
 
 instance GHasPosition offset i f a => GHasPosition offset i (M1 D meta f) a where
   gposition = mIso . gposition @offset @i

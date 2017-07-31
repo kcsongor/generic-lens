@@ -89,14 +89,14 @@ class HasField (field :: Symbol) a s | s field -> a where
 
 instance
   ( Generic s
-  , ErrorUnlessJust field s (HasFieldP field (Rep s))
+  , ErrorUnless field s (HasFieldP field (Rep s))
   , GHasField field (Rep s) a
   ) => HasField field a s where
 
   field = repIso . gfield @field
 
-type family ErrorUnlessJust (field :: Symbol) (s :: Type) (contains :: Bool) :: Constraint where
-  ErrorUnlessJust field s 'False
+type family ErrorUnless (field :: Symbol) (s :: Type) (contains :: Bool) :: Constraint where
+  ErrorUnless field s 'False
     = TypeError
         (     'Text "The type "
         ':<>: 'ShowType s
@@ -104,7 +104,7 @@ type family ErrorUnlessJust (field :: Symbol) (s :: Type) (contains :: Bool) :: 
         ':<>: 'ShowType field
         )
 
-  ErrorUnlessJust _ _ 'True
+  ErrorUnless _ _ 'True
     = ()
 
 -- |As 'HasField' but over generic representations as defined by
@@ -123,10 +123,7 @@ instance (GHasField field l a, GHasField field r a)
   gfield = combine (gfield @field @l) (gfield @field @r)
 
 instance GHasField field (S1 ('MetaSel ('Just field) upkd str infstr) (Rec0 a)) a where
-  gfield = mIso . gfield @field
-
-instance GHasField field (K1 R a) a where
-  gfield f (K1 x) = fmap K1 (f x)
+  gfield = mIso . kIso
 
 instance GHasField field f a => GHasField field (M1 D meta f) a where
   gfield = mIso . gfield @field

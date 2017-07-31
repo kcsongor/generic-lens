@@ -121,16 +121,10 @@ instance GProductHasType l r a (HasTypeP a l)
 instance (GHasType l a, GHasType r a) => GHasType (l :+: r) a where
   gtyped = combine (gtyped @l) (gtyped @r)
 
-instance GHasType (S1 meta (Rec0 a)) a where
-  gtyped = mIso . gtyped
-
 instance GHasType (K1 R a) a where
   gtyped f (K1 x) = fmap K1 (f x)
 
-instance GHasType f a => GHasType (M1 D meta f) a where
-  gtyped = mIso . gtyped
-
-instance GHasType f a => GHasType (M1 C meta f) a where
+instance GHasType f a => GHasType (M1 m meta f) a where
   gtyped = mIso . gtyped
 
 class GProductHasType l r a (contains :: Bool) where
