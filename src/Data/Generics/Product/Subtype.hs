@@ -53,12 +53,11 @@ module Data.Generics.Product.Subtype
   ( Subtype (..)
   ) where
 
-import Data.Generics.Product.Fields
-import Data.Generics.Internal.Families.Has (HasFieldP)
-
+import Data.Generics.Internal.Families
 import Data.Generics.Internal.Lens
+import Data.Generics.Product.Fields
 
-import Data.Kind                (Type)
+import Data.Kind
 import GHC.Generics
 
 -- |Structural subtype relationship
@@ -139,10 +138,10 @@ instance (GSmash a sup, GSmash b sup) => GSmash (a :*: b) sup where
 
 instance
   ( leaf ~ (S1 ('MetaSel ('Just field) p f b) t)
-  , GSmashLeaf leaf sup (HasFieldP field sup)
+  , GSmashLeaf leaf sup (HasTotalFieldP field sup)
   ) => GSmash (S1 ('MetaSel ('Just field) p f b) t) sup where
 
-  gsmash = gsmashLeaf @_ @_ @(HasFieldP field sup)
+  gsmash = gsmashLeaf @_ @_ @(HasTotalFieldP field sup)
 
 instance GSmash sub sup => GSmash (C1 c sub) sup where
   gsmash sup (M1 sub) = M1 (gsmash sup sub)

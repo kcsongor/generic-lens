@@ -1,144 +1,77 @@
-name:                generic-lens
+name:                 generic-lens
+version:              0.3.0.0
+synopsis:             Generic data-structure operations exposed as lenses.
+description:          This package uses the GHC 8 Generic representation to derive various operations on data structures with a lens interface, including structural subtype relationship between records and positional indexing into arbitrary product types.
 
-version:             0.3.0.0
+homepage:             https://github.com/kcsongor/generic-lens
+license:              BSD3
+license-file:         LICENSE
+author:               Csongor Kiss
+maintainer:           kiss.csongor.kiss@gmail.com
+category:             Generics, Records, Lens
+build-type:           Simple
+cabal-version:        >= 1.10
 
-synopsis:            Generic data-structure operations exposed as lenses.
-
-description:         This package uses the GHC 8 Generic representation to derive various operations on data structures with a lens interface, including structural subtype relationship between records and positional indexing into arbitrary product types.
-
-homepage:            https://github.com/kcsongor/generic-lens
-
-license:             BSD3
-
-license-file:        LICENSE
-
-author:              Csongor Kiss
-
-maintainer:          kiss.csongor.kiss@gmail.com
-
-category:            Generics, Records, Lens
-
-build-type:          Simple
-
--- Extra files to be distributed with the package, such as examples or a
--- README.
-extra-source-files:  ChangeLog.md
-                   , examples/StarWars.hs
-                   , examples/Examples.hs
-                   , README.md
-
--- Constraint on the version of Cabal needed to build this package.
-cabal-version:       >= 1.10
-
+extra-source-files:   ChangeLog.md
+                    , examples/StarWars.hs
+                    , examples/Examples.hs
+                    , README.md
 
 library
-  exposed-modules:   Data.Generics.Product
-                   , Data.Generics.Product.Any
-                   , Data.Generics.Product.Fields
-                   , Data.Generics.Product.Positions
-                   , Data.Generics.Product.Subtype
-                   , Data.Generics.Product.Typed
-                   , Data.Generics.Sum.Any
-                   , Data.Generics.Sum.Constructors
-                   , Data.Generics.Sum.Typed
+  exposed-modules:    Data.Generics.Product
+                    , Data.Generics.Product.Any
+                    , Data.Generics.Product.Fields
+                    , Data.Generics.Product.Positions
+                    , Data.Generics.Product.Subtype
+                    , Data.Generics.Product.Typed
+                    , Data.Generics.Sum.Any
+                    , Data.Generics.Sum.Constructors
+                    , Data.Generics.Sum.Typed
 
-                   , Data.Generics.Record
-                   , Data.Generics.Record.Subtype
-                   , Data.Generics.Internal.Lens
+                    , Data.Generics.Internal.Lens
 
-                   , Data.Generics.Internal.Lens
+  other-modules:      Data.Generics.Internal.Families
+                    , Data.Generics.Internal.Families.Bool
+                    , Data.Generics.Internal.Families.Count
+                    , Data.Generics.Internal.Families.Has
+                    , Data.Generics.Internal.HList
 
-  other-modules:     Data.Generics.Internal.Families
-                   , Data.Generics.Internal.Families.Bool
-                   , Data.Generics.Internal.Families.Count
-                   , Data.Generics.Internal.Families.Has
-                   , Data.Generics.Internal.HList
+  build-depends:      base        >= 4.9 && <= 5.0
+                    , profunctors >= 5.0 && <= 6.0
 
-  other-extensions:  AllowAmbiguousTypes
-                   , DataKinds
-                   , FlexibleInstances
-                   , FunctionalDependencies
-                   , PolyKinds
-                   , Rank2Types
-                   , ScopedTypeVariables
-                   , TypeApplications
-                   , TypeFamilies
-                   , TypeOperators
-                   , UndecidableInstances
-
-  -- Other library packages from which modules are imported.
-  build-depends:     base >= 4.9 && <= 5.0
-                   , profunctors >= 5.0 && <= 6.0
-
-  -- Directories containing source files.
-  hs-source-dirs:    src
-
-  -- Base language which the package is written in.
-  default-language:  Haskell2010
-  ghc-options:       -Wall
+  hs-source-dirs:     src
+  default-language:   Haskell2010
+  ghc-options:        -Wall
 
 source-repository head
-  type:     git
-  location: https://github.com/kcsongor/generic-lens
+  type:               git
+  location:           https://github.com/kcsongor/generic-lens
 
 test-suite generic-lens-test
-  type:
-    exitcode-stdio-1.0
-  hs-source-dirs:
-    test
-  main-is:
-    Spec.hs
+  type:               exitcode-stdio-1.0
+  hs-source-dirs:     test
+  main-is:            Spec.hs
 
-  build-depends:     base >= 4.9 && <= 5.0
-                   , QuickCheck
-                   , hspec
-                   , generic-lens
+  build-depends:      base          >= 4.9 && <= 5.0
+                    , QuickCheck
+                    , hspec
+                    , generic-lens
 
-  ghc-options:
-    -Wall
-  other-extensions:  AllowAmbiguousTypes
-                   , DataKinds
-                   , FlexibleInstances
-                   , FunctionalDependencies
-                   , PolyKinds
-                   , Rank2Types
-                   , ScopedTypeVariables
-                   , TypeApplications
-                   , TypeFamilies
-                   , TypeOperators
-                   , UndecidableInstances
-  default-language:
-    Haskell2010
+  default-language:   Haskell2010
+  ghc-options:        -Wall
 
 benchmark generic-lens-bench
-  type:
-    exitcode-stdio-1.0
-  hs-source-dirs:
-    benchmarks
-  main-is:
-    Bench.hs
+  type:               exitcode-stdio-1.0
+  hs-source-dirs:     benchmarks
+  main-is:            Bench.hs
 
-  build-depends:     generic-lens
+  build-depends:      generic-lens
 
+                    , base        >= 4.9 && <= 5.0
                     , QuickCheck
-                    , base
                     , criterion
                     , deepseq
                     , lens
 
-  ghc-options:
-    -Wall
-  other-extensions:  AllowAmbiguousTypes
-                   , DataKinds
-                   , FlexibleInstances
-                   , FunctionalDependencies
-                   , PolyKinds
-                   , Rank2Types
-                   , ScopedTypeVariables
-                   , TypeApplications
-                   , TypeFamilies
-                   , TypeOperators
-                   , UndecidableInstances
-
-  default-language:
-    Haskell2010
+  default-language:   Haskell2010
+  ghc-options:        -Wall
