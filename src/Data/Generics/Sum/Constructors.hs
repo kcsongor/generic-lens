@@ -29,14 +29,14 @@ class AsConstructor (ctor :: Symbol) a s | s ctor -> a where
 
 instance
   ( Generic s
-  , ErrorUnlessTrue ctor s (HasCtorP ctor (Rep s))
+  , ErrorUnless ctor s (HasCtorP ctor (Rep s))
   , GAsConstructor ctor (Rep s) a
   ) => AsConstructor ctor a s where
 
   _Ctor = repIso . _GCtor @ctor
 
-type family ErrorUnlessTrue (ctor :: Symbol) (s :: Type) (contains :: Bool) :: Constraint where
-  ErrorUnlessTrue ctor s 'False
+type family ErrorUnless (ctor :: Symbol) (s :: Type) (contains :: Bool) :: Constraint where
+  ErrorUnless ctor s 'False
     = TypeError
         (     'Text "The type "
         ':<>: 'ShowType s
@@ -44,7 +44,7 @@ type family ErrorUnlessTrue (ctor :: Symbol) (s :: Type) (contains :: Bool) :: C
         ':<>: 'ShowType ctor
         )
 
-  ErrorUnlessTrue _ _ 'True
+  ErrorUnless _ _ 'True
     = ()
 
 class GAsConstructor (ctor :: Symbol) (f :: Type -> Type) a | ctor f -> a where

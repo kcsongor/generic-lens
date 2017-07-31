@@ -30,14 +30,14 @@ class AsType a s where
 
 instance
   ( Generic s
-  , ErrorUnlessTrue a s (HasPartialTypeP a (Rep s))
+  , ErrorUnless a s (HasPartialTypeP a (Rep s))
   , GAsType (Rep s) a
   ) => AsType a s where
 
   _Typed = repIso . _GTyped
 
-type family ErrorUnlessTrue (a :: Type) (s :: Type) (contains :: Bool) :: Constraint where
-  ErrorUnlessTrue a s 'False
+type family ErrorUnless (a :: Type) (s :: Type) (contains :: Bool) :: Constraint where
+  ErrorUnless a s 'False
     = TypeError
         (     'Text "The type "
         ':<>: 'ShowType s
@@ -45,7 +45,7 @@ type family ErrorUnlessTrue (a :: Type) (s :: Type) (contains :: Bool) :: Constr
         ':<>: 'ShowType a
         )
 
-  ErrorUnlessTrue _ _ 'True
+  ErrorUnless _ _ 'True
     = ()
 
 class GAsType (f :: Type -> Type) a where
