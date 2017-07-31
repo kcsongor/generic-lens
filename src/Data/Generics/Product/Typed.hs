@@ -36,7 +36,7 @@ module Data.Generics.Product.Typed
 import Data.Generics.Internal.Families
 import Data.Generics.Internal.Lens
 
-import Data.Kind    (Constraint, Type)
+import Data.Kind
 import GHC.Generics
 import GHC.TypeLits
 
@@ -81,7 +81,7 @@ class HasType a s where
 
 instance
   ( Generic s
-  , ErrorUnlessOne a s (CountType a (Rep s))
+  , ErrorUnlessOne a s (CountTotalType a (Rep s))
   , GHasType (Rep s) a
   ) => HasType a s where
 
@@ -113,10 +113,10 @@ type family ErrorUnlessOne (a :: Type) (s :: Type) (count :: Count) :: Constrain
 class GHasType (f :: Type -> Type) a where
   gtyped :: Lens' (f x) a
 
-instance GProductHasType l r a (HasTypeP a l)
+instance GProductHasType l r a (HasTotalTypeP a l)
       => GHasType (l :*: r) a where
 
-  gtyped = gproductTyped @_ @_ @_ @(HasTypeP a l)
+  gtyped = gproductTyped @_ @_ @_ @(HasTotalTypeP a l)
 
 instance (GHasType l a, GHasType r a) => GHasType (l :+: r) a where
   gtyped = combine (gtyped @l) (gtyped @r)

@@ -36,7 +36,7 @@ module Data.Generics.Product.Fields
 import Data.Generics.Internal.Families
 import Data.Generics.Internal.Lens
 
-import Data.Kind    (Constraint, Type)
+import Data.Kind
 import GHC.Generics
 import GHC.TypeLits
 
@@ -58,7 +58,7 @@ import GHC.TypeLits
 --    human = Human \"Tunyasz\" 50 \"London\"
 --  @
 
---  | Records that have a field with a given name.
+-- |Records that have a field with a given name.
 class HasField (field :: Symbol) a s | s field -> a where
   -- |A lens that focuses on a field with a given name. Compatible with the
   --  lens package's 'Control.Lens.Lens' type.
@@ -71,14 +71,14 @@ class HasField (field :: Symbol) a s | s field -> a where
   field f s
     = fmap (flip (setField @field) s) (f (getField @field s))
 
-  -- | Get 'field'
+  -- |Get 'field'
   --
   -- >>> getField @"name" human
   -- "Tunyasz"
   getField :: s -> a
   getField s = s ^. field @field
 
-  -- | Set 'field'
+  -- |Set 'field'
   --
   -- >>> setField @"age" (setField @"name" "Tamas" human) 30
   -- Human {name = "Tamas", age = 30, address = "London"}
@@ -89,7 +89,7 @@ class HasField (field :: Symbol) a s | s field -> a where
 
 instance
   ( Generic s
-  , ErrorUnless field s (HasFieldP field (Rep s))
+  , ErrorUnless field s (HasTotalFieldP field (Rep s))
   , GHasField field (Rep s) a
   ) => HasField field a s where
 
@@ -112,10 +112,10 @@ type family ErrorUnless (field :: Symbol) (s :: Type) (contains :: Bool) :: Cons
 class GHasField (field :: Symbol) (f :: Type -> Type) a | field f -> a where
   gfield :: Lens' (f x) a
 
-instance GProductHasField field l r a (HasFieldP field l)
+instance GProductHasField field l r a (HasTotalFieldP field l)
       => GHasField field (l :*: r) a where
 
-  gfield = gproductField @field @_ @_ @_ @(HasFieldP field l)
+  gfield = gproductField @field @_ @_ @_ @(HasTotalFieldP field l)
 
 instance (GHasField field l a, GHasField field r a)
       =>  GHasField field (l :+: r) a where

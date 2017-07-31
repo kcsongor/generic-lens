@@ -5,67 +5,98 @@
 {-# LANGUAGE UndecidableInstances #-}
 
 module Data.Generics.Internal.Families.Has
-  ( HasFieldP
-  , HasTypeP
+  ( HasTotalFieldP
+  , HasTotalTypeP
+  , HasPartialTypeP
+  , HasCtorP
   ) where
+
+import Data.Generics.Internal.Families.Bool
 
 import GHC.Generics
 import GHC.TypeLits
 
-type family HasFieldP (field :: Symbol) f :: Bool where
-  HasFieldP field (S1 ('MetaSel ('Just field) _ _ _) (Rec0 t))
+type family HasTotalFieldP (field :: Symbol) f :: Bool where
+  HasTotalFieldP field (S1 ('MetaSel ('Just field) _ _ _) (Rec0 t))
     = 'True
-  HasFieldP field (l :*: r)
-    = HasFieldP field l || HasFieldP field r
-  HasFieldP field (l :+: r)
-    = HasFieldP field l && HasFieldP field r
-  HasFieldP field (S1 _ _)
+  HasTotalFieldP field (l :*: r)
+    = HasTotalFieldP field l || HasTotalFieldP field r
+  HasTotalFieldP field (l :+: r)
+    = HasTotalFieldP field l && HasTotalFieldP field r
+  HasTotalFieldP field (S1 _ _)
     = 'False
-  HasFieldP field (C1 _ f)
-    = HasFieldP field f
-  HasFieldP field (D1 _ f)
-    = HasFieldP field f
-  HasFieldP field (Rec0 _)
+  HasTotalFieldP field (C1 _ f)
+    = HasTotalFieldP field f
+  HasTotalFieldP field (D1 _ f)
+    = HasTotalFieldP field f
+  HasTotalFieldP field (Rec0 _)
     = 'False
-  HasFieldP field U1
+  HasTotalFieldP field U1
     = 'False
-  HasFieldP field V1
+  HasTotalFieldP field V1
     = 'False
-  HasFieldP field f
+  HasTotalFieldP field f
     = TypeError
         (     'ShowType f
         ':<>: 'Text " is not a valid GHC.Generics representation type"
         )
 
-type family HasTypeP a f :: Bool where
-  HasTypeP t (S1 meta (Rec0 t))
+type family HasTotalTypeP a f :: Bool where
+  HasTotalTypeP t (S1 meta (Rec0 t))
     = 'True
-  HasTypeP t (l :*: r)
-    = HasTypeP t l || HasTypeP t r
-  HasTypeP t (l :+: r)
-    = HasTypeP t l && HasTypeP t r
-  HasTypeP t (S1 _ _)
+  HasTotalTypeP t (l :*: r)
+    = HasTotalTypeP t l || HasTotalTypeP t r
+  HasTotalTypeP t (l :+: r)
+    = HasTotalTypeP t l && HasTotalTypeP t r
+  HasTotalTypeP t (S1 _ _)
     = 'False
-  HasTypeP t (C1 m f)
-    = HasTypeP t f
-  HasTypeP t (D1 m f)
-    = HasTypeP t f
-  HasTypeP t (Rec0 _)
+  HasTotalTypeP t (C1 m f)
+    = HasTotalTypeP t f
+  HasTotalTypeP t (D1 m f)
+    = HasTotalTypeP t f
+  HasTotalTypeP t (Rec0 _)
     = 'False
-  HasTypeP t U1
+  HasTotalTypeP t U1
     = 'False
-  HasTypeP t V1
+  HasTotalTypeP t V1
     = 'False
-  HasTypeP t f
+  HasTotalTypeP t f
     = TypeError
         (     'ShowType f
         ':<>: 'Text " is not a valid GHC.Generics representation type"
         )
 
-type family (a :: Bool) || (b :: Bool) :: Bool where
-  'True || _ = 'True
-  _     || b = b
+type family HasPartialTypeP a f :: Bool where
+  HasPartialTypeP t (S1 meta (Rec0 t))
+    = 'True
+  HasPartialTypeP t (l :*: r)
+    = HasPartialTypeP t l || HasPartialTypeP t r
+  HasPartialTypeP t (l :+: r)
+    = HasPartialTypeP t l || HasPartialTypeP t r
+  HasPartialTypeP t (S1 _ _)
+    = 'False
+  HasPartialTypeP t (C1 m f)
+    = HasPartialTypeP t f
+  HasPartialTypeP t (D1 m f)
+    = HasPartialTypeP t f
+  HasPartialTypeP t (Rec0 _)
+    = 'False
+  HasPartialTypeP t U1
+    = 'False
+  HasPartialTypeP t V1
+    = 'False
+  HasPartialTypeP t f
+    = TypeError
+        (     'ShowType f
+        ':<>: 'Text " is not a valid GHC.Generics representation type"
+        )
 
-type family (a :: Bool) && (b :: Bool) :: Bool where
-  'True && 'True = 'True
-  _     && _     = 'False
+type family HasCtorP (ctor :: Symbol) f :: Bool where
+  HasCtorP ctor (C1 ('MetaCons ctor _ _) _)
+    = 'True
+  HasCtorP ctor (f :+: g)
+    = HasCtorP ctor f || HasCtorP ctor g
+  HasCtorP ctor (D1 m f)
+    = HasCtorP ctor f
+  HasCtorP ctor _
+    = 'False

@@ -5,33 +5,59 @@
 {-# LANGUAGE UndecidableInstances #-}
 
 module Data.Generics.Internal.Families.Count
-  ( CountType
+  ( CountTotalType
+  , CountPartialType
   , Count (..)
   ) where
 
 import GHC.Generics
 import GHC.TypeLits
 
-type family CountType t f :: Count where
-  CountType t (S1 _ (Rec0 t))
+type family CountTotalType t f :: Count where
+  CountTotalType t (S1 _ (Rec0 t))
     = 'One
-  CountType t (l :*: r)
-    = CountType t l <|> CountType t r
-  CountType t (l :+: r)
-    = CountType t l <&> CountType t r
-  CountType t (S1 _ _)
+  CountTotalType t (l :*: r)
+    = CountTotalType t l <|> CountTotalType t r
+  CountTotalType t (l :+: r)
+    = CountTotalType t l <&> CountTotalType t r
+  CountTotalType t (S1 _ _)
     = 'None
-  CountType t (C1 _ f)
-    = CountType t f
-  CountType t (D1 _ f)
-    = CountType t f
-  CountType t (Rec0 _)
+  CountTotalType t (C1 _ f)
+    = CountTotalType t f
+  CountTotalType t (D1 _ f)
+    = CountTotalType t f
+  CountTotalType t (Rec0 _)
     = 'None
-  CountType t U1
+  CountTotalType t U1
     = 'None
-  CountType t V1
+  CountTotalType t V1
     = 'None
-  CountType t f
+  CountTotalType t f
+    = TypeError
+        (     'ShowType f
+        ':<>: 'Text " is not a valid GHC.Generics representation type"
+        )
+
+type family CountPartialType t f :: Count where
+  CountPartialType t (S1 _ (Rec0 t))
+    = 'One
+  CountPartialType t (l :*: r)
+    = CountPartialType t l <|> CountPartialType t r
+  CountPartialType t (l :+: r)
+    = CountPartialType t l <|> CountPartialType t r
+  CountPartialType t (S1 _ _)
+    = 'None
+  CountPartialType t (C1 _ f)
+    = CountPartialType t f
+  CountPartialType t (D1 _ f)
+    = CountPartialType t f
+  CountPartialType t (Rec0 _)
+    = 'None
+  CountPartialType t U1
+    = 'None
+  CountPartialType t V1
+    = 'None
+  CountPartialType t f
     = TypeError
         (     'ShowType f
         ':<>: 'Text " is not a valid GHC.Generics representation type"
