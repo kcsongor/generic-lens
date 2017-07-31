@@ -12,7 +12,7 @@
 
 -----------------------------------------------------------------------------
 -- |
--- Module      :  Data.Generics.Record.HasField
+-- Module      :  Data.Generics.Product.Fields
 -- Copyright   :  (C) 2017 Csongor Kiss
 -- License     :  BSD3
 -- Maintainer  :  Csongor Kiss <kiss.csongor.kiss@gmail.com>

@@ -13,7 +13,7 @@
 
 -----------------------------------------------------------------------------
 -- |
--- Module      :  Data.Generics.Product.Any
+-- Module      :  Data.Generics.Sum.Typed
 -- Copyright   :  (C) 2017 Csongor Kiss
 -- License     :  BSD3
 -- Maintainer  :  Csongor Kiss <kiss.csongor.kiss@gmail.com>
