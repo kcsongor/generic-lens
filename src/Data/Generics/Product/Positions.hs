@@ -36,7 +36,7 @@ module Data.Generics.Product.Positions
 
 import Data.Generics.Internal.Lens
 
-import Data.Kind    (Constraint, Type)
+import Data.Kind
 import GHC.Generics
 import GHC.TypeLits
 

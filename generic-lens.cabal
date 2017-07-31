@@ -36,16 +36,23 @@ library
                    , Data.Generics.Product.Any
                    , Data.Generics.Product.Fields
                    , Data.Generics.Product.Positions
-                   , Data.Generics.Product.Typed
                    , Data.Generics.Product.Subtype
+                   , Data.Generics.Product.Typed
+                   , Data.Generics.Sum.Any
+                   , Data.Generics.Sum.Constructors
+                   , Data.Generics.Sum.Typed
 
-                   , Data.Generics.Sum.HasConstructor
+                   , Data.Generics.Record
+                   , Data.Generics.Record.Subtype
+                   , Data.Generics.Internal.Lens
 
                    , Data.Generics.Internal.Lens
 
   other-modules:     Data.Generics.Internal.Families
+                   , Data.Generics.Internal.Families.Bool
                    , Data.Generics.Internal.Families.Count
                    , Data.Generics.Internal.Families.Has
+                   , Data.Generics.Internal.HList
 
   other-extensions:  AllowAmbiguousTypes
                    , DataKinds

@@ -36,7 +36,7 @@ module Data.Generics.Product.Fields
 import Data.Generics.Internal.Families
 import Data.Generics.Internal.Lens
 
-import Data.Kind    (Constraint, Type)
+import Data.Kind
 import GHC.Generics
 import GHC.TypeLits
 
@@ -89,14 +89,14 @@ class HasField (field :: Symbol) a s | s field -> a where
 
 instance
   ( Generic s
-  , ErrorUnlessJust field s (HasFieldP field (Rep s))
+  , ErrorUnlessTrue field s (HasTotalFieldP field (Rep s))
   , GHasField field (Rep s) a
   ) => HasField field a s where
 
   field = repIso . gfield @field
 
-type family ErrorUnlessJust (field :: Symbol) (s :: Type) (contains :: Bool) :: Constraint where
-  ErrorUnlessJust field s 'False
+type family ErrorUnlessTrue (field :: Symbol) (s :: Type) (contains :: Bool) :: Constraint where
+  ErrorUnlessTrue field s 'False
     = TypeError
         (     'Text "The type "
         ':<>: 'ShowType s
@@ -104,7 +104,7 @@ type family ErrorUnlessJust (field :: Symbol) (s :: Type) (contains :: Bool) :: 
         ':<>: 'ShowType field
         )
 
-  ErrorUnlessJust _ _ 'True
+  ErrorUnlessTrue _ _ 'True
     = ()
 
 -- |As 'HasField' but over generic representations as defined by
@@ -112,10 +112,10 @@ type family ErrorUnlessJust (field :: Symbol) (s :: Type) (contains :: Bool) :: 
 class GHasField (field :: Symbol) (f :: Type -> Type) a | field f -> a where
   gfield :: Lens' (f x) a
 
-instance GProductHasField field l r a (HasFieldP field l)
+instance GProductHasField field l r a (HasTotalFieldP field l)
       => GHasField field (l :*: r) a where
 
-  gfield = gproductField @field @_ @_ @_ @(HasFieldP field l)
+  gfield = gproductField @field @_ @_ @_ @(HasTotalFieldP field l)
 
 instance (GHasField field l a, GHasField field r a)
       =>  GHasField field (l :+: r) a where
