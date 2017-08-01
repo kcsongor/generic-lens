@@ -40,6 +40,8 @@ import Data.Kind
 import GHC.Generics
 import GHC.TypeLits
 
+import Data.Type.Bool (type (&&), If, Not)
+
 --  $example
 --  @
 --    module Example where
@@ -154,24 +156,7 @@ type family Size f :: Nat where
 
 --------------------------------------------------------------------------------
 
-type family Not (b :: Bool) where
-  Not 'True = 'False
-  Not 'False = 'True
-
-type family (<?) (x :: Nat) (y :: Nat) :: Bool where
-  x <? y = Not (y <=? x)
-
+type x <? y = Not (y <=? x)
 infixl 4 <?
 
-type family If (c :: Bool) (x :: k) (y :: k) :: k where
-  If 'True  x _ = x
-  If 'False _ y = y
-
-type family Min (a :: Nat) (b :: Nat) :: Nat where
-  Min a b = If (a <? b) a b
-
-type family (a :: Bool) && (b :: Bool) :: Bool where
-  'True && 'True = 'True
-  _     && _     = 'False
-
-infix 3 &&
+type Min a b = If (a <? b) a b

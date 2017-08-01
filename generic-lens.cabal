@@ -32,7 +32,6 @@ library
                     , Data.Generics.Internal.Lens
 
   other-modules:      Data.Generics.Internal.Families
-                    , Data.Generics.Internal.Families.Bool
                     , Data.Generics.Internal.Families.Count
                     , Data.Generics.Internal.Families.Has
                     , Data.Generics.Internal.HList
