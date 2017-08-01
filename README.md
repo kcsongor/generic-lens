@@ -3,25 +3,29 @@
 [![Build
 Status](https://travis-ci.org/kcsongor/generic-lens.svg?branch=master)](https://travis-ci.org/kcsongor/generic-lens)
 
-Generically derive lenses for accessing fields of data types.
+Generically derive lenses and prisms for data types.
 
 Available on [Hackage](https://hackage.haskell.org/package/generic-lens)
 
-This package uses the GHC 8 Generic representation to derive various operations on data structures with a lens interface, including structural subtype relationship between records and positional indexing into arbitrary product types.
+This package uses the GHC 8 `Generic` representation to derive various operations
+on data structures with lens interfaces, including structural subtype
+relationships between records and positional indexing into arbitrary product
+types.
 
-This is made possible by GHC-8's new Generics API, which provides the meta-data
-at the type-level (previously only value-level meta-data was available).
+This is made possible by GHC 8's new Generics API, which provides metadata
+at the type-level (previously only value-level metadata was available).
 
-An example can be found in the `examples` folder.
+Examples can be found in the `examples` folder. This library makes heavy use of
+[Visible Type Applications](https://ghc.haskell.org/trac/ghc/wiki/TypeApplication).
 
-(The library makes heavy use of [Visible Type Applications](https://ghc.haskell.org/trac/ghc/wiki/TypeApplication))
+## Lenses
 
-## Record fields
+### Record fields
 
-Record fields can be accessed by their label.
+Record fields can be accessed by their label:
 
 ```haskell
-data Person = Person { name :: String, age :: Int } deriving (Show, Generic)
+data Person = Person { name :: String, age :: Int } deriving (Generic, Show)
 
 sally :: Person
 sally = Person "Sally" 25
@@ -32,30 +36,32 @@ sally = Person "Sally" 25
 25
 
 >>> setField @"age" 26 sally
-Person { name = "Sally", age = 26 }
+Person {name = "Sally", age = 26}
 
 >>> sally ^. field @"name"
 "Sally"
 
 >>> sally & field @"name" .~ "Tamas"
-Person { name = "Tamas", age = 25 }
+Person {name = "Tamas", age = 25}
 
+>>> sally ^. field @"pet"
+error:
+  • The type Person does not contain a field named "pet"
 ```
 
-## Positional fields
+### Positional fields
 
-Fields can be accessed by their position in the data structure (index starting at 1).
+Fields can be accessed by their position in the data structure (index starting at 1):
 
 ```haskell
-data Point = Point Int Int Int deriving (Show, Generic)
-data Polygon = Polygon Point Point Point deriving (Show, Generic)
+data Point = Point Int Int Int deriving (Generic, Show)
+data Polygon = Polygon Point Point Point deriving (Generic, Show)
 
 polygon :: Polygon
 polygon = Polygon (Point 1 5 3) (Point 2 4 2) (Point 5 7 (-2))
 ```
 
 ```haskell
-
 >>> getPosition @2 polygon
 Point 2 4 2
 
@@ -68,19 +74,51 @@ Polygon (Point 26 5 3) (Point 2 4 2) (Point 5 7 (-2))
 >>> polygon & position @3 . position @2 %~ (+10)
 Polygon (Point 1 5 3) (Point 2 4 2) (Point 5 17 (-2))
 
+>>> polygon ^. position @10
+error:
+  • The type Polygon does not contain a field at position 10
 ```
 
-Since tuples are an instance of Generic, positional lenses can be used with them.
+Since tuples are an instance of `Generic`, they also have positional lenses:
 
 ```haskell
 >>> (("hello", True), 5) ^. position @1 . position @2
 True
 ```
 
-## Typed fields
-- TODO
+### Typed fields
 
-## Structural subtyping
+Fields can be accessed by their type in the data structure, assuming that this
+type is unique:
+
+```haskell
+data Person = Person { name :: String, age :: Int } deriving (Generic, Show)
+data Point = Point Int Int Int deriving (Generic, Show)
+
+sally :: Person
+sally = Person "Sally" 25
+
+point :: Point
+point = Point 1 2 3
+```
+
+```haskell
+>>> getTyped @String sally
+"Sally"
+
+>>> setTyped @Int sally 26
+Person {name = "Sally", age = 26}
+
+>>> point ^. typed @Int
+error:
+  • The type Point contains multiple values of type Int; the choice of value is thus ambiguous
+
+>>> point & typed @String .~ "Point"
+error:
+  • The type Point does not contain a value of type [Char]
+```
+
+### Structural subtyping
 
 A record is a (structural) `subtype' of another, if its fields are a superset of
 those of the other.
@@ -98,7 +136,7 @@ data Animal = Animal
   } deriving (Generic, Show)
 
 human :: Human
-human = Human { name = "Tunyasz", age = 50, address = "London" }
+human = Human {name = "Tunyasz", age = 50, address = "London"}
 ```
 
 ```haskell
@@ -124,6 +162,77 @@ growUp (Animal name age) = Animal name (age + 50)
 
 >>> human & super @Animal %~ growUp
 Human {name = "Tunyasz", age = 60, address = "London"}
+```
+
+## Prisms
+
+### Named constructors
+
+Constructor components can be accessed using the constructor's name:
+
+```haskell
+type Name = String
+type Age  = Int
+
+data Dog = MkDog { name :: Name, age :: Age } deriving (Generic, Show)
+data Animal = Dog Dog | Cat (Name, Age) | Duck Age deriving (Generic, Show)
+
+shep = Dog (MkDog "Shep" 4)
+mog = Cat ("Mog", 5)
+donald = Duck 4
+```
+
+```haskell
+>>> shep ^? _Ctor @"Dog"
+Just (MkDog {name = "Shep", age = 4})
+
+>>> shep ^? _Ctor @"Cat"
+Nothing
+
+>>> mog ^? _Ctor @"Cat"
+Just ("Mog",5)
+
+>>> _Ctor @"Cat" # ("Garfield", 6) :: Animal
+Cat ("Garfield",6)
+
+>>> donald ^? _Ctor @"Giraffe"
+error:
+  • The type Animal does not contain a constructor named "Giraffe"
+```
+
+## Typed constructors
+
+Constructor components can be accessed using the component's type, assuming
+that this type is unique:
+
+```haskell
+type Name = String
+type Age  = Int
+
+data Dog = MkDog { name :: Name, age :: Age } deriving (Generic, Show)
+data Animal = Dog Dog | Cat (Name, Age) | Duck Age deriving (Generic, Show)
+
+shep = Dog (MkDog "Shep" 4)
+mog = Cat ("Mog", 5)
+donald = Duck 4
+```
+
+```haskell
+>>> mog ^? _Typed @Dog
+Nothing
+
+>>> shep ^? _Typed @Dog
+Just (MkDog {name = "Shep", age = 4})
+
+>>> donald ^? _Typed @Age
+Just 4
+
+>>> donald ^? _Typed @Float
+error:
+  • The type Animal does not contain a constructor whose field is of type Float
+
+>>> _Typed @Age # 6 :: Animal
+Duck 6
 ```
 
 ## Contributors

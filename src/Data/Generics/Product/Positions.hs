@@ -37,10 +37,9 @@ module Data.Generics.Product.Positions
 import Data.Generics.Internal.Lens
 
 import Data.Kind
+import Data.Type.Bool
 import GHC.Generics
 import GHC.TypeLits
-
-import Data.Type.Bool (type (&&), If, Not)
 
 --  $example
 --  @

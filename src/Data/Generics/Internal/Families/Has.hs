@@ -11,10 +11,9 @@ module Data.Generics.Internal.Families.Has
   , HasCtorP
   ) where
 
+import Data.Type.Bool (type (||), type (&&))
 import GHC.Generics
 import GHC.TypeLits
-
-import Data.Type.Bool (type (||), type (&&))
 
 type family HasTotalFieldP (field :: Symbol) f :: Bool where
   HasTotalFieldP field (S1 ('MetaSel ('Just field) _ _ _) (Rec0 t))
