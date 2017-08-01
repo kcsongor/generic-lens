@@ -155,7 +155,7 @@ class GSmashLeaf sub sup (w :: Bool) where
 instance
   GHasField field sup t
   => GSmashLeaf (S1 ('MetaSel ('Just field) p f b) (Rec0 t)) sup 'True where
-  gsmashLeaf sup (M1 (K1 _)) = M1 (K1 (sup ^. gfield @field))
+  gsmashLeaf sup _ = M1 (K1 (sup ^. gfield @field))
 
 instance GSmashLeaf (S1 ('MetaSel ('Just field) p f b) (Rec0 t)) sup 'False where
   gsmashLeaf _ = id
