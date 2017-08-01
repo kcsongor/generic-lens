@@ -11,16 +11,18 @@
 {-# LANGUAGE TypeOperators          #-}
 {-# LANGUAGE UndecidableInstances   #-}
 
+-----------------------------------------------------------------------------
+-- |
+-- Module      :  Data.Generics.Internal.HList
+-- Copyright   :  (C) 2017 Csongor Kiss
+-- License     :  BSD3
+-- Maintainer  :  Csongor Kiss <kiss.csongor.kiss@gmail.com>
+-- Stability   :  experimental
+-- Portability :  non-portable
+--
+-----------------------------------------------------------------------------
 module Data.Generics.Internal.HList
-  ( HList (..)
-
-  , head'
-  , tail'
-
-  , append
-  , (++)
-
-  , Splittable (..)
+  ( (++)
 
   , ListTuple (..)
 
@@ -46,9 +48,6 @@ append (x :> xs) ys = x :> append xs ys
 
 head' :: HList (a ': as) -> a
 head' (x :> _) = x
-
-tail' :: HList (a ': as) -> HList as
-tail' (_ :> xs) = xs
 
 --------------------------------------------------------------------------------
 -- * Split HList
@@ -142,6 +141,7 @@ instance ListTuple (a, b, c, d, e, f, g, h, j, k, l) '[a, b, c, d, e, f, g, h, j
     = (a, b, c, d, e, f, g, h, j, k, l)
 
 --------------------------------------------------------------------------------
+
 class GCollectible (f :: Type -> Type) (as :: [Type]) | f -> as where
   gtoCollection   :: f x -> HList as
   gfromCollection :: HList as -> f x

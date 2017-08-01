@@ -200,7 +200,7 @@ error:
   • The type Animal does not contain a constructor named "Giraffe"
 ```
 
-## Typed constructors
+### Typed constructors
 
 Constructor components can be accessed using the component's type, assuming
 that this type is unique:

@@ -1,9 +1,19 @@
-{-# LANGUAGE DataKinds            #-}
-{-# LANGUAGE PolyKinds            #-}
-{-# LANGUAGE TypeFamilies         #-}
-{-# LANGUAGE TypeOperators        #-}
-{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE DataKinds             #-}
+{-# LANGUAGE PolyKinds             #-}
+{-# LANGUAGE TypeFamilies          #-}
+{-# LANGUAGE TypeOperators         #-}
+{-# LANGUAGE UndecidableInstances  #-}
 
+-----------------------------------------------------------------------------
+-- |
+-- Module      :  Data.Generics.Internal.Families.Has
+-- Copyright   :  (C) 2017 Csongor Kiss
+-- License     :  BSD3
+-- Maintainer  :  Csongor Kiss <kiss.csongor.kiss@gmail.com>
+-- Stability   :  experimental
+-- Portability :  non-portable
+--
+-----------------------------------------------------------------------------
 module Data.Generics.Internal.Families.Has
   ( HasTotalFieldP
   , HasTotalTypeP
@@ -16,7 +26,7 @@ import GHC.Generics
 import GHC.TypeLits
 
 type family HasTotalFieldP (field :: Symbol) f :: Bool where
-  HasTotalFieldP field (S1 ('MetaSel ('Just field) _ _ _) (Rec0 t))
+  HasTotalFieldP field (S1 ('MetaSel ('Just field) _ _ _) _)
     = 'True
   HasTotalFieldP field (l :*: r)
     = HasTotalFieldP field l || HasTotalFieldP field r

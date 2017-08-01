@@ -28,9 +28,6 @@ module Data.Generics.Sum.Constructors
 
     --  $example
     AsConstructor (..)
-
-    -- *Internals
-  , GAsConstructor (..)
   ) where
 
 import Data.Generics.Internal.Families
@@ -77,10 +74,13 @@ class AsConstructor (ctor :: Symbol) a s | s ctor -> a where
   --
   --  >>> dog ^? _Ctor @"Dog"
   --  Just (MkDog {name = "Shep", age = 3})
+  --
   --  >>> dog ^? _Ctor @"Cat"
   --  Nothing
+  --
   --  >>> cat ^? _Ctor @"Cat"
   --  Just ("Mog", 5)
+  --
   --  >>> _Ctor @"Cat" # ("Garfield", 6) :: Animal
   --  Cat ("Garfield", 6)
   _Ctor :: Prism' s a
