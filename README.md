@@ -175,10 +175,10 @@ type Name = String
 type Age  = Int
 
 data Dog = MkDog { name :: Name, age :: Age } deriving (Generic, Show)
-data Animal = Dog Dog | Cat (Name, Age) | Duck Age deriving (Generic, Show)
+data Animal = Dog Dog | Cat Name Age | Duck Age deriving (Generic, Show)
 
 shep = Dog (MkDog "Shep" 4)
-mog = Cat ("Mog", 5)
+mog = Cat "Mog" 5
 donald = Duck 4
 ```
 
@@ -193,7 +193,7 @@ Nothing
 Just ("Mog",5)
 
 >>> _Ctor @"Cat" # ("Garfield", 6) :: Animal
-Cat ("Garfield",6)
+Cat "Garfield" 6
 
 >>> donald ^? _Ctor @"Giraffe"
 error:

@@ -17,13 +17,15 @@
 module Data.Generics.Internal.Families.Has
   ( HasTotalFieldP
   , HasTotalTypeP
-  , HasPartialTypeP
+  , HasPartialTypeTupleP
   , HasCtorP
   ) where
 
 import Data.Type.Bool (type (||), type (&&))
 import GHC.Generics
 import GHC.TypeLits
+
+import Data.Generics.Internal.HList
 
 type family HasTotalFieldP (field :: Symbol) f :: Bool where
   HasTotalFieldP field (S1 ('MetaSel ('Just field) _ _ _) _)
@@ -75,30 +77,17 @@ type family HasTotalTypeP a f :: Bool where
         ':<>: 'Text " is not a valid GHC.Generics representation type"
         )
 
-type family HasPartialTypeP a f :: Bool where
-  HasPartialTypeP t (S1 meta (Rec0 t))
-    = 'True
-  HasPartialTypeP t (l :*: r)
-    = HasPartialTypeP t l || HasPartialTypeP t r
-  HasPartialTypeP t (l :+: r)
-    = HasPartialTypeP t l || HasPartialTypeP t r
-  HasPartialTypeP t (S1 _ _)
+type family HasPartialTypeTupleP a f :: Bool where
+  HasPartialTypeTupleP t (l :+: r)
+    = HasPartialTypeTupleP t l || HasPartialTypeTupleP t r
+  HasPartialTypeTupleP t (C1 m f)
+    = Equals t (ListToTuple (GCollect f))
+  HasPartialTypeTupleP t _
     = 'False
-  HasPartialTypeP t (C1 m f)
-    = HasPartialTypeP t f
-  HasPartialTypeP t (D1 m f)
-    = HasPartialTypeP t f
-  HasPartialTypeP t (Rec0 _)
-    = 'False
-  HasPartialTypeP t U1
-    = 'False
-  HasPartialTypeP t V1
-    = 'False
-  HasPartialTypeP t f
-    = TypeError
-        (     'ShowType f
-        ':<>: 'Text " is not a valid GHC.Generics representation type"
-        )
+
+type family Equals a b where
+  Equals a a = 'True
+  Equals _ _ = 'False
 
 type family HasCtorP (ctor :: Symbol) f :: Bool where
   HasCtorP ctor (C1 ('MetaCons ctor _ _) _)

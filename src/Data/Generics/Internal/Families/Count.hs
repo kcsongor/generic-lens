@@ -22,6 +22,9 @@ module Data.Generics.Internal.Families.Count
 
 import GHC.Generics
 import GHC.TypeLits
+import Data.Type.Bool (If)
+
+import Data.Generics.Internal.HList
 
 type family CountTotalType t f :: Count where
   CountTotalType t (S1 _ (Rec0 t))
@@ -49,29 +52,16 @@ type family CountTotalType t f :: Count where
         )
 
 type family CountPartialType t f :: Count where
-  CountPartialType t (S1 _ (Rec0 t))
-    = 'One
-  CountPartialType t (l :*: r)
-    = CountPartialType t l <|> CountPartialType t r
   CountPartialType t (l :+: r)
     = CountPartialType t l <|> CountPartialType t r
-  CountPartialType t (S1 _ _)
-    = 'None
-  CountPartialType t (C1 _ f)
-    = CountPartialType t f
+  CountPartialType t (C1 m f)
+    = If (Equals t (ListToTuple (GCollect f))) 'One 'None
   CountPartialType t (D1 _ f)
     = CountPartialType t f
-  CountPartialType t (Rec0 _)
-    = 'None
-  CountPartialType t U1
-    = 'None
-  CountPartialType t V1
-    = 'None
-  CountPartialType t f
-    = TypeError
-        (     'ShowType f
-        ':<>: 'Text " is not a valid GHC.Generics representation type"
-        )
+
+type family Equals a b where
+  Equals a a = 'True
+  Equals _ _ = 'False
 
 data Count
   = None

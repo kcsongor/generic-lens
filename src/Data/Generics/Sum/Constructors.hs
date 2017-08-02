@@ -123,9 +123,6 @@ instance GSumAsConstructor ctor l r a (HasCtorP ctor l) => GAsConstructor ctor (
 instance GAsConstructor ctor f a => GAsConstructor ctor (M1 D meta f) a where
   _GCtor = mIso . _GCtor @ctor
 
-instance GAsConstructor ctor f a => GAsConstructor ctor (M1 S meta f) a where
-  _GCtor = mIso . _GCtor @ctor
-
 class GSumAsConstructor (ctor :: Symbol) l r a (contains :: Bool) | ctor l r contains -> a where
   _GSumCtor :: Prism' ((l :+: r) x) a
 
