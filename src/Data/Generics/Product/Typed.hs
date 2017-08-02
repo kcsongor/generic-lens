@@ -58,7 +58,7 @@ import GHC.TypeLits (TypeError, ErrorMessage (..))
 --    human = Human \"Tunyasz\" 50 \"London\"
 --  @
 
---  | Records that have a field with a unique type.
+-- |Records that have a field with a unique type.
 class HasType a s where
   -- |A lens that focuses on a field with a unique type in its parent type.
   --  Compatible with the lens package's 'Control.Lens.Lens' type.
@@ -69,11 +69,11 @@ class HasType a s where
   typed f t
     = fmap (flip (setTyped @a) t) (f (getTyped @a t))
 
-  -- |Get field at type
+  -- |Get field at type.
   getTyped :: s -> a
   getTyped s = s ^. typed @a
 
-  -- |Set field at type
+  -- |Set field at type.
   setTyped :: a -> s -> s
   setTyped = set (typed @a)
 

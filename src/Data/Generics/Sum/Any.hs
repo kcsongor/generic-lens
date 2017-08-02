@@ -41,7 +41,7 @@ import Data.Generics.Sum.Typed
 --
 --    data Animal
 --      = Dog Dog
---      | Cat (Name, Age)
+--      | Cat Name Age
 --      | Duck Age
 --      deriving (Generic, Show)
 --
@@ -57,7 +57,7 @@ import Data.Generics.Sum.Typed
 --    dog, cat, duck :: Animal
 --
 --    dog = Dog (MkDog "Shep" 3)
---    cat = Cat ("Mog", 5)
+--    cat = Cat "Mog" 5
 --    duck = Duck 2
 --  @
 
@@ -73,10 +73,12 @@ class AsAny (sel :: k) a s | s sel k -> a where
   --  Just (MkDog {name = "Shep", age = 3})
   --  >>> dog ^? _As @"Cat"
   --  Nothing
+  --  >>> cat ^? _As @(Name, Age)
+  --  Just ("Mog",5)
   --  >>> cat ^? _As @"Cat"
-  --  Just ("Mog", 5)
+  --  Just ("Mog",5)
   --  >>> _As @"Cat" # ("Garfield", 6) :: Animal
-  --  Cat ("Garfield", 6)
+  --  Cat ("Garfield",6)
   --  >>> duck ^? _As @Age
   --  Just 2
   _As :: Prism' s a

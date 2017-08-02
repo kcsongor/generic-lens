@@ -69,7 +69,7 @@ import Data.Generics.Internal.Lens
 --    dog, cat, duck :: Animal
 --
 --    dog = Dog (MkDog "Shep" 3)
---    cat = Cat ("Mog", 5)
+--    cat = Cat "Mog" 5
 --    duck = Duck 2
 --  @
 
@@ -80,8 +80,10 @@ class AsType a s where
   --
   --  >>> dog ^? _Typed @Dog
   --  Just (MkDog {name = "Shep", age = 3})
-  --  >>> dog ^? _Typed @Cat
+  --  >>> dog ^? _Typed @Age
   --  Nothing
+  --  >>> cat ^? _Typed @(Name, Age)
+  --  Just ("Mog",5)
   --  >>> duck ^? _Typed @Age
   --  Just 2
   _Typed :: Prism' s a
@@ -131,7 +133,7 @@ instance
   ginjectTyped
     = M1 . gfromCollection . tupleToList
   gprojectTyped
-    = Right . listToTuple @_ @as . gtoCollection . unM1
+    = Right . listToTuple . gtoCollection . unM1
 
 instance GSumAsType (HasPartialTypeTupleP a l) l r a => GAsType (l :+: r) a where
   ginjectTyped

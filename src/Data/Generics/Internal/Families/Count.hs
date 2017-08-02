@@ -20,10 +20,9 @@ module Data.Generics.Internal.Families.Count
   , Count (..)
   ) where
 
-import GHC.Generics
-
 import Data.Type.Bool     (If)
 import Data.Type.Equality (type (==))
+import GHC.Generics
 import GHC.TypeLits       (TypeError, ErrorMessage (..))
 
 import Data.Generics.Internal.HList

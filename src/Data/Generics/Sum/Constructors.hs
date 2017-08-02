@@ -47,7 +47,7 @@ import GHC.TypeLits (Symbol, TypeError, ErrorMessage (..))
 --
 --    data Animal
 --      = Dog Dog
---      | Cat (Name, Age)
+--      | Cat Name Age
 --      | Duck Age
 --      deriving (Generic, Show)
 --
@@ -63,7 +63,7 @@ import GHC.TypeLits (Symbol, TypeError, ErrorMessage (..))
 --    dog, cat, duck :: Animal
 --
 --    dog = Dog (MkDog "Shep" 3)
---    cat = Cat ("Mog", 5)
+--    cat = Cat "Mog" 5
 --    duck = Duck 2
 --  @
 

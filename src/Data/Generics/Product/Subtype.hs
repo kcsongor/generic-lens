@@ -21,36 +21,15 @@
 -- Stability   :  experimental
 -- Portability :  non-portable
 --
--- Structural subtype relationship between record types.
---
--- The running example in this module is the following two types:
---
--- @
---
---   module Test where
---
---   import GHC.Generics
---   import Data.Generics.Record
---
---   data Human = Human
---     { name    :: String
---     , age     :: Int
---     , address :: String
---     } deriving (Generic, Show)
---
---   data Animal = Animal
---     { name    :: String
---     , age     :: Int
---     } deriving (Generic, Show)
---
---    human :: Human
---    human = Human \"Tunyasz\" 50 \"London\"
---
--- @
+-- Structural subtype relationships between product types.
 --
 -----------------------------------------------------------------------------
+
 module Data.Generics.Product.Subtype
-  ( Subtype (..)
+  ( -- *Lenses
+    --
+    --  $example
+    Subtype (..)
   ) where
 
 import Data.Generics.Internal.Families
@@ -60,14 +39,36 @@ import Data.Generics.Product.Fields
 import Data.Kind (Type)
 import GHC.Generics
 
+--  $example
+--  @
+--     module Example where
+--
+--     import Data.Generics.Product
+--     import GHC.Generics
+--
+--     data Human = Human
+--       { name    :: String
+--       , age     :: Int
+--       , address :: String
+--       } deriving (Generic, Show)
+--
+--     data Animal = Animal
+--       { name    :: String
+--       , age     :: Int
+--       } deriving (Generic, Show)
+--
+--     human :: Human
+--     human = Human \"Tunyasz\" 50 \"London\"
+--  @
+
 -- |Structural subtype relationship
 --
 -- @sub@ is a (structural) `subtype' of @sup@, if its fields are a subset of
 -- those of @sup@.
 --
 class Subtype sup sub where
-  -- | Structural subtype lens. Given a subtype relationship @sub :< sup@,
-  --   we can focus on the @sub@ structure of @sup@.
+  -- |Structural subtype lens. Given a subtype relationship @sub :< sup@,
+  --  we can focus on the @sub@ structure of @sup@.
   --
   -- >>> human ^. super @Animal
   -- Animal {name = "Tunyasz", age = 50}
@@ -78,7 +79,7 @@ class Subtype sup sub where
   super f sub
     = fmap (`smash` sub) (f (upcast sub))
 
-  -- | Cast the more specific subtype to the more general supertype
+  -- |Cast the more specific subtype to the more general supertype
   --
   -- >>> upcast human :: Animal
   -- Animal {name = "Tunyasz", age = 50}
@@ -86,7 +87,7 @@ class Subtype sup sub where
   upcast :: sub -> sup
   upcast s = s ^. super @sup
 
-  -- | Plug a smaller structure into a larger one
+  -- |Plug a smaller structure into a larger one
   --
   -- >>> smash (Animal "dog" 10) human
   -- Human {name = "dog", age = 10, address = "London"}
@@ -95,7 +96,6 @@ class Subtype sup sub where
 
   {-# MINIMAL super | smash, upcast #-}
 
--- | Instances are created by the compiler
 instance
   ( GSmash (Rep a) (Rep b)
   , GUpcast (Rep a) (Rep b)
@@ -108,7 +108,6 @@ instance
 --------------------------------------------------------------------------------
 -- * Generic upcasting
 
--- | Upcast 'sub to 'sup' (generic rep)
 class GUpcast (sub :: Type -> Type) (sup :: Type -> Type) where
   gupcast :: sub p -> sup p
 

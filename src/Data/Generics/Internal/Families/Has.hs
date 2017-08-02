@@ -21,10 +21,9 @@ module Data.Generics.Internal.Families.Has
   , HasCtorP
   ) where
 
-import GHC.Generics
-
 import Data.Type.Bool     (type (||), type (&&))
 import Data.Type.Equality (type (==))
+import GHC.Generics
 import GHC.TypeLits       (Symbol, TypeError, ErrorMessage (..))
 
 import Data.Generics.Internal.HList
