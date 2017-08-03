@@ -36,10 +36,10 @@ module Data.Generics.Product.Positions
 
 import Data.Generics.Internal.Lens
 
-import Data.Kind
-import Data.Type.Bool
+import Data.Kind      (Constraint, Type)
+import Data.Type.Bool (If, type (&&), Not)
 import GHC.Generics
-import GHC.TypeLits
+import GHC.TypeLits   (type (<=?), type (+), Nat, TypeError, ErrorMessage(..))
 
 --  $example
 --  @

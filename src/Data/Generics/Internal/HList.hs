@@ -29,7 +29,7 @@ module Data.Generics.Internal.HList
   , GCollectible (..)
   ) where
 
-import Data.Kind
+import Data.Kind (Type)
 import GHC.Generics
 
 data HList (xs :: [Type]) where

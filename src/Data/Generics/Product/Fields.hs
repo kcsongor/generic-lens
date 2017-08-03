@@ -36,9 +36,9 @@ module Data.Generics.Product.Fields
 import Data.Generics.Internal.Families
 import Data.Generics.Internal.Lens
 
-import Data.Kind
+import Data.Kind    (Constraint, Type)
 import GHC.Generics
-import GHC.TypeLits
+import GHC.TypeLits (Symbol, ErrorMessage(..), TypeError)
 
 --  $example
 --  @

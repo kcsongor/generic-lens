@@ -36,13 +36,13 @@ module Data.Generics.Sum.Typed
   , GAsType (..)
   ) where
 
+import Data.Kind
+import GHC.Generics
+import GHC.TypeLits (TypeError, ErrorMessage (..))
+
 import Data.Generics.Internal.Families
 import Data.Generics.Internal.HList
 import Data.Generics.Internal.Lens
-
-import Data.Kind
-import GHC.Generics
-import GHC.TypeLits
 
 --  $example
 --  @

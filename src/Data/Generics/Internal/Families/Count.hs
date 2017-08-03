@@ -21,8 +21,10 @@ module Data.Generics.Internal.Families.Count
   ) where
 
 import GHC.Generics
-import GHC.TypeLits
-import Data.Type.Bool (If)
+
+import Data.Type.Bool     (If)
+import Data.Type.Equality (type (==))
+import GHC.TypeLits       (TypeError, ErrorMessage (..))
 
 import Data.Generics.Internal.HList
 
@@ -55,13 +57,9 @@ type family CountPartialType t f :: Count where
   CountPartialType t (l :+: r)
     = CountPartialType t l <|> CountPartialType t r
   CountPartialType t (C1 m f)
-    = If (Equals t (ListToTuple (GCollect f))) 'One 'None
+    = If (t == ListToTuple (GCollect f)) 'One 'None
   CountPartialType t (D1 _ f)
     = CountPartialType t f
-
-type family Equals a b where
-  Equals a a = 'True
-  Equals _ _ = 'False
 
 data Count
   = None

@@ -18,7 +18,7 @@ module Data.Generics.Internal.Lens where
 import Control.Applicative   (Const(..))
 import Data.Functor.Identity (Identity(..))
 import Data.Profunctor       (Choice(right'), Profunctor(dimap))
-import GHC.Generics          ((:*:)(..), Generic(..), K1(..), M1(..), Rep, (:+:)(..))
+import GHC.Generics          ((:*:)(..), (:+:)(..), Generic(..), K1(..), M1(..), Rep)
 
 -- | Type alias for lens
 type Lens' s a

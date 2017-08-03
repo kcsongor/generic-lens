@@ -57,7 +57,7 @@ import Data.Generics.Internal.Families
 import Data.Generics.Internal.Lens
 import Data.Generics.Product.Fields
 
-import Data.Kind
+import Data.Kind (Type)
 import GHC.Generics
 
 -- |Structural subtype relationship

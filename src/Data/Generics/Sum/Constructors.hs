@@ -34,9 +34,9 @@ import Data.Generics.Internal.Families
 import Data.Generics.Internal.HList
 import Data.Generics.Internal.Lens
 
-import Data.Kind
+import Data.Kind    (Constraint, Type)
 import GHC.Generics
-import GHC.TypeLits
+import GHC.TypeLits (Symbol, TypeError, ErrorMessage (..))
 
 --  $example
 --  @

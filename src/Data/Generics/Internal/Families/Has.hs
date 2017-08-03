@@ -21,9 +21,11 @@ module Data.Generics.Internal.Families.Has
   , HasCtorP
   ) where
 
-import Data.Type.Bool (type (||), type (&&))
 import GHC.Generics
-import GHC.TypeLits
+
+import Data.Type.Bool     (type (||), type (&&))
+import Data.Type.Equality (type (==))
+import GHC.TypeLits       (Symbol, TypeError, ErrorMessage (..))
 
 import Data.Generics.Internal.HList
 
@@ -81,13 +83,9 @@ type family HasPartialTypeTupleP a f :: Bool where
   HasPartialTypeTupleP t (l :+: r)
     = HasPartialTypeTupleP t l || HasPartialTypeTupleP t r
   HasPartialTypeTupleP t (C1 m f)
-    = Equals t (ListToTuple (GCollect f))
+    = t == ListToTuple (GCollect f)
   HasPartialTypeTupleP t _
     = 'False
-
-type family Equals a b where
-  Equals a a = 'True
-  Equals _ _ = 'False
 
 type family HasCtorP (ctor :: Symbol) f :: Bool where
   HasCtorP ctor (C1 ('MetaCons ctor _ _) _)
