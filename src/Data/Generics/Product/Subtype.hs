@@ -32,12 +32,10 @@ module Data.Generics.Product.Subtype
     Subtype (..)
   ) where
 
-import Data.Generics.Internal.Families
 import Data.Generics.Internal.Lens
-import Data.Generics.Product.Fields
+import Data.Generics.Product.Internal.Subtype
 
-import Data.Kind (Type)
-import GHC.Generics
+import GHC.Generics (Generic (Rep, to, from) )
 
 --  $example
 --  @
@@ -104,57 +102,3 @@ instance
   ) => Subtype b a where
     smash p b = to $ gsmash (from p) (from b)
     upcast    = to . gupcast . from
-
---------------------------------------------------------------------------------
--- * Generic upcasting
-
-class GUpcast (sub :: Type -> Type) (sup :: Type -> Type) where
-  gupcast :: sub p -> sup p
-
-instance (GUpcast sub a, GUpcast sub b) => GUpcast sub (a :*: b) where
-  gupcast rep = gupcast rep :*: gupcast rep
-
-instance
-  GHasField field sub t
-  => GUpcast sub (S1 ('MetaSel ('Just field) p f b) (Rec0 t)) where
-
-  gupcast r = M1 (K1 (r ^. gfield @field))
-
-instance GUpcast sub sup => GUpcast sub (C1 c sup) where
-  gupcast = M1 . gupcast
-
-instance GUpcast sub sup => GUpcast sub (D1 c sup) where
-  gupcast = M1 . gupcast
-
---------------------------------------------------------------------------------
--- * Generic smashing
-
-class GSmash sub sup where
-  gsmash :: sup p -> sub p -> sub p
-
-instance (GSmash a sup, GSmash b sup) => GSmash (a :*: b) sup where
-  gsmash rep (a :*: b) = gsmash rep a :*: gsmash rep b
-
-instance
-  ( leaf ~ (S1 ('MetaSel ('Just field) p f b) t)
-  , GSmashLeaf leaf sup (HasTotalFieldP field sup)
-  ) => GSmash (S1 ('MetaSel ('Just field) p f b) t) sup where
-
-  gsmash = gsmashLeaf @_ @_ @(HasTotalFieldP field sup)
-
-instance GSmash sub sup => GSmash (C1 c sub) sup where
-  gsmash sup (M1 sub) = M1 (gsmash sup sub)
-
-instance GSmash sub sup => GSmash (D1 c sub) sup where
-  gsmash sup (M1 sub) = M1 (gsmash sup sub)
-
-class GSmashLeaf sub sup (w :: Bool) where
-  gsmashLeaf :: sup p -> sub p -> sub p
-
-instance
-  GHasField field sup t
-  => GSmashLeaf (S1 ('MetaSel ('Just field) p f b) (Rec0 t)) sup 'True where
-  gsmashLeaf sup _ = M1 (K1 (sup ^. gfield @field))
-
-instance GSmashLeaf (S1 ('MetaSel ('Just field) p f b) (Rec0 t)) sup 'False where
-  gsmashLeaf _ = id

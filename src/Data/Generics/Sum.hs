@@ -20,9 +20,11 @@ module Data.Generics.Sum
     AsAny (..)
 
   , AsConstructor (..)
+  , AsSubtype (..)
   , AsType (..)
   ) where
 
 import Data.Generics.Sum.Any
 import Data.Generics.Sum.Constructors
+import Data.Generics.Sum.Subtype
 import Data.Generics.Sum.Typed
