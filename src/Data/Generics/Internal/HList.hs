@@ -21,7 +21,7 @@
 --
 -----------------------------------------------------------------------------
 module Data.Generics.Internal.HList
-  ( (++)
+  ( type (++)
 
   , ListTuple (..)
 
@@ -151,6 +151,55 @@ instance ListTuple (a, b, c, d, e, f, g, h, j, k, l) '[a, b, c, d, e, f, g, h, j
     = a :> b :> c :> d:> e :> f :> g :> h :> j :> k :> l :> Nil
   listToTuple (a :> b :> c :> d :> e :> f :> g :> h :> j :> k :> l :> Nil)
     = (a, b, c, d, e, f, g, h, j, k, l)
+
+instance ListTuple (a, b, c, d, e, f, g, h, j, k, l, m) '[a, b, c, d, e, f, g, h, j, k, l, m] where
+  type ListToTuple '[a, b, c, d, e, f, g, h, j, k, l, m] = (a, b, c, d, e, f, g, h, j, k, l, m)
+  tupleToList (a, b, c, d, e, f, g, h, j, k, l, m)
+    = a :> b :> c :> d:> e :> f :> g :> h :> j :> k :> l :> m :> Nil
+  listToTuple (a :> b :> c :> d :> e :> f :> g :> h :> j :> k :> l :> m :> Nil)
+    = (a, b, c, d, e, f, g, h, j, k, l, m)
+
+instance ListTuple (a, b, c, d, e, f, g, h, j, k, l, m, n) '[a, b, c, d, e, f, g, h, j, k, l, m, n] where
+  type ListToTuple '[a, b, c, d, e, f, g, h, j, k, l, m, n] = (a, b, c, d, e, f, g, h, j, k, l, m, n)
+  tupleToList (a, b, c, d, e, f, g, h, j, k, l, m, n)
+    = a :> b :> c :> d:> e :> f :> g :> h :> j :> k :> l :> m :> n :> Nil
+  listToTuple (a :> b :> c :> d :> e :> f :> g :> h :> j :> k :> l :> m :> n :> Nil)
+    = (a, b, c, d, e, f, g, h, j, k, l, m, n)
+
+instance ListTuple (a, b, c, d, e, f, g, h, j, k, l, m, n, o) '[a, b, c, d, e, f, g, h, j, k, l, m, n, o] where
+  type ListToTuple '[a, b, c, d, e, f, g, h, j, k, l, m, n, o] = (a, b, c, d, e, f, g, h, j, k, l, m, n, o)
+  tupleToList (a, b, c, d, e, f, g, h, j, k, l, m, n, o)
+    = a :> b :> c :> d:> e :> f :> g :> h :> j :> k :> l :> m :> n :> o :> Nil
+  listToTuple (a :> b :> c :> d :> e :> f :> g :> h :> j :> k :> l :> m :> n :> o :> Nil)
+    = (a, b, c, d, e, f, g, h, j, k, l, m, n, o)
+
+instance ListTuple (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p) '[a, b, c, d, e, f, g, h, j, k, l, m, n, o, p] where
+  type ListToTuple '[a, b, c, d, e, f, g, h, j, k, l, m, n, o, p] = (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p)
+  tupleToList (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p)
+    = a :> b :> c :> d:> e :> f :> g :> h :> j :> k :> l :> m :> n :> o :> p :> Nil
+  listToTuple (a :> b :> c :> d :> e :> f :> g :> h :> j :> k :> l :> m :> n :> o :> p :> Nil)
+    = (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p)
+
+instance ListTuple (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q) '[a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q] where
+  type ListToTuple '[a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q] = (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q)
+  tupleToList (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q)
+    = a :> b :> c :> d:> e :> f :> g :> h :> j :> k :> l :> m :> n :> o :> p :> q :> Nil
+  listToTuple (a :> b :> c :> d :> e :> f :> g :> h :> j :> k :> l :> m :> n :> o :> p :> q :> Nil)
+    = (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q)
+
+instance ListTuple (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q, r) '[a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q, r] where
+  type ListToTuple '[a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q, r] = (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q, r)
+  tupleToList (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q, r)
+    = a :> b :> c :> d:> e :> f :> g :> h :> j :> k :> l :> m :> n :> o :> p :> q :> r :> Nil
+  listToTuple (a :> b :> c :> d :> e :> f :> g :> h :> j :> k :> l :> m :> n :> o :> p :> q :> r :> Nil)
+    = (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q, r)
+
+instance ListTuple (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q, r, s) '[a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q, r, s] where
+  type ListToTuple '[a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q, r, s] = (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q, r, s)
+  tupleToList (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q, r, s)
+    = a :> b :> c :> d:> e :> f :> g :> h :> j :> k :> l :> m :> n :> o :> p :> q :> r :> s :> Nil
+  listToTuple (a :> b :> c :> d :> e :> f :> g :> h :> j :> k :> l :> m :> n :> o :> p :> q :> r :> s :> Nil)
+    = (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q, r, s)
 
 --------------------------------------------------------------------------------
 
