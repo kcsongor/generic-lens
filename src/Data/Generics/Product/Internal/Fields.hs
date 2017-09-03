@@ -49,8 +49,11 @@ instance (GHasField field l a, GHasField field r a)
 
   gfield = combine (gfield @field @l) (gfield @field @r)
 
+instance GHasField field (K1 R a) a where
+  gfield f (K1 x) = fmap K1 (f x)
+
 instance GHasField field (S1 ('MetaSel ('Just field) upkd str infstr) (Rec0 a)) a where
-  gfield = mIso . kIso
+  gfield = mIso . gfield @field
 
 instance GHasField field f a => GHasField field (M1 D meta f) a where
   gfield = mIso . gfield @field

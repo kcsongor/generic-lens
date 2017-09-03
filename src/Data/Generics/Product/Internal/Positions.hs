@@ -42,13 +42,10 @@ import GHC.TypeLits   (type (<=?), type (+), Nat)
 class GHasPosition (offset :: Nat) (i :: Nat) (f :: Type -> Type) a | offset i f -> a where
   gposition :: Lens' (f x) a
 
-instance GHasPosition i i (S1 meta (Rec0 a)) a where
-  gposition = mIso . kIso
+instance GHasPosition i i (K1 R a) a where
+  gposition f (K1 x) = fmap K1 (f x)
 
-instance GHasPosition offset i f a => GHasPosition offset i (M1 D meta f) a where
-  gposition = mIso . gposition @offset @i
-
-instance GHasPosition offset i f a => GHasPosition offset i (M1 C meta f) a where
+instance GHasPosition offset i f a => GHasPosition offset i (M1 m meta f) a where
   gposition = mIso . gposition @offset @i
 
 instance
