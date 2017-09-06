@@ -41,6 +41,10 @@ library
                     , Data.Generics.Sum.Internal.Typed
                     , Data.Generics.Sum.Internal.Subtype
 
+                    , Data.Generics.Internal.Families
+                    , Data.Generics.Internal.Families.Count
+                    , Data.Generics.Internal.Families.Has
+                    , Data.Generics.Internal.HList
                     , Data.Generics.Product.Internal.Fields
                     , Data.Generics.Product.Internal.Positions
                     , Data.Generics.Product.Internal.Subtype
@@ -63,9 +67,8 @@ test-suite generic-lens-test
   main-is:            Spec.hs
 
   build-depends:      base          >= 4.9 && <= 5.0
-                    , QuickCheck
-                    , hspec
                     , generic-lens
+                    , ghc-proofs >= 0.1.1
 
   default-language:   Haskell2010
   ghc-options:        -Wall

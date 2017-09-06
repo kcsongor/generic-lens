@@ -93,7 +93,7 @@ instance
   , GHasPosition 1 i (Rep s) a
   ) => HasPosition i a s where
 
-  position = repIso . gposition @1 @i
+  position = ravel (repIso . gposition @1 @i)
 
 type family ErrorUnless (i :: Nat) (s :: Type) (hasP :: Bool) :: Constraint where
   ErrorUnless i s 'False
