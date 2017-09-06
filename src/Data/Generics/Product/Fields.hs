@@ -91,7 +91,7 @@ instance
   , GHasField field (Rep s) a
   ) => HasField field a s where
 
-  field = repIso . gfield @field
+  field = ravel (repIso . gfield @field)
 
 type family ErrorUnless (field :: Symbol) (s :: Type) (contains :: Bool) :: Constraint where
   ErrorUnless field s 'False

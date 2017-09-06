@@ -1,4 +1,5 @@
-{-# LANGUAGE Rank2Types #-}
+{-# LANGUAGE GADTs         #-}
+{-# LANGUAGE Rank2Types    #-}
 {-# LANGUAGE TypeOperators #-}
 
 -----------------------------------------------------------------------------
@@ -89,3 +90,20 @@ _Left = prism Left $ either Right (Left . Right)
 
 _Right :: Prism' (Either c a) a
 _Right = prism Right $ either (Left . Left) Right
+
+--------------------------------------------------------------------------------
+
+data Coyoneda f b = forall a. Coyoneda (a -> b) (f a)
+
+instance Functor (Coyoneda f) where
+  fmap f (Coyoneda g fa)
+    = Coyoneda (f . g) fa
+
+inj :: Functor f => Coyoneda f a -> f a
+inj (Coyoneda f a) = fmap f a
+
+proj :: Functor f => f a -> Coyoneda f a
+proj fa = Coyoneda id fa
+
+ravel :: Functor f => ((a -> Coyoneda f b) -> s -> Coyoneda f t) -> (a -> f b) -> (s -> f t)
+ravel coy f s = inj $ coy (\a -> proj (f a)) s
