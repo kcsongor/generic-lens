@@ -81,13 +81,24 @@ class AsType a s where
   --  Just 2
   _Typed :: Prism' s a
 
+  -- |Inject by type.
+  injectTyped :: a -> s
+
+  -- |Project by type.
+  projectTyped :: s -> Maybe a
+
 instance
   ( Generic s
   , ErrorUnlessOne a s (CountPartialType a (Rep s))
   , GAsType (Rep s) a
   ) => AsType a s where
 
-  _Typed = repIso . _GTyped
+  _Typed
+    = repIso . _GTyped
+  injectTyped
+    = to . ginjectTyped
+  projectTyped
+    = either (const Nothing) Just . gprojectTyped . from
 
 type family ErrorUnlessOne (a :: Type) (s :: Type) (count :: Count) :: Constraint where
   ErrorUnlessOne a s 'None
