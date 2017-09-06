@@ -50,6 +50,9 @@ subtypeLensManual f record
 fieldP :: Proof
 fieldP = L fieldALensManual === L (field @"fieldA")
 
+typedP :: Proof
+typedP = L fieldALensManual === L (typed @Int)
+
 posP :: Proof
 posP = L fieldALensManual === L (position @1)
 
