@@ -2,6 +2,7 @@
 
 [![Build
 Status](https://travis-ci.org/kcsongor/generic-lens.svg?branch=master)](https://travis-ci.org/kcsongor/generic-lens)
+[![Hackage](https://img.shields.io/hackage/v/generic-lens.svg)](https://hackage.haskell.org/package/generic-lens)
 
 Generically derive lenses and prisms for data types.
 
