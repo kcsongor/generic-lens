@@ -26,6 +26,7 @@ library
                     , Data.Generics.Product.Subtype
                     , Data.Generics.Product.Typed
                     , Data.Generics.Labels
+                    , Data.Generics.Product.Types
 
                     , Data.Generics.Sum
                     , Data.Generics.Sum.Any
@@ -49,6 +50,7 @@ library
                     , Data.Generics.Product.Internal.Positions
                     , Data.Generics.Product.Internal.Subtype
                     , Data.Generics.Product.Internal.Typed
+                    , Data.Generics.Product.Internal.Types
 
   build-depends:      base        >= 4.9 && <= 5.0
                     , profunctors >= 5.0 && <= 6.0

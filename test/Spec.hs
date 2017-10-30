@@ -45,8 +45,7 @@ prism :: (b -> t) -> (s -> Either t a) -> Prism s t a b
 prism bt seta = dimap seta (either pure (fmap bt)) . right'
 {-# INLINE prism #-}
 
-fieldALensManual :: Lens' Record Int
-fieldALensManual f (MkRecord a b) = (\a' -> MkRecord a' b) <$> f a
+type Traversal' s a = forall f. Applicative f => (a -> f a) -> s -> f s
 
 typeChangingManual :: Lens (Record3 a) (Record3 b) a b
 typeChangingManual f (MkRecord3 a b) = (\a' -> MkRecord3 a' b) <$> f a
@@ -55,6 +54,12 @@ typeChangingManualCompose :: Lens (Record3 (Record3 a)) (Record3 (Record3 b)) a 
 typeChangingManualCompose = typeChangingManual . typeChangingManual
 
 newtype L s a = L (Lens' s a)
+
+intTraversalManual :: Traversal' Record3 Int
+intTraversalManual = types
+
+fieldALensManual :: Lens' Record Int
+fieldALensManual f (MkRecord a b) = (\a' -> MkRecord a' b) <$> f a
 
 subtypeLensManual :: Lens' Record Record2
 subtypeLensManual f record

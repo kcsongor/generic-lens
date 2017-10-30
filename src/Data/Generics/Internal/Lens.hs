@@ -32,6 +32,10 @@ type Lens' s a
 type Lens s t a b
   = forall f. Functor f => (a -> f b) -> s -> f t
 
+-- | Type alias for traversal
+type Traversal' s a
+  = forall f. Applicative f => (a -> f a) -> s -> f s
+
 -- | Type alias for prism
 type Prism s t a b
   = forall p f. (Choice p, Applicative f) => p a (f b) -> p s (f t)
