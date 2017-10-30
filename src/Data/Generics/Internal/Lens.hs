@@ -25,6 +25,10 @@ import GHC.Generics          ((:*:)(..), (:+:)(..), Generic(..), M1(..), Rep)
 type Lens' s a
   = forall f. Functor f => (a -> f a) -> s -> f s
 
+-- | Type alias for traversal
+type Traversal' s a
+  = forall f. Applicative f => (a -> f a) -> s -> f s
+
 -- | Type alias for prism
 type Prism' s a
   = forall p f. (Choice p, Applicative f) => p a (f a) -> p s (f s)

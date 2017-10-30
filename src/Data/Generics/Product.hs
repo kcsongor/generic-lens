@@ -23,6 +23,9 @@ module Data.Generics.Product
   , HasPosition (..)
   , HasType (..)
 
+  -- *Traversals
+  , HasTypes (..)
+
     -- *Subtype relationships
   , Subtype  (..)
   ) where
@@ -32,3 +35,4 @@ import Data.Generics.Product.Fields
 import Data.Generics.Product.Positions
 import Data.Generics.Product.Subtype
 import Data.Generics.Product.Typed
+import Data.Generics.Product.Types

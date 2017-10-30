@@ -28,12 +28,26 @@ data Record2 = MkRecord2
   { fieldA :: Int
   } deriving Generic
 
+data Record3 = MkRecord3
+  { fieldA :: Int
+  , fieldB :: Int
+  , fieldC :: String
+  , fieldD :: Int
+  , fieldE :: Char
+  , fieldF :: Int
+  } deriving Generic
+
 type Lens' s a = forall f. Functor f => (a -> f a) -> s -> f s
+
+type Traversal' s a = forall f. Applicative f => (a -> f a) -> s -> f s
+
+newtype L s a = L (Lens' s a)
+
+intTraversalManual :: Traversal' Record3 Int
+intTraversalManual = types
 
 fieldALensManual :: Lens' Record Int
 fieldALensManual f (MkRecord a b) = (\a' -> MkRecord a' b) <$> f a
-
-newtype L s a = L (Lens' s a)
 
 subtypeLensManual :: Lens' Record Record2
 subtypeLensManual f record

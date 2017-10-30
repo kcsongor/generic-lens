@@ -19,7 +19,7 @@
 -- Stability   :  experimental
 -- Portability :  non-portable
 --
--- Derive record field getters and setters generically.
+-- Derive lenses of a given type in a product.
 --
 -----------------------------------------------------------------------------
 
