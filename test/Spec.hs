@@ -1,4 +1,4 @@
-{-# OPTIONS_GHC -O -fplugin GHC.Proof.Plugin #-}
+{-# OPTIONS_GHC -O -fplugin Test.Inspection.Plugin #-}
 
 {-# LANGUAGE AllowAmbiguousTypes             #-}
 {-# LANGUAGE DataKinds                       #-}
@@ -8,12 +8,16 @@
 {-# LANGUAGE RankNTypes                      #-}
 {-# LANGUAGE ScopedTypeVariables             #-}
 {-# LANGUAGE TypeApplications                #-}
+{-# LANGUAGE TemplateHaskell                 #-}
+{-# LANGUAGE CPP                             #-}
 
 module Main where
 
 import GHC.Generics
 import Data.Generics.Product
-import GHC.Proof
+#if MIN_VERSION_GLASGOW_HASKELL(8,2,0,0)
+import Test.Inspection
+#endif
 
 main :: IO ()
 main = putStrLn "Hello world"
@@ -42,19 +46,28 @@ subtypeLensManual f record
 
 --------------------------------------------------------------------------------
 -- * Tests
--- The ghc-proofs plugin checks that the following equalities hold, by checking
--- that the LHSs and the RHSs are CSEd. This also means that the runtime
--- characteristics of the derived lenses is the same as the manually written
--- ones above.
+-- The inspection-testing plugin checks that the following equalities hold, by
+-- checking that the LHSs and the RHSs are CSEd. This also means that the
+-- runtime characteristics of the derived lenses is the same as the manually
+-- written ones above.
 
-fieldP :: Proof
-fieldP = L fieldALensManual === L (field @"fieldA")
+fieldALensName :: Lens' Record Int
+fieldALensName = field @"fieldA"
 
-typedP :: Proof
-typedP = L fieldALensManual === L (typed @Int)
+fieldALensType :: Lens' Record Int
+fieldALensType = typed @Int
 
-posP :: Proof
-posP = L fieldALensManual === L (position @1)
+fieldALensPos :: Lens' Record Int
+fieldALensPos = position @1
 
-subtypeP :: Proof
-subtypeP = L subtypeLensManual === L super
+subtypeLensGeneric :: Lens' Record Record2
+subtypeLensGeneric = super
+
+#if MIN_VERSION_GLASGOW_HASKELL(8,2,0,0)
+-- It turns out that these equalities only hold with ghc-8.2 or newer,
+-- probably due to improvements to CSE
+inspect $ 'fieldALensManual === 'fieldALensName
+inspect $ 'fieldALensManual === 'fieldALensType
+inspect $ 'fieldALensManual === 'fieldALensPos
+inspect $ 'subtypeLensManual === 'subtypeLensGeneric
+#endif
