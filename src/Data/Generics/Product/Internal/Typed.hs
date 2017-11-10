@@ -50,7 +50,7 @@ instance GHasType (K1 R a) a where
   gtyped f (K1 x) = fmap K1 (f x)
 
 instance GHasType f a => GHasType (M1 m meta f) a where
-  gtyped = mIso . gtyped
+  gtyped = mLens . gtyped
 
 class GProductHasType l r a (contains :: Bool) where
   gproductTyped :: Lens' ((l :*: r) x) a

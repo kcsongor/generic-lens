@@ -9,15 +9,12 @@
 {-# LANGUAGE ScopedTypeVariables             #-}
 {-# LANGUAGE TypeApplications                #-}
 {-# LANGUAGE TemplateHaskell                 #-}
-{-# LANGUAGE CPP                             #-}
 
 module Main where
 
 import GHC.Generics
 import Data.Generics.Product
-#if MIN_VERSION_GLASGOW_HASKELL(8,2,0,0)
 import Test.Inspection
-#endif
 
 main :: IO ()
 main = putStrLn "Hello world"
@@ -63,11 +60,7 @@ fieldALensPos = position @1
 subtypeLensGeneric :: Lens' Record Record2
 subtypeLensGeneric = super
 
-#if MIN_VERSION_GLASGOW_HASKELL(8,2,0,0)
--- It turns out that these equalities only hold with ghc-8.2 or newer,
--- probably due to improvements to CSE
 inspect $ 'fieldALensManual === 'fieldALensName
 inspect $ 'fieldALensManual === 'fieldALensType
 inspect $ 'fieldALensManual === 'fieldALensPos
 inspect $ 'subtypeLensManual === 'subtypeLensGeneric
-#endif

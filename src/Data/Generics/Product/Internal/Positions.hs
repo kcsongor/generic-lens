@@ -46,7 +46,7 @@ instance GHasPosition i i (K1 R a) a where
   gposition f (K1 x) = fmap K1 (f x)
 
 instance GHasPosition offset i f a => GHasPosition offset i (M1 m meta f) a where
-  gposition = mIso . gposition @offset @i
+  gposition = mLens . gposition @offset @i
 
 instance
   ( goLeft  ~ (i <? (offset + Size l))

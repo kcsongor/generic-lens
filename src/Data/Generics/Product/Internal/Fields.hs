@@ -53,13 +53,13 @@ instance GHasField field (K1 R a) a where
   gfield f (K1 x) = fmap K1 (f x)
 
 instance GHasField field (S1 ('MetaSel ('Just field) upkd str infstr) (Rec0 a)) a where
-  gfield = mIso . gfield @field
+  gfield = mLens . gfield @field
 
 instance GHasField field f a => GHasField field (M1 D meta f) a where
-  gfield = mIso . gfield @field
+  gfield = mLens . gfield @field
 
 instance GHasField field f a => GHasField field (M1 C meta f) a where
-  gfield = mIso . gfield @field
+  gfield = mLens . gfield @field
 
 class GProductHasField (field :: Symbol) l r a (left :: Bool) | left field l r -> a where
   gproductField :: Lens' ((l :*: r) x) a

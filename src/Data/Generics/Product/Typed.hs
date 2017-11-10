@@ -83,7 +83,7 @@ instance
   , GHasType (Rep s) a
   ) => HasType a s where
 
-  typed = ravel (repIso . gtyped)
+  typed = ravel (repLens . gtyped)
 
 type family ErrorUnlessOne (a :: Type) (s :: Type) (count :: Count) :: Constraint where
   ErrorUnlessOne a s 'None

@@ -77,6 +77,13 @@ repIso = dimap from (fmap to)
 mIso :: Iso' (M1 i c f p) (f p)
 mIso = dimap unM1 (fmap M1)
 
+-- These are specialised versions of the Isos above. On GHC 8.0.2, having
+-- these functions eta-expanded allows the optimiser to inline these functions.
+mLens :: Lens' (M1 i c f p) (f p)
+mLens f s = mIso f s
+
+repLens :: Generic a => Lens' a (Rep a x)
+repLens f s = repIso f s
 
 sumIso :: Iso' ((a :+: b) x) (Either (a x) (b x))
 sumIso = dimap f (fmap t)
