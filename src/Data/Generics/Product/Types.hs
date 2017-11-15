@@ -46,4 +46,4 @@ instance
   , GHasTypes (Rep s) a
   ) => HasTypes a s where
 
-  types = repIso . gtypes
+  types = ravel (repIso . gtypes)

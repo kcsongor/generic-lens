@@ -110,6 +110,11 @@ instance Functor (Coyoneda f) where
   fmap f (Coyoneda g fa)
     = Coyoneda (f . g) fa
 
+instance Applicative f => Applicative (Coyoneda f) where
+  pure = proj . pure
+  Coyoneda f fa <*> Coyoneda f' fa' =
+    proj $ (\a1 a2 -> f a1 (f' a2)) <$> fa <*> fa'
+
 inj :: Functor f => Coyoneda f a -> f a
 inj (Coyoneda f a) = fmap f a
 
