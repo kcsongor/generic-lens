@@ -1,5 +1,5 @@
 name:                 generic-lens
-version:              0.4.1.0
+version:              0.4.1.1
 synopsis:             Generic data-structure operations exposed as lenses.
 description:          This package uses the GHC 8 Generic representation to derive various operations on data structures with a lens interface, including structural subtype relationship between records and positional indexing into arbitrary product types.
 
@@ -68,7 +68,7 @@ test-suite generic-lens-test
 
   build-depends:      base          >= 4.9 && <= 5.0
                     , generic-lens
-                    , inspection-testing >= 0.1
+                    , inspection-testing >= 0.1.1.1
 
   default-language:   Haskell2010
   ghc-options:        -Wall
