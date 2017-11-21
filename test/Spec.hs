@@ -14,6 +14,7 @@ module Main where
 
 import GHC.Generics
 import Data.Generics.Product
+import Data.Generics.Product.Types
 import Test.Inspection
 
 main :: IO ()
@@ -31,10 +32,6 @@ data Record2 = MkRecord2
 data Record3 = MkRecord3
   { fieldA :: Int
   , fieldB :: Int
-  , fieldC :: String
-  , fieldD :: Int
-  , fieldE :: Char
-  , fieldF :: Int
   } deriving Generic
 
 type Lens' s a = forall f. Functor f => (a -> f a) -> s -> f s
@@ -45,11 +42,14 @@ newtype L s a = L (Lens' s a)
 newtype T s a = T (Traversal' s a)
 
 intTraversalManual :: Traversal' Record3 Int
-intTraversalManual f' (MkRecord3 a b c d e f)
-  = MkRecord3 <$> f' a <*> f' b <*> pure c <*> f' d <*> pure e <*> f' f
+intTraversalManual f' (MkRecord3 a b)
+  = MkRecord3 <$> f' a <*> f' b
 
 intTraversalDerived :: Traversal' Record3 Int
 intTraversalDerived = types
+
+intTraversalDerived2 :: Traversal' Record3 Int
+intTraversalDerived2 = types2
 
 fieldALensManual :: Lens' Record Int
 fieldALensManual f (MkRecord a b) = (\a' -> MkRecord a' b) <$> f a
@@ -84,5 +84,4 @@ inspect $ 'fieldALensManual === 'fieldALensType
 inspect $ 'fieldALensManual === 'fieldALensPos
 inspect $ 'subtypeLensManual === 'subtypeLensGeneric
 
---typedTraversalP :: Proof
---typedTraversalP = T intTraversalManual === T (types @Int)
+--inspect $ 'intTraversalManual === 'intTraversalDerived

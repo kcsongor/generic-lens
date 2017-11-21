@@ -28,6 +28,7 @@ module Data.Generics.Product.Types
     --
     --  $example
     HasTypes (..)
+   , types2
   ) where
 
 --import Data.Generics.Internal.Families
@@ -46,4 +47,13 @@ instance
   , GHasTypes (Rep s) a
   ) => HasTypes a s where
 
-  types = ravel (repIso . gtypes)
+  types = (repIso . gtypes')
+  {-# INLINE types #-}
+
+types2 :: (HasTypes a s) => Traversal' s a
+types2 = ravel types
+
+gtypes' :: (GHasTypes f a) => Traversal' (f a) a
+gtypes' f s = flatten @(S (S (S (S (S (S (S Z))))))) (gtypes f s)
+{-# INLINE gtypes' #-}
+
