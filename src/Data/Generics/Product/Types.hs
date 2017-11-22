@@ -35,7 +35,8 @@ import Data.Generics.Internal.Lens
 import Data.Generics.Product.Internal.Types
 
 --import Data.Kind    (Constraint, Type)
-import GHC.Generics (Generic (Rep))
+import GHC.Generics (Generic (Rep), from, to)
+import Boggle
 --import GHC.TypeLits (TypeError, ErrorMessage (..))
 
 class HasTypes a s where
@@ -46,4 +47,5 @@ instance
   , GHasTypes (Rep s) a
   ) => HasTypes a s where
 
-  types = repIso . gtypes
+  types f s = lowerBoggle (to <$> gtypes f (from s))
+
