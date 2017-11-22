@@ -64,7 +64,12 @@ typeChangingManualCompose = typeChangingManual . typeChangingManual
 newtype L s a = L (Lens' s a)
 
 intTraversalManual :: Traversal' Record3 Int
-intTraversalManual = types
+intTraversalManual f (MkRecord3 a b c d e f') =
+    (\a1 a2 a3 a4 -> MkRecord3 a1 a2 c a3 e a4) <$> f a <*> f b <*> f d <*> f f'
+
+intTraversalDerived :: Traversal' Record3 Int
+intTraversalDerived = types
+
 
 intTraversalDerived3 :: Traversal' (Record4 Int) Int
 intTraversalDerived3 = genericTraverse
@@ -129,5 +134,6 @@ inspect $ 'subtypeLensManual === 'subtypeLensGeneric
 inspect $ 'typeChangingManual === 'typeChangingGeneric
 inspect $ 'typeChangingManual === 'typeChangingGenericPos
 inspect $ 'typeChangingManualCompose === 'typeChangingGenericCompose
+inspect $ 'intTraversalManual === 'intTraversalDerived
 
 --inspect $ 'sum1PrismManual === 'sum1PrismB
