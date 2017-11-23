@@ -108,6 +108,7 @@ module Boggle
 
 import Control.Applicative
 import Control.Monad
+import GHC.Exts ( inline )
 
 infixl 4 <<$>, <<.>, <.>
 
@@ -336,7 +337,7 @@ instance Applicative (Boggle f) where
 
 liftBoggle :: Applicative f => f a -> Boggle f a
 liftBoggle = Boggle . liftPureK . liftApK1 . liftMapK1 . liftApWrap
-{-# INLINE liftBoggle #-}
+{-# INLINE[1] liftBoggle #-}
 
 -- | 'lowerBoggle' lowers the 'ApK1' and 'MapK' layers first before lowering
 -- the 'PureK' layer. This ensures that any 'fmap' uses in the 'PureK' layer
@@ -353,7 +354,7 @@ lowerBoggle
 -- This function will only work well on non-recursive traversals. For an example
 -- of using this technique on recursive cases see "Data.Traversable.Generic".
 boggling :: Applicative f => LensLike (Boggle f) s t a b -> LensLike f s t a b
-boggling l = \f x -> lowerBoggle (l (liftBoggle . f) x)
+boggling l = \f x -> lowerBoggle (l (\x -> (liftBoggle (f x))) x)
 {-# INLINE boggling #-}
 
 
@@ -397,3 +398,136 @@ traversePair f (a, b) = (,) <$> f a <*> f b
 
 test :: Applicative f => (a -> f a) -> (a, a) -> f (a, a)
 test = boggling traversePair
+
+{- example
+-
+
+liftBoggle fa <*> (pure (5+) <*> liftBoggle fb)
+=
+((Boggle . liftPureK . liftApK1 . liftMapK1 . liftApWrap) fa)
+  <*>
+  (pure (5+) <*> (Boggle . liftPureK . liftApK1 . liftMapK1 . liftApWrap) fb)
+=
+  Boggle (
+    Dirty (
+      ApK1 (MapK1 (ApWrap fa) (liftMapK (ApWrap fa))) (liftApK (MapK1 (ApWrap fa) (liftMapK (ApWrap fa))))))
+  <*>
+    ( Boggle (Pure (5+))
+      <*>
+      Boggle (
+        Dirty (
+          ApK1 (MapK1 (ApWrap fb) (liftMapK (ApWrap fb))) (liftApK (MapK1 (ApWrap fb) (liftMapK (ApWrap fb)))))))
+= Boggle (
+    (Dirty (
+      ApK1 (MapK1 (ApWrap fa) (liftMapK (ApWrap fa))) (liftApK (MapK1 (ApWrap fa) (liftMapK (ApWrap fa)))))))
+    <*> (Pure (5+) <*>
+        (Dirty (
+          ApK1 (MapK1 (ApWrap fb) (liftMapK (ApWrap fb))) (liftApK (MapK1 (ApWrap fb) (liftMapK (ApWrap fb)))))))
+= {- PureK <$> -}
+  Boggle (
+    (Dirty (
+      ApK1 (MapK1 (ApWrap fa) (liftMapK (ApWrap fa))) (liftApK (MapK1 (ApWrap fa) (liftMapK (ApWrap fa)))))))
+    <.>
+        (Dirty ((+5) <$>
+          ApK1 (MapK1 (ApWrap fb) (liftMapK (ApWrap fb))) (liftApK (MapK1 (ApWrap fb) (liftMapK (ApWrap fb)))))))
+= {- PureK <.> -}
+  Boggle (
+    (Dirty
+      (
+      ApK1 (MapK1 (ApWrap fa) (liftMapK (ApWrap fa))) (liftApK (MapK1 (ApWrap fa) (liftMapK (ApWrap fa))))))
+    <.>
+      ((+5) <$>
+          ApK1 (MapK1 (ApWrap fb) (liftMapK (ApWrap fb))) (liftApK (MapK1 (ApWrap fb) (liftMapK (ApWrap fb)))))
+= {- ApK1 <$> -}
+  Boggle (
+    (Dirty
+      (
+      ApK1 (MapK1 (ApWrap fa) (liftMapK (ApWrap fa))) (liftApK (MapK1 (ApWrap fa) (liftMapK (ApWrap fa))))))
+    <.>
+      (
+          ApK1 ((+5) <$> MapK1 (ApWrap fb) (liftMapK (ApWrap fb))) ((+5) <$> liftApK (MapK1 (ApWrap fb) (liftMapK (ApWrap fb)))))
+= {- ApK1 <.> -}
+
+  Boggle (
+    (Dirty
+      (ApK1
+
+  (MapK1 (ApWrap fa) (liftMapK (ApWrap fa)))
+    <<.> ((+5) <$> liftApK (MapK1 (ApWrap fb) (liftMapK (ApWrap fb))))
+  -- This isn't going to be evaluated
+  ((liftApK (MapK1 (ApWrap fa) (liftMapK (ApWrap fa))))))
+    <.> ((+5) <$> liftApK (MapK1 (ApWrap fb) (liftMapK (ApWrap fb)))))
+= {- Remove unevaled term -}
+  Boggle (
+    (Dirty
+      (ApK1
+        (MapK1 (ApWrap fa) (liftMapK (ApWrap fa)))
+          <<.> ((+5) <$> liftApK (MapK1 (ApWrap fb) (liftMapK (ApWrap fb))))
+        <uneval>
+= {- liftMapK defn -}
+  Boggle (
+    (Dirty
+      (ApK1
+        (MapK1 (ApWrap fa) (liftMapK (ApWrap fa)))
+          <<.> ((+5) <$> liftApK (MapK1 (ApWrap fb) (MapK (<$> (ApWrap fb))))
+        <uneval>
+= {- liftApK defn -}
+  Boggle (
+    (Dirty
+      (ApK1
+        (MapK1 (ApWrap fa) (liftMapK (ApWrap fa)))
+          <<.> ((+5) <$> ApK (<.> (MapK1 (ApWrap fb) (MapK (<$> (ApWrap fb))))
+= {- <$> ApK -}
+  Boggle (
+    (Dirty
+      (ApK1
+        (MapK1 (ApWrap fa) (liftMapK (ApWrap fa)))
+          <<.> (ApK (\g -> (\a b -> a (5 + b)) <$> g <<.>
+                  (ApK (<.> (MapK1 (ApWrap fb) (MapK (<$> (ApWrap fb)))))
+= {- <<.> defn -}
+  Boggle (
+    (Dirty
+      (ApK1
+        (MapK1 (ApWrap fa) (liftMapK (ApWrap fa)))
+          <<.> (ApK (\g -> (\a b -> a (5 + b)) <$>
+                  (g <.> (MapK1 (ApWrap fb) (MapK (<$> (ApWrap fb))))))
+= {- <<.> defn -}
+  Boggle (
+    (Dirty
+      (ApK1
+        (\a b -> a (5 + b)) <$>  (
+                  (MapK1 (ApWrap fa) (liftMapK (ApWrap fa)))
+                    <.> (MapK1 (ApWrap fb) (MapK (<$> (ApWrap fb))))))
+= {- MapK1 <.> -}
+  Boggle (
+    (Dirty
+      (ApK1
+        (\a b -> a (5 + b)) <$>  (
+                  (MapK1 (ApWrap fa <.> ApWrap fb)
+                    (\k -> (\a b -> k (a b)) <<$> (MapK (<$> (ApWrap fa)))))
+                                             <.> (ApWrap fb)))))
+= {- <<$> defn -}
+  Boggle (
+    (Dirty
+      (ApK1
+        (\a b -> a (5 + b)) <$>  (
+                  (MapK1 (ApWrap fa <.> ApWrap fb)
+                    (ApWrap ((\k -> (\a b -> k (a b))) <$> fa <*> fb))))
+=
+  {- <$> -}
+  Boggle (
+    (Dirty
+      (ApK1
+        MapK1 (
+        (\a b -> a (5 + b)) <$> ApWrap fa <.> ApWrap fb))))
+-}
+
+
+
+
+
+
+
+
+
+
