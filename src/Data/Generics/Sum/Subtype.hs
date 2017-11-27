@@ -22,53 +22,47 @@
 module Data.Generics.Sum.Subtype
   ( -- *Prisms
     --
-    --  $example
+    --  $setup
     AsSubtype (..)
   ) where
 
 import Data.Generics.Internal.Lens
+import Data.Generics.Internal.Void
 import Data.Generics.Sum.Internal.Subtype
 
 import GHC.Generics (Generic (Rep, to, from))
 
---  $example
---  @
---    module Example where
---
---    import Data.Generics.Sum
---    import GHC.Generics
---
---    data Animal
---      = Dog Dog
---      | Cat Name Age
---      | Duck Age
---      deriving (Generic, Show)
---
---    data FourLeggedAnimal
---      = Dog4 Dog
---      | Cat4 Name Age
---      deriving (Generic, Show)
---
---    data Dog = MkDog
---      { name :: Name
---      , age  :: Age
---      }
---      deriving (Generic, Show)
---
---    type Name = String
---    type Age  = Int
---
---    dog, cat, duck :: Animal
---
---    dog = Dog (MkDog "Shep" 3)
---    cat = Cat "Mog" 5
---    duck = Duck 2
---
---    dog4, cat4 :: FourLeggedAnimal
---
---    dog4 = Dog4 (MkDog "Snowy" 4)
---    cat4 = Cat4 "Garfield" 6
---  @
+-- $setup
+-- >>> :set -XTypeApplications
+-- >>> :set -XDataKinds
+-- >>> :set -XDeriveGeneric
+-- >>> import GHC.Generics
+-- >>> :m +Data.Generics.Internal.Lens
+-- >>> :{
+-- data Animal
+--   = Dog Dog
+--   | Cat Name Age
+--   | Duck Age
+--   deriving (Generic, Show)
+-- data FourLeggedAnimal
+--   = Dog4 Dog
+--   | Cat4 Name Age
+--   deriving (Generic, Show)
+-- data Dog = MkDog
+--   { name :: Name
+--   , age  :: Age
+--   }
+--   deriving (Generic, Show)
+-- type Name = String
+-- type Age  = Int
+-- dog, cat, duck :: Animal
+-- dog = Dog (MkDog "Shep" 3)
+-- cat = Cat "Mog" 5
+-- duck = Duck 2
+-- dog4, cat4 :: FourLeggedAnimal
+-- dog4 = Dog4 (MkDog "Snowy" 4)
+-- cat4 = Cat4 "Garfield" 6
+-- :}
 
 -- |Structural subtyping between sums. A sum 'Sub' is a subtype of another sum
 --  'Sup' if a value of 'Sub' can be given (modulo naming of constructors)
@@ -106,3 +100,11 @@ instance
 
   injectSub  = to . ginjectSub . from
   projectSub = either (Left . to) (Right . to) . gprojectSub . from
+
+-- See Note [Uncluttering type signatures]
+instance {-# OVERLAPPING #-} AsSubtype a Void where
+  injectSub = undefined
+  projectSub = undefined
+instance {-# OVERLAPPING #-} AsSubtype Void a where
+  injectSub = undefined
+  projectSub = undefined

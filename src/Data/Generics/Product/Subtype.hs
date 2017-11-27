@@ -28,36 +28,38 @@
 module Data.Generics.Product.Subtype
   ( -- *Lenses
     --
-    --  $example
+    --  $setup
     Subtype (..)
   ) where
 
 import Data.Generics.Internal.Lens
+import Data.Generics.Internal.Void
 import Data.Generics.Product.Internal.Subtype
 
 import GHC.Generics (Generic (Rep, to, from) )
 
---  $example
---  @
---     module Example where
---
---     import Data.Generics.Product
---     import GHC.Generics
---
---     data Human = Human
---       { name    :: String
---       , age     :: Int
---       , address :: String
---       } deriving (Generic, Show)
---
---     data Animal = Animal
---       { name    :: String
---       , age     :: Int
---       } deriving (Generic, Show)
---
---     human :: Human
---     human = Human \"Tunyasz\" 50 \"London\"
---  @
+-- $setup
+-- >>> :set -XTypeApplications
+-- >>> :set -XDataKinds
+-- >>> :set -XDeriveGeneric
+-- >>> :set -XDuplicateRecordFields
+-- >>> import GHC.Generics
+-- >>> :m +Data.Generics.Internal.Lens
+-- >>> :{
+-- data Human = Human
+--   { name    :: String
+--   , age     :: Int
+--   , address :: String
+--   }
+--   deriving (Generic, Show)
+-- data Animal = Animal
+--   { name    :: String
+--   , age     :: Int
+--   }
+--   deriving (Generic, Show)
+-- human :: Human
+-- human = Human "Tunyasz" 50 "London"
+-- :}
 
 -- |Structural subtype relationship
 --
@@ -94,11 +96,18 @@ class Subtype sup sub where
 
   {-# MINIMAL super | smash, upcast #-}
 
+-- TODO: improve type error by showing a diff of fields
 instance
-  ( GSmash (Rep a) (Rep b)
-  , GUpcast (Rep a) (Rep b)
-  , Generic a
+  ( Generic a
   , Generic b
+  , GSmash (Rep a) (Rep b)
+  , GUpcast (Rep a) (Rep b)
   ) => Subtype b a where
     smash p b = to $ gsmash (from p) (from b)
     upcast    = to . gupcast . from
+
+-- See Note [Uncluttering type signatures]
+instance {-# OVERLAPPING #-} Subtype a Void where
+  super = undefined
+instance {-# OVERLAPPING #-} Subtype Void a where
+  super = undefined

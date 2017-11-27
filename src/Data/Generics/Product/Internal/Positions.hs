@@ -1,5 +1,7 @@
 {-# LANGUAGE AllowAmbiguousTypes    #-}
+{-# LANGUAGE ConstraintKinds        #-}
 {-# LANGUAGE DataKinds              #-}
+{-# LANGUAGE FlexibleContexts       #-}
 {-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE KindSignatures         #-}
@@ -26,6 +28,7 @@
 
 module Data.Generics.Product.Internal.Positions
   ( GHasPosition (..)
+  , GHasPosition'
   , type (<?)
   , Size
   ) where
@@ -39,31 +42,32 @@ import GHC.TypeLits   (type (<=?), type (+), Nat)
 
 -- |As 'HasPosition' but over generic representations as defined by
 --  "GHC.Generics".
-class GHasPosition (offset :: Nat) (i :: Nat) (f :: Type -> Type) a | offset i f -> a where
-  gposition :: Lens' (f x) a
+class GHasPosition (offset :: Nat) (i :: Nat) (s :: Type -> Type) (t :: Type -> Type) a b | s offset i -> a, s t offset i -> b where
+  gposition :: Lens (s x) (t x) a b
 
-instance GHasPosition i i (K1 R a) a where
+type GHasPosition' i s a = GHasPosition 1 i s s a a
+
+instance GHasPosition i i (K1 R a) (K1 R b) a b where
   gposition f (K1 x) = fmap K1 (f x)
 
-instance GHasPosition offset i f a => GHasPosition offset i (M1 m meta f) a where
+instance GHasPosition offset i s t a b => GHasPosition offset i (M1 m meta s) (M1 m meta t) a b where
   gposition = mLens . gposition @offset @i
 
 instance
   ( goLeft  ~ (i <? (offset + Size l))
   , offset' ~ (If goLeft offset (offset + Size l))
-  , GProductHasPosition offset' i l r a goLeft
-  ) => GHasPosition offset i (l :*: r) a where
+  , GProductHasPosition offset' i l r l' r' a b goLeft
+  ) => GHasPosition offset i (l :*: r) (l' :*: r') a b where
 
-  gposition = gproductPosition @offset' @i @_ @_ @_ @goLeft
+  gposition = gproductPosition @offset' @i @_ @_ @_ @_ @_ @_ @goLeft
 
+class GProductHasPosition (offset :: Nat) (i :: Nat) l r l' r' a b (left :: Bool) | offset i l r -> a, offset i l r l' r' -> b where
+  gproductPosition :: Lens ((l :*: r) x) ((l' :*: r') x) a b
 
-class GProductHasPosition (offset :: Nat) (i :: Nat) l r a (left :: Bool) | offset i l r left -> a where
-  gproductPosition :: Lens' ((l :*: r) x) a
-
-instance GHasPosition offset i l a => GProductHasPosition offset i l r a 'True where
+instance GHasPosition offset i l l' a b => GProductHasPosition offset i l r l' r a b 'True where
   gproductPosition = first . gposition @offset @i
 
-instance GHasPosition offset i r a => GProductHasPosition offset i l r a 'False where
+instance GHasPosition offset i r r' a b => GProductHasPosition offset i l r l r' a b 'False where
   gproductPosition = second . gposition @offset @i
 
 type family Size f :: Nat where

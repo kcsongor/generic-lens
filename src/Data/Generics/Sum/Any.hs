@@ -24,7 +24,7 @@
 module Data.Generics.Sum.Any
   ( -- *Prisms
     --
-    --  $example
+    --  $setup
     AsAny (..)
   ) where
 
@@ -32,34 +32,31 @@ import Data.Generics.Internal.Lens
 import Data.Generics.Sum.Constructors
 import Data.Generics.Sum.Typed
 
---  $example
---  @
---    module Example where
---
---    import Data.Generics.Sum
---    import GHC.Generics
---
---    data Animal
---      = Dog Dog
---      | Cat Name Age
---      | Duck Age
---      deriving (Generic, Show)
---
---    data Dog = MkDog
---      { name :: Name
---      , age  :: Age
---      }
---      deriving (Generic, Show)
---
---    type Name = String
---    type Age  = Int
---
---    dog, cat, duck :: Animal
---
---    dog = Dog (MkDog "Shep" 3)
---    cat = Cat "Mog" 5
---    duck = Duck 2
---  @
+-- $setup
+-- >>> :set -XTypeApplications
+-- >>> :set -XDataKinds
+-- >>> :set -XDeriveGeneric
+-- >>> import GHC.Generics
+-- >>> :m +Data.Generics.Internal.Lens
+-- >>> :{
+-- data Animal
+--   = Dog Dog
+--   | Cat Name Age
+--   | Duck Age
+--   deriving (Generic, Show)
+-- data Dog
+--   = MkDog
+--   { name :: Name
+--   , age  :: Age
+--   }
+--   deriving (Generic, Show)
+-- type Name = String
+-- type Age  = Int
+-- dog, cat, duck :: Animal
+-- dog = Dog (MkDog "Shep" 3)
+-- cat = Cat "Mog" 5
+-- duck = Duck 2
+-- :}
 
 -- |Sums that have generic prisms.
 class AsAny (sel :: k) a s | s sel k -> a where
@@ -78,7 +75,7 @@ class AsAny (sel :: k) a s | s sel k -> a where
   --  >>> cat ^? _As @"Cat"
   --  Just ("Mog",5)
   --  >>> _As @"Cat" # ("Garfield", 6) :: Animal
-  --  Cat ("Garfield",6)
+  --  Cat "Garfield" 6
   --  >>> duck ^? _As @Age
   --  Just 2
   _As :: Prism' s a
@@ -88,3 +85,4 @@ instance AsConstructor ctor a s => AsAny ctor a s where
 
 instance AsType a s => AsAny a a s where
   _As = _Typed @a
+

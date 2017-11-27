@@ -47,7 +47,7 @@ instance (GUpcast sub a, GUpcast sub b) => GUpcast sub (a :*: b) where
   gupcast rep = gupcast rep :*: gupcast rep
 
 instance
-  GHasField field sub t
+  GHasField field sub sub t t
   => GUpcast sub (S1 ('MetaSel ('Just field) p f b) (Rec0 t)) where
 
   gupcast r = M1 (K1 (r ^. gfield @field))
@@ -84,7 +84,7 @@ class GSmashLeaf sub sup (w :: Bool) where
   gsmashLeaf :: sup p -> sub p -> sub p
 
 instance
-  GHasField field sup t
+  GHasField field sup sup t t
   => GSmashLeaf (S1 ('MetaSel ('Just field) p f b) (Rec0 t)) sup 'True where
   gsmashLeaf sup _ = M1 (K1 (sup ^. gfield @field))
 

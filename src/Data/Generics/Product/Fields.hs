@@ -1,14 +1,16 @@
-{-# LANGUAGE AllowAmbiguousTypes    #-}
-{-# LANGUAGE DataKinds              #-}
-{-# LANGUAGE FlexibleInstances      #-}
-{-# LANGUAGE FunctionalDependencies #-}
-{-# LANGUAGE KindSignatures         #-}
-{-# LANGUAGE MultiParamTypeClasses  #-}
-{-# LANGUAGE ScopedTypeVariables    #-}
-{-# LANGUAGE TypeApplications       #-}
-{-# LANGUAGE TypeFamilies           #-}
-{-# LANGUAGE TypeOperators          #-}
-{-# LANGUAGE UndecidableInstances   #-}
+{-# LANGUAGE AllowAmbiguousTypes     #-}
+{-# LANGUAGE ConstraintKinds         #-}
+{-# LANGUAGE DataKinds               #-}
+{-# LANGUAGE FlexibleInstances       #-}
+{-# LANGUAGE FunctionalDependencies  #-}
+{-# LANGUAGE MultiParamTypeClasses   #-}
+{-# LANGUAGE ScopedTypeVariables     #-}
+{-# LANGUAGE TypeApplications        #-}
+{-# LANGUAGE TypeFamilies            #-}
+{-# LANGUAGE TypeInType              #-}
+{-# LANGUAGE TypeOperators           #-}
+{-# LANGUAGE UndecidableInstances    #-}
+{-# LANGUAGE UndecidableSuperClasses #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -26,72 +28,94 @@
 module Data.Generics.Product.Fields
   ( -- *Lenses
 
-    --  $example
+    --  $setup
     HasField (..)
+  , HasField'
+
+  , getField
+  , setField
   ) where
 
 import Data.Generics.Internal.Families
 import Data.Generics.Internal.Lens
+import Data.Generics.Internal.Void
 import Data.Generics.Product.Internal.Fields
 
 import Data.Kind    (Constraint, Type)
 import GHC.Generics
 import GHC.TypeLits (Symbol, ErrorMessage(..), TypeError)
+import Data.Type.Bool (If)
 
---  $example
---  @
---    module Example where
---
---    import Data.Generics.Product
---    import GHC.Generics
---
---    data Human = Human
---      { name    :: String
---      , age     :: Int
---      , address :: String
---      }
---      deriving (Generic, Show)
---
---    human :: Human
---    human = Human \"Tunyasz\" 50 \"London\"
---  @
+-- $setup
+-- >>> :set -XTypeApplications
+-- >>> :set -XDataKinds
+-- >>> :set -XDeriveGeneric
+-- >>> :set -XGADTs
+-- >>> :set -XFlexibleContexts
+-- >>> import GHC.Generics
+-- >>> :m +Data.Generics.Internal.Lens
+-- >>> :m +Data.Function
+-- >>> :{
+-- data Human a = Human
+--   { name    :: String
+--   , age     :: Int
+--   , address :: String
+--   , other   :: a
+--   }
+--   deriving (Generic, Show)
+-- human :: Human Bool
+-- human = Human { name = "Tunyasz", age = 50, address = "London", other = False }
+-- :}
 
 -- |Records that have a field with a given name.
-class HasField (field :: Symbol) a s | s field -> a where
+class HasField (field :: Symbol) s t a b | s field b -> t, s field -> a where
   -- |A lens that focuses on a field with a given name. Compatible with the
   --  lens package's 'Control.Lens.Lens' type.
   --
   --  >>> human ^. field @"age"
   --  50
-  --  >>> human & field @"name" .~ "Tamas"
-  --  Human {name = "Tamas", age = 50, address = "London"}
-  field :: Lens' s a
-  field f s
-    = fmap (flip (setField @field) s) (f (getField @field s))
-
-  -- |Get 'field'
   --
-  -- >>> getField @"name" human
-  -- "Tunyasz"
-  getField :: s -> a
-  getField s = s ^. field @field
+  -- If the field's type comes from a type parameter, it can be changed:
+  --  >>> :t human
+  --  human :: Human Bool
+  --  >>> :t human & field @"other" .~ 42
+  --  human & field @"other" .~ 42 :: Num b => Human b
+  --  >>> human & field @"other" .~ 42
+  --  Human {name = "Tunyasz", age = 50, address = "London", other = 42}
+  field :: Lens s t a b
 
-  -- |Set 'field'
-  --
-  -- >>> setField @"age" (setField @"name" "Tamas" human) 30
-  -- Human {name = "Tamas", age = 30, address = "London"}
-  setField :: a -> s -> s
-  setField = set (field @field)
+type HasField' field s a = HasField field s s a a
 
-  {-# MINIMAL field | setField, getField #-}
+-- |
+-- >>> getField @"age" human
+-- 50
+getField :: forall f s a. HasField' f s a => s -> a
+getField s = s ^. field @f
 
-instance
+-- |
+-- >>> setField @"age" 60 human
+-- Human {name = "Tunyasz", age = 60, address = "London", other = False}
+setField :: forall f s a. HasField' f s a => a -> s -> s
+setField = set (field @f)
+
+instance  -- see Note [Changing type parameters]
   ( Generic s
   , ErrorUnless field s (HasTotalFieldP field (Rep s))
-  , GHasField field (Rep s) a
-  ) => HasField field a s where
+  , Generic t
+  , s' ~ Proxied s
+  , Generic s'
+  , GHasField' field (Rep s) a
+  , GHasField' field (Rep s') a'
+  , GHasField field (Rep s) (Rep t) a b
+  , '(t', b') ~ If (IsParam a') '(Change s' (IndexOf a') b, P (IndexOf a') b) '(s', b)
+  , t ~ UnProxied t'
+  ) => HasField field s t a b where
 
-  field = ravel (repLens . gfield @field)
+  field f s = ravel (repLens . gfield @field) f s
+
+-- See Note [Uncluttering type signatures]
+instance {-# OVERLAPPING #-} HasField f Void Void Void Void where
+  field = undefined
 
 type family ErrorUnless (field :: Symbol) (s :: Type) (contains :: Bool) :: Constraint where
   ErrorUnless field s 'False

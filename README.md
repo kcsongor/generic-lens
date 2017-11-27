@@ -1,7 +1,6 @@
 # generic-lens
 
-[![Build
-Status](https://travis-ci.org/kcsongor/generic-lens.svg?branch=master)](https://travis-ci.org/kcsongor/generic-lens)
+[![Build Status](https://travis-ci.org/kcsongor/generic-lens.svg?branch=master)](https://travis-ci.org/kcsongor/generic-lens)
 [![Hackage](https://img.shields.io/hackage/v/generic-lens.svg)](https://hackage.haskell.org/package/generic-lens)
 
 Generically derive lenses and prisms for data types.
@@ -48,6 +47,23 @@ Person {name = "Tamas", age = 25}
 >>> sally ^. field @"pet"
 error:
   • The type Person does not contain a field named "pet"
+```
+
+If the accessed field is a type parameter that appears uniquely in the type,
+then its type can be changed:
+
+```haskell
+data T a b c d = T
+  { paramA :: a
+  , paramB :: b
+  , paramC :: c
+  , paramD :: d
+  }
+  deriving (Generic, Show)
+
+>>> t = T "a" (10 :: Int) 'c' False
+>>> t & field @"paramA" .~ 'a' & field @"paramB" .~ False
+T {paramA = 'a', paramB = False, paramC = 'c', paramD = False}
 ```
 
 ### Positional fields
