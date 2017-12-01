@@ -38,6 +38,7 @@ import Data.Generics.Sum.Internal.Constructors
 import Data.Kind    (Constraint, Type)
 import GHC.Generics (Generic (Rep))
 import GHC.TypeLits (Symbol, TypeError, ErrorMessage (..))
+import Data.Type.Bool (If)
 
 -- $setup
 -- >>> :set -XTypeApplications
@@ -66,7 +67,7 @@ import GHC.TypeLits (Symbol, TypeError, ErrorMessage (..))
 -- :}
 
 -- |Sums that have a constructor with a given name.
-class AsConstructor (ctor :: Symbol) a s | s ctor -> a where
+class AsConstructor (ctor :: Symbol) s t a b | s ctor -> a where
   -- |A prism that projects a named constructor from a sum. Compatible with the
   --  lens package's 'Control.Lens.Prism' type.
   --
@@ -81,18 +82,25 @@ class AsConstructor (ctor :: Symbol) a s | s ctor -> a where
   --
   --  >>> _Ctor @"Cat" # ("Garfield", 6) :: Animal
   --  Cat "Garfield" 6
-  _Ctor :: Prism' s a
+  _Ctor :: Prism s t a b
 
 instance
   ( Generic s
   , ErrorUnless ctor s (HasCtorP ctor (Rep s))
-  , GAsConstructor ctor (Rep s) a
-  ) => AsConstructor ctor a s where
+  , Generic t
+  , s' ~ Proxied s
+  , Generic s'
+  , GAsConstructor' ctor (Rep s) a
+  , GAsConstructor' ctor (Rep s') a'
+  , GAsConstructor ctor (Rep s) (Rep t) a b
+  , '(t', b') ~ If (IsParam a') '(Change s' (IndexOf a') b, P (IndexOf a') b) '(s', b)
+  , t ~ UnProxied t'
+  ) => AsConstructor ctor s t a b where
 
   _Ctor = repIso . _GCtor @ctor
 
 -- See Note [Uncluttering type signatures]
-instance {-# OVERLAPPING #-} AsConstructor ctor Void Void where
+instance {-# OVERLAPPING #-} AsConstructor ctor Void Void Void Void where
   _Ctor = undefined
 
 type family ErrorUnless (ctor :: Symbol) (s :: Type) (contains :: Bool) :: Constraint where

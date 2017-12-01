@@ -80,7 +80,7 @@ class AsAny (sel :: k) a s | s sel k -> a where
   --  Just 2
   _As :: Prism' s a
 
-instance AsConstructor ctor a s => AsAny ctor a s where
+instance AsConstructor ctor s s a a => AsAny ctor a s where
   _As = _Ctor @ctor
 
 instance AsType a s => AsAny a a s where
