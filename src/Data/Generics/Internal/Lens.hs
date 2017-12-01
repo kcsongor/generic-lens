@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE GADTs         #-}
 {-# LANGUAGE Rank2Types    #-}
 {-# LANGUAGE TypeOperators #-}
@@ -32,8 +33,11 @@ type Lens s t a b
   = forall f. Functor f => (a -> f b) -> s -> f t
 
 -- | Type alias for prism
+type Prism s t a b
+  = forall p f. (Choice p, Applicative f) => p a (f b) -> p s (f t)
+
 type Prism' s a
-  = forall p f. (Choice p, Applicative f) => p a (f a) -> p s (f s)
+  = Prism s s a a
 
 type Iso' s a
   = forall p f. (Profunctor p, Functor f) => p a (f a) -> p s (f s)
@@ -74,21 +78,21 @@ second :: Lens ((a :*: b) x) ((a :*: b') x) (b x) (b' x)
 second f (a :*: b)
   = fmap (a :*:) (f b)
 
-left :: Prism' ((a :+: b) x) (a x)
-left = prism L1 $ \x -> case x of
-  L1 a -> Right a
-  R1 _ -> Left x
+left :: Prism ((a :+: c) x) ((b :+: c) x) (a x) (b x)
+left = prism L1 $ gsum Right (Left . R1)
 
-right :: Prism' ((a :+: b) x) (b x)
-right = prism R1 $ \x -> case x of
-  L1 _ -> Left x
-  R1 a -> Right a
+right :: Prism ((a :+: b) x) ((a :+: c) x) (b x) (c x)
+right = prism R1 $ gsum (Left . L1) Right
+
+gsum :: (a x -> c) -> (b x -> c) -> ((a :+: b) x) -> c
+gsum f _ (L1 x) =  f x
+gsum _ g (R1 y) =  g y
 
 combine :: Lens' (s x) a -> Lens' (t x) a -> Lens' ((s :+: t) x) a
 combine sa _ f (L1 s) = fmap (\a -> L1 (set sa a s)) (f (s ^. sa))
 combine _ ta f (R1 t) = fmap (\a -> R1 (set ta a t)) (f (t ^. ta))
 
-prism :: (a -> s) -> (s -> Either s a) -> Prism' s a
+prism :: (b -> t) -> (s -> Either t a) -> Prism s t a b
 prism bt seta = dimap seta (either pure (fmap bt)) . right'
 
 -- | A type and its generic representation are isomorphic
