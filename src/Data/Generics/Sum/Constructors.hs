@@ -38,7 +38,6 @@ import Data.Generics.Sum.Internal.Constructors
 import Data.Kind    (Constraint, Type)
 import GHC.Generics (Generic (Rep))
 import GHC.TypeLits (Symbol, TypeError, ErrorMessage (..))
-import Data.Type.Bool (If)
 
 -- $setup
 -- >>> :set -XTypeApplications
@@ -96,10 +95,7 @@ instance
   , GAsConstructor' ctor (Rep s) a
   , GAsConstructor' ctor (Rep s') a'
   , GAsConstructor ctor (Rep s) (Rep t) a b
-  , aa ~ PSub (Unify a' a)
-  , '(t', b') ~ IfEq a a' '(s', a') (If (IsSingleton aa) '(Change s' (Fst (Head aa)) Skolem, Change a' (Fst (Head aa)) Skolem) '(s', a'))
-  , b ~ Generalise (UnProxied b') p
-  , t ~ Generalise (UnProxied t') p
+  , '(t, b) ~ Infer s' a' a p
   ) => AsConstructor ctor s t a b where
 
   _Ctor = repIso . _GCtor @ctor

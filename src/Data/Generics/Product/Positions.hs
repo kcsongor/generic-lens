@@ -43,7 +43,7 @@ import Data.Generics.Internal.Families
 import Data.Generics.Product.Internal.Positions
 
 import Data.Kind      (Constraint, Type)
-import Data.Type.Bool (type (&&), If)
+import Data.Type.Bool (type (&&))
 import GHC.Generics
 import GHC.TypeLits   (type (<=?),  Nat, TypeError, ErrorMessage(..))
 
@@ -92,11 +92,7 @@ instance  -- see Note [Changing type parameters]
   , GHasPosition' i (Rep s) a
   , GHasPosition' i (Rep s') a'
   , GHasPosition 1 i (Rep s) (Rep t) a b
-  , aa ~ PSub (Unify a' a)
-  , '(t', b') ~ If (IsSingleton aa) '(Change s' (Fst (Head aa)) Skolem, Change a' (Fst (Head aa)) Skolem) '(s', a')
-  , t'' ~ UnProxied t'
-  , b'' ~ UnProxied b'
-  , '(b, t) ~ If (IsSingleton aa) '(Generalise b'' p, Generalise t'' p) '(b'', t'')
+  , '(t, b) ~ Infer s' a' a p
   ) => HasPosition i s t a b where
 
   position f s = ravel (repLens . gposition @1 @i) f s

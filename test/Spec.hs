@@ -87,3 +87,4 @@ inspect $ 'fieldALensManual === 'fieldALensPos
 inspect $ 'subtypeLensManual === 'subtypeLensGeneric
 inspect $ 'typeChangingManual === 'typeChangingGeneric
 inspect $ 'typeChangingManual === 'typeChangingGenericPos
+inspect $ 'typeChangingManualCompose === 'typeChangingManualCompose
