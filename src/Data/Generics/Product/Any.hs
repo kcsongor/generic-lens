@@ -52,7 +52,7 @@ import Data.Generics.Product.Typed
 -- :}
 
 -- |Records that have generic lenses.
-class HasAny (sel :: k) s t a b | s sel k -> a, s sel k b -> t where
+class HasAny (sel :: k) s t a b | s sel k -> a where
   -- |A lens that focuses on a part of a product as identified by some
   --  selector. Currently supported selectors are field names, positions and
   --  unique types. Compatible with the lens package's 'Control.Lens.Lens'

@@ -68,7 +68,7 @@ import Data.Type.Bool (If)
 -- :}
 
 -- |Records that have a field with a given name.
-class HasField (field :: Symbol) s t a b | s field b -> t, s field -> a where
+class HasField (field :: Symbol) s t a b | s field -> a where
   -- |A lens that focuses on a field with a given name. Compatible with the
   --  lens package's 'Control.Lens.Lens' type.
   --
@@ -107,14 +107,17 @@ instance  -- see Note [Changing type parameters]
   , GHasField' field (Rep s) a
   , GHasField' field (Rep s') a'
   , GHasField field (Rep s) (Rep t) a b
-  , '(t', b') ~ If (IsParam a') '(Change s' (IndexOf a') b, P (IndexOf a') b) '(s', b)
-  , t ~ UnProxied t'
+  , aa ~ PSub (Unify a' a)
+  , '(t', b') ~ If (IsSingleton aa) '(Change s' (Fst (Head aa)) Skolem, Change a' (Fst (Head aa)) Skolem) '(s', a')
+  , t'' ~ UnProxied t'
+  , b'' ~ UnProxied b'
+  , '(b, t) ~ If (IsSingleton aa) '(Generalise b'' p, Generalise t'' p) '(b'', t'')
   ) => HasField field s t a b where
 
   field f s = ravel (repLens . gfield @field) f s
 
 -- See Note [Uncluttering type signatures]
-instance {-# OVERLAPPING #-} HasField f Void Void Void Void where
+instance {-# OVERLAPPING #-} HasField f (Void2 t a) t a b where
   field = undefined
 
 type family ErrorUnless (field :: Symbol) (s :: Type) (contains :: Bool) :: Constraint where
