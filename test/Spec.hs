@@ -31,7 +31,7 @@ data Record2 = MkRecord2
 data Record3 a = MkRecord3
   { fieldA :: a
   , fieldB :: Bool
-  } deriving Generic
+  } deriving (Generic, Show)
 
 type Lens' s a = Lens s s a a
 type Lens s t a b = forall f. Functor f => (a -> f b) -> s -> f t
@@ -41,6 +41,9 @@ fieldALensManual f (MkRecord a b) = (\a' -> MkRecord a' b) <$> f a
 
 typeChangingManual :: Lens (Record3 a) (Record3 b) a b
 typeChangingManual f (MkRecord3 a b) = (\a' -> MkRecord3 a' b) <$> f a
+
+typeChangingManualCompose :: Lens (Record3 (Record3 a)) (Record3 (Record3 b)) a b
+typeChangingManualCompose = typeChangingManual . typeChangingManual
 
 newtype L s a = L (Lens' s a)
 
@@ -75,9 +78,12 @@ typeChangingGeneric = field @"fieldA"
 typeChangingGenericPos :: Lens (Record3 a) (Record3 b) a b
 typeChangingGenericPos = position @1
 
+typeChangingGenericCompose :: Lens (Record3 (Record3 a)) (Record3 (Record3 b)) a b
+typeChangingGenericCompose = field @"fieldA" . field @"fieldA"
+
 inspect $ 'fieldALensManual === 'fieldALensName
 inspect $ 'fieldALensManual === 'fieldALensType
 inspect $ 'fieldALensManual === 'fieldALensPos
 inspect $ 'subtypeLensManual === 'subtypeLensGeneric
 inspect $ 'typeChangingManual === 'typeChangingGeneric
---inspect $ 'typeChangingManual === 'typeChangingGenericPos
+inspect $ 'typeChangingManual === 'typeChangingGenericPos
