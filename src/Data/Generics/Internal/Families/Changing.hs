@@ -73,20 +73,21 @@ type family PSub (subs :: [(*, *)]) :: [(Nat, *)] where
   PSub ('(P n _, b) ': xs) = '(n, b) ': PSub xs
   PSub (_ ': xs) = PSub xs
 
-type family Fst (a :: (k, l)) :: k where
-  Fst '(f, _) = f
-
 type family Zip (xs :: [k]) (ys :: [l]) :: [(k, l)] where
   Zip '[] '[] = '[]
   Zip (x ': xs) (y ': ys) = '(x, y) ': Zip xs ys
 
-type family IsSingleton (xs :: [k]) :: Bool where
-  IsSingleton '[_] = 'True
-  IsSingleton _    = 'False
-
-type family Head (xs :: [k]) :: k where
-  Head (x ': _) = x
-
 type family IfEq a b t f where
   IfEq a a t _ = t
   IfEq _ _ _ f = f
+
+type family Infer (s :: *) (a' :: *) (a :: *) (w :: *) :: (*, *) where
+  Infer s' a' a w
+    = Infer' s' a' (PSub (Unify a' a)) w
+
+type family Infer' (s :: *) (a' :: *) (subs :: [(Nat, k)]) w :: (*, *) where
+  Infer' s' a' '[ '(p, _)] w
+    = '(Generalise (UnProxied (Change s' p Skolem)) w, Generalise (UnProxied (Change a' p Skolem)) w)
+  Infer' s' a' _ _
+    = '(UnProxied s', UnProxied a')
+

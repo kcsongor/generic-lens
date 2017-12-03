@@ -1,17 +1,21 @@
-{-# LANGUAGE DataKinds             #-}
-{-# LANGUAGE DeriveGeneric         #-}
-{-# LANGUAGE DuplicateRecordFields #-}
-{-# LANGUAGE FlexibleContexts      #-}
-{-# LANGUAGE TypeApplications      #-}
-{-# LANGUAGE UndecidableInstances  #-}
+{-# LANGUAGE DataKinds                 #-}
+{-# LANGUAGE DeriveGeneric             #-}
+{-# LANGUAGE DuplicateRecordFields     #-}
+{-# LANGUAGE FlexibleContexts          #-}
+{-# LANGUAGE NoMonomorphismRestriction #-}
+{-# LANGUAGE PartialTypeSignatures     #-}
+{-# LANGUAGE TypeApplications          #-}
+{-# LANGUAGE UndecidableInstances      #-}
 
 {-# OPTIONS_GHC -fno-warn-unused-imports  #-}
 
 module Examples where
 
-import GHC.Generics
+import Data.Function ((&))
+import Data.Generics.Internal.Lens
 import Data.Generics.Product
-import Control.Lens
+import Data.Generics.Sum
+import GHC.Generics
 
 data Animal = Animal
   { name :: String
@@ -47,12 +51,36 @@ data Test a b = Test { fieldInt :: Int, fieldA :: a, fieldB :: b } deriving (Gen
 -- changedA :: Test Int String
 -- >>> changedA
 -- Test {fieldInt = 10, fieldA = 10, fieldB = "world"}
-changedA = set (field @"fieldA") (10 :: Int) (Test 10 "hello" "world")
+changedA = Test 10 "hello" "world" & field @"fieldA" .~ (10 :: Int)
 
 -- changedB :: Test String Int
 -- >>> changedB
 -- Test {fieldInt = 10, fieldA = "hello", fieldB = 10}
-changedB = set (field @"fieldB") (10 :: Int) (Test 10 "hello" "world")
+changedB = (Test 10 "hello" "world") & field @"fieldB" .~ (10 :: Int)
 
 --changedInt = set (field @"fieldInt") ("hello") (Test 10 "hello" "world")
 -- type error
+
+data Animal2 a
+  = Dog (Dog a)
+  | Cat Name Age
+  | Duck Age
+  deriving (Generic, Show)
+
+data Dog a
+  = MkDog
+  { name   :: Name
+  , age    :: Age
+  , fieldA :: a
+  }
+  deriving (Generic, Show)
+type Name = String
+type Age  = Int
+dog, cat, duck :: Animal2 Int
+dog = Dog (MkDog "Shep" 3 30)
+cat = Cat "Mog" 5
+duck = Duck 2
+
+
+--dog' :: Animal2 String
+dog' = dog & _Ctor @"Dog" . field @"fieldA" .~ "now it's a String"

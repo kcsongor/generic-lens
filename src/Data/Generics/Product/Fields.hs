@@ -44,7 +44,6 @@ import Data.Generics.Product.Internal.Fields
 import Data.Kind    (Constraint, Type)
 import GHC.Generics
 import GHC.TypeLits (Symbol, ErrorMessage(..), TypeError)
-import Data.Type.Bool (If)
 
 -- $setup
 -- >>> :set -XTypeApplications
@@ -79,7 +78,7 @@ class HasField (field :: Symbol) s t a b | s field -> a where
   --  >>> :t human
   --  human :: Human Bool
   --  >>> :t human & field @"other" .~ 42
-  --  human & field @"other" .~ 42 :: Num b => Human b
+  --  human & field @"other" .~ 42 :: Num p => Human p
   --  >>> human & field @"other" .~ 42
   --  Human {name = "Tunyasz", age = 50, address = "London", other = 42}
   field :: Lens s t a b
@@ -107,11 +106,7 @@ instance  -- see Note [Changing type parameters]
   , GHasField' field (Rep s) a
   , GHasField' field (Rep s') a'
   , GHasField field (Rep s) (Rep t) a b
-  , aa ~ PSub (Unify a' a)
-  , '(t', b') ~ If (IsSingleton aa) '(Change s' (Fst (Head aa)) Skolem, Change a' (Fst (Head aa)) Skolem) '(s', a')
-  , t'' ~ UnProxied t'
-  , b'' ~ UnProxied b'
-  , '(b, t) ~ If (IsSingleton aa) '(Generalise b'' p, Generalise t'' p) '(b'', t'')
+  , '(t, b) ~ Infer s' a' a p
   ) => HasField field s t a b where
 
   field f s = ravel (repLens . gfield @field) f s
