@@ -77,8 +77,8 @@ class HasField (field :: Symbol) s t a b | s field -> a where
   -- If the field's type comes from a type parameter, it can be changed:
   --  >>> :t human
   --  human :: Human Bool
-  --  >>> :t human & field @"other" .~ 42
-  --  human & field @"other" .~ 42 :: Num p => Human p
+  --  >>> :t human & field @"other" .~ (42 :: Int)
+  --  human & field @"other" .~ (42 :: Int) :: Human Int
   --  >>> human & field @"other" .~ 42
   --  Human {name = "Tunyasz", age = 50, address = "London", other = 42}
   field :: Lens s t a b
