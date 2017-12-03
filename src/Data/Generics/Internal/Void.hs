@@ -14,3 +14,5 @@ module Data.Generics.Internal.Void where
   machinery has sufficient information to reduce to sensible types.
 -}
 data Void
+data Void1 a
+data Void2 a b

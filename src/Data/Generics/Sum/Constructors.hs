@@ -46,33 +46,36 @@ import Data.Type.Bool (If)
 -- >>> :set -XDeriveGeneric
 -- >>> import GHC.Generics
 -- >>> :m +Data.Generics.Internal.Lens
+-- >>> :m +Data.Generics.Product.Fields
+-- >>> :m +Data.Function
 -- >>> :{
--- data Animal
---   = Dog Dog
+-- data Animal a
+--   = Dog (Dog a)
 --   | Cat Name Age
 --   | Duck Age
 --   deriving (Generic, Show)
--- data Dog
+-- data Dog a
 --   = MkDog
---   { name :: Name
---   , age  :: Age
+--   { name   :: Name
+--   , age    :: Age
+--   , fieldA :: a
 --   }
 --   deriving (Generic, Show)
 -- type Name = String
 -- type Age  = Int
--- dog, cat, duck :: Animal
--- dog = Dog (MkDog "Shep" 3)
+-- dog, cat, duck :: Animal Int
+-- dog = Dog (MkDog "Shep" 3 30)
 -- cat = Cat "Mog" 5
 -- duck = Duck 2
 -- :}
 
 -- |Sums that have a constructor with a given name.
-class AsConstructor (ctor :: Symbol) s t a b | s ctor -> a where
+class AsConstructor (ctor :: Symbol) s t a b | ctor s -> a, ctor t -> b where
   -- |A prism that projects a named constructor from a sum. Compatible with the
   --  lens package's 'Control.Lens.Prism' type.
   --
   --  >>> dog ^? _Ctor @"Dog"
-  --  Just (MkDog {name = "Shep", age = 3})
+  --  Just (MkDog {name = "Shep", age = 3, fieldA = 30})
   --
   --  >>> dog ^? _Ctor @"Cat"
   --  Nothing
@@ -80,7 +83,7 @@ class AsConstructor (ctor :: Symbol) s t a b | s ctor -> a where
   --  >>> cat ^? _Ctor @"Cat"
   --  Just ("Mog",5)
   --
-  --  >>> _Ctor @"Cat" # ("Garfield", 6) :: Animal
+  --  >>> _Ctor @"Cat" # ("Garfield", 6) :: Animal Int
   --  Cat "Garfield" 6
   _Ctor :: Prism s t a b
 
@@ -93,14 +96,16 @@ instance
   , GAsConstructor' ctor (Rep s) a
   , GAsConstructor' ctor (Rep s') a'
   , GAsConstructor ctor (Rep s) (Rep t) a b
-  , '(t', b') ~ If (IsParam a') '(Change s' (IndexOf a') b, P (IndexOf a') b) '(s', b)
-  , t ~ UnProxied t'
+  , aa ~ PSub (Unify a' a)
+  , '(t', b') ~ IfEq a a' '(s', a') (If (IsSingleton aa) '(Change s' (Fst (Head aa)) Skolem, Change a' (Fst (Head aa)) Skolem) '(s', a'))
+  , b ~ Generalise (UnProxied b') p
+  , t ~ Generalise (UnProxied t') p
   ) => AsConstructor ctor s t a b where
 
   _Ctor = repIso . _GCtor @ctor
 
 -- See Note [Uncluttering type signatures]
-instance {-# OVERLAPPING #-} AsConstructor ctor Void Void Void Void where
+instance {-# OVERLAPPING #-} AsConstructor ctor (Void1 a) (Void1 b) a b where
   _Ctor = undefined
 
 type family ErrorUnless (ctor :: Symbol) (s :: Type) (contains :: Bool) :: Constraint where

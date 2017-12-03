@@ -49,7 +49,7 @@ instance GProductHasField field l r l' r' a b (HasTotalFieldP field l)
 
   gfield = gproductField @field @_ @_ @_ @_ @_ @_ @(HasTotalFieldP field l)
 
-instance (GHasField field r r a a, GHasField field l l a a, GHasField field l l' a b, GHasField field r r' a b)
+instance (GHasField' field r a, GHasField' field l a, GHasField field l l' a b, GHasField field r r' a b)
       =>  GHasField field (l :+: r) (l' :+: r') a b where
 
   gfield f (L1 s) = fmap (\a -> L1 (set (gfield @field) a s)) (f (s ^. gfield @field))

@@ -41,18 +41,52 @@ type family Proxied' (t :: k) (next :: Nat) :: k where
   Proxied' t _ = t
 
 type family UnProxied (t :: k) :: k where
+  UnProxied (P _ a) = a
   UnProxied (t (P _ a) :: k) = UnProxied t a
   UnProxied t = t
 
 type family Change (t :: k) (target :: Nat) (to :: j) :: k where
+  Change (P target _) target to = (P target to)
   Change (t (P target _) :: k) target to = t (P target to)
   Change (t a :: k) target to = Change t target to a
   Change t _ _ = t
 
-type family IsParam a where
-  IsParam (P _ _) = 'True
-  IsParam _ = 'False
+-- TODO: document this
+data Skolem
 
-type family IndexOf a where
-  IndexOf (P i a) = i
+type family Generalise (t :: k) (w :: *) :: k where
+  Generalise Skolem w = w
+  Generalise (t Skolem :: k) w = t w
+  Generalise (t a) w = (Generalise t w) a
+  Generalise t _ = t
 
+type family UnApply (a :: k) :: [*] where
+  UnApply (f x) = x ': UnApply f
+  UnApply x     = '[]
+
+type family Unify a b :: [(*, *)] where
+  Unify (P n a') a = '[ '(P n a', a)]
+  Unify a b = Zip (UnApply a) (UnApply b)
+
+type family PSub (subs :: [(*, *)]) :: [(Nat, *)] where
+  PSub '[] = '[]
+  PSub ('(P n _, b) ': xs) = '(n, b) ': PSub xs
+  PSub (_ ': xs) = PSub xs
+
+type family Fst (a :: (k, l)) :: k where
+  Fst '(f, _) = f
+
+type family Zip (xs :: [k]) (ys :: [l]) :: [(k, l)] where
+  Zip '[] '[] = '[]
+  Zip (x ': xs) (y ': ys) = '(x, y) ': Zip xs ys
+
+type family IsSingleton (xs :: [k]) :: Bool where
+  IsSingleton '[_] = 'True
+  IsSingleton _    = 'False
+
+type family Head (xs :: [k]) :: k where
+  Head (x ': _) = x
+
+type family IfEq a b t f where
+  IfEq a a t _ = t
+  IfEq _ _ _ f = f
