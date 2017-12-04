@@ -54,15 +54,6 @@ type family Change (t :: k) (target :: Nat) (to :: j) :: k where
   Change (t a :: k) target to = Change t target to a
   Change t _ _ = t
 
--- TODO: document this
-data Skolem
-
-type family Generalise (t :: k) (w :: *) :: k where
-  Generalise Skolem w = w
-  Generalise (t Skolem :: k) w = t w
-  Generalise (t a) w = (Generalise t w) a
-  Generalise t _ = t
-
 type family UnApply (a :: k) :: [*] where
   UnApply (f x) = x ': UnApply f
   UnApply x     = '[]
@@ -80,17 +71,13 @@ type family Zip (xs :: [k]) (ys :: [l]) :: [(k, l)] where
   Zip '[] '[] = '[]
   Zip (x ': xs) (y ': ys) = '(x, y) ': Zip xs ys
 
-type family IfEq a b t f where
-  IfEq a a t _ = t
-  IfEq _ _ _ f = f
-
 type family Infer (s :: *) (a' :: *) (a :: *) (w :: *) :: (*, *) where
   Infer s' a' a w
     = Infer' s' a' (PSub (Unify a' a)) w
 
 type family Infer' (s :: *) (a' :: *) (subs :: [(Nat, k)]) w :: (*, *) where
   Infer' s' a' '[ '(p, _)] w
-    = '(Generalise (UnProxied (Change s' p Skolem)) w, Generalise (UnProxied (Change a' p Skolem)) w)
+    = '(UnProxied (Change s' p w), UnProxied (Change a' p w))
   Infer' s' a' _ _
     = '(UnProxied s', UnProxied a')
 
