@@ -66,7 +66,7 @@ import GHC.TypeLits   (type (<=?),  Nat, TypeError, ErrorMessage(..))
 -- :}
 
 -- |Records that have a field at a given position.
-class HasPosition (i :: Nat) s t a b | s i -> a where
+class HasPosition (i :: Nat) s t a b | s i -> a, s i b -> t where
   -- |A lens that focuses on a field at a given position. Compatible with the
   --  lens package's 'Control.Lens.Lens' type.
   --
@@ -92,7 +92,7 @@ instance  -- see Note [Changing type parameters]
   , GHasPosition' i (Rep s) a
   , GHasPosition' i (Rep s') a'
   , GHasPosition 1 i (Rep s) (Rep t) a b
-  , '(t, b) ~ Infer s' a' a p
+  , '(t, b) ~ Infer s' a' a (PickTv a' b)
   ) => HasPosition i s t a b where
 
   position f s = ravel (repLens . gposition @1 @i) f s

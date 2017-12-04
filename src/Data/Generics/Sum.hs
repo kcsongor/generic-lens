@@ -17,14 +17,13 @@
 
 module Data.Generics.Sum
   ( -- *Prisms
-    AsAny (..)
-
-  , AsConstructor (..)
-  , AsSubtype (..)
-  , AsType (..)
+    module Any
+  , module Constructors
+  , module Subtype
+  , module Typed
   ) where
 
-import Data.Generics.Sum.Any
-import Data.Generics.Sum.Constructors
-import Data.Generics.Sum.Subtype
-import Data.Generics.Sum.Typed
+import Data.Generics.Sum.Any          as Any
+import Data.Generics.Sum.Constructors as Constructors
+import Data.Generics.Sum.Subtype      as Subtype
+import Data.Generics.Sum.Typed        as Typed

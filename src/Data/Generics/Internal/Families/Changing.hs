@@ -1,3 +1,6 @@
+{-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE DataKinds            #-}
 {-# LANGUAGE PolyKinds            #-}
 {-# LANGUAGE TypeFamilies         #-}
@@ -91,3 +94,7 @@ type family Infer' (s :: *) (a' :: *) (subs :: [(Nat, k)]) w :: (*, *) where
   Infer' s' a' _ _
     = '(UnProxied s', UnProxied a')
 
+type family PickTv (a :: k) (b :: k) :: * where
+  PickTv (P _ _) b = b
+  PickTv (f (P _ _)) (g b) = b
+  PickTv (f a) (g b) = PickTv f g

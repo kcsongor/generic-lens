@@ -95,7 +95,7 @@ instance
   , GAsConstructor' ctor (Rep s) a
   , GAsConstructor' ctor (Rep s') a'
   , GAsConstructor ctor (Rep s) (Rep t) a b
-  , '(t, b) ~ Infer s' a' a p
+  , '(t, b) ~ Infer s' a' a (PickTv a' b)
   ) => AsConstructor ctor s t a b where
 
   _Ctor = repIso . _GCtor @ctor

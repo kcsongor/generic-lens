@@ -1,3 +1,7 @@
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE Rank2Types #-}
+{-# LANGUAGE AllowAmbiguousTypes       #-}
 {-# LANGUAGE DataKinds                 #-}
 {-# LANGUAGE DeriveGeneric             #-}
 {-# LANGUAGE DuplicateRecordFields     #-}
@@ -76,11 +80,25 @@ data Dog a
   deriving (Generic, Show)
 type Name = String
 type Age  = Int
-dog, cat, duck :: Animal2 Int
+dog :: Animal2 Int
 dog = Dog (MkDog "Shep" 3 30)
-cat = Cat "Mog" 5
-duck = Duck 2
 
+-- TODO: the error message for this case is ugly
+-- data Dog a
+--   = MkDog
+--   { name    :: Name
+--   , age     :: Age
+--   , fieldA  :: a
+--   , fieldA' :: a
+--   }
+--   deriving (Generic, Show)
 
 --dog' :: Animal2 String
 dog' = dog & _Ctor @"Dog" . field @"fieldA" .~ "now it's a String"
+
+stuff ::
+  ( HasPosition 15 s t a String
+  , HasField "test" s' t' a' b'
+  , HasField "bar" a' b' s t
+  ) => s' -> t'
+stuff r = r & field @"test" . field @"bar" . position @15 .~ "hello"

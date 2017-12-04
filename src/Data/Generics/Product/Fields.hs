@@ -67,7 +67,7 @@ import GHC.TypeLits (Symbol, ErrorMessage(..), TypeError)
 -- :}
 
 -- |Records that have a field with a given name.
-class HasField (field :: Symbol) s t a b | s field -> a where
+class HasField (field :: Symbol) s t a b | s field -> a, s field b -> t where
   -- |A lens that focuses on a field with a given name. Compatible with the
   --  lens package's 'Control.Lens.Lens' type.
   --
@@ -106,13 +106,16 @@ instance  -- see Note [Changing type parameters]
   , GHasField' field (Rep s) a
   , GHasField' field (Rep s') a'
   , GHasField field (Rep s) (Rep t) a b
-  , '(t, b) ~ Infer s' a' a p
+  , '(t, b) ~ Infer s' a' a (PickTv a' b)
   ) => HasField field s t a b where
 
   field f s = ravel (repLens . gfield @field) f s
 
 -- See Note [Uncluttering type signatures]
 instance {-# OVERLAPPING #-} HasField f (Void2 t a) t a b where
+  field = undefined
+
+instance {-# OVERLAPPING #-} HasField f (Void1 a) (Void1 b) a b where
   field = undefined
 
 type family ErrorUnless (field :: Symbol) (s :: Type) (contains :: Bool) :: Constraint where

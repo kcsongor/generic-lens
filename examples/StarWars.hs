@@ -59,7 +59,7 @@ c3po = Droid
   , primaryFunction = "protocol and human relations"
   }
 
-getName :: HasField "name" a r => r -> a
+getName :: HasField' "name" r a => r -> a
 getName = getField @"name"
 
 -- upcast :: Subtype a b => a -> b
