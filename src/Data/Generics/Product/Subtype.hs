@@ -28,7 +28,7 @@
 module Data.Generics.Product.Subtype
   ( -- *Lenses
     --
-    --  $setup
+    -- $setup
     Subtype (..)
   ) where
 
@@ -39,6 +39,8 @@ import Data.Generics.Product.Internal.Subtype
 import GHC.Generics (Generic (Rep, to, from) )
 
 -- $setup
+-- == /Running example:/
+--
 -- >>> :set -XTypeApplications
 -- >>> :set -XDataKinds
 -- >>> :set -XDeriveGeneric

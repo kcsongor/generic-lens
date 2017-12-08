@@ -28,7 +28,7 @@
 module Data.Generics.Product.Fields
   ( -- *Lenses
 
-    --  $setup
+    -- $setup
     HasField (..)
   , HasField'
 
@@ -46,6 +46,8 @@ import GHC.Generics
 import GHC.TypeLits (Symbol, ErrorMessage(..), TypeError)
 
 -- $setup
+-- == /Running example:/
+--
 -- >>> :set -XTypeApplications
 -- >>> :set -XDataKinds
 -- >>> :set -XDeriveGeneric
@@ -80,17 +82,24 @@ class HasField (field :: Symbol) s t a b | s field -> a, s field b -> t where
   --  >>> human ^. field @"age"
   --  50
   --
-  -- If the field's type comes from a type parameter, it can be changed:
+  --  === /Type changing/
+  --
   --  >>> :t human
   --  human :: Human Bool
+  --
   --  >>> :t human & field @"other" .~ (42 :: Int)
   --  human & field @"other" .~ (42 :: Int) :: Human Int
+  --
   --  >>> human & field @"other" .~ 42
   --  Human {name = "Tunyasz", age = 50, address = "London", other = 42}
+  --
+  --  === /Type errors/
+  --
   --  >>> human & field @"weight" .~ 42
   --  ...
   --  ... The type Human Bool does not contain a field named 'weight'.
   --  ...
+  --
   --  >>> human & field @"address" .~ ""
   --  ...
   --  ... Not all constructors of the type Human Bool

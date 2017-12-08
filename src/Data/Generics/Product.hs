@@ -17,15 +17,15 @@
 
 module Data.Generics.Product
   ( -- *Lenses
-    module Any
-  , module Field
-  , module Positions
-  , module Subtype
-  , module Typed
+    module Data.Generics.Product.Any
+  , module Data.Generics.Product.Fields
+  , module Data.Generics.Product.Positions
+  , module Data.Generics.Product.Subtype
+  , module Data.Generics.Product.Typed
   ) where
 
-import Data.Generics.Product.Any       as Any
-import Data.Generics.Product.Fields    as Field
-import Data.Generics.Product.Positions as Positions
-import Data.Generics.Product.Subtype   as Subtype
-import Data.Generics.Product.Typed     as Typed
+import Data.Generics.Product.Any
+import Data.Generics.Product.Fields
+import Data.Generics.Product.Positions
+import Data.Generics.Product.Subtype
+import Data.Generics.Product.Typed

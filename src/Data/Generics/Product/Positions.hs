@@ -29,7 +29,7 @@
 module Data.Generics.Product.Positions
   ( -- *Lenses
 
-    --  $setup
+    -- $setup
     HasPosition (..)
   , HasPosition'
 
@@ -48,9 +48,13 @@ import GHC.Generics
 import GHC.TypeLits   (type (<=?),  Nat, TypeError, ErrorMessage(..))
 
 -- $setup
+-- == /Running example:/
+--
 -- >>> :set -XTypeApplications
 -- >>> :set -XDataKinds
 -- >>> :set -XDeriveGeneric
+-- >>> :set -XGADTs
+-- >>> :set -XFlexibleContexts
 -- >>> import GHC.Generics
 -- >>> :m +Data.Generics.Internal.Lens
 -- >>> :m +Data.Function
@@ -74,6 +78,13 @@ class HasPosition (i :: Nat) s t a b | s i -> a, s i b -> t where
   --  "Tunyasz"
   --  >>> human & position @3 .~ "Berlin"
   --  Human {name = "Tunyasz", age = 50, address = "Berlin"}
+  --
+  --  === /Type errors/
+  --
+  --  >>> human & position @4 .~ "Berlin"
+  --  ...
+  --  ... The type Human does not contain a field at position 4
+  --  ...
   position :: Lens s t a b
 
 type HasPosition' i s a = HasPosition i s s a a

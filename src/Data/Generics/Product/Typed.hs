@@ -26,7 +26,7 @@
 module Data.Generics.Product.Typed
   ( -- *Lenses
     --
-    --  $setup
+    -- $setup
     HasType (..)
   ) where
 
@@ -40,6 +40,8 @@ import GHC.Generics (Generic (Rep))
 import GHC.TypeLits (TypeError, ErrorMessage (..))
 
 -- $setup
+-- == /Running example:/
+--
 -- >>> :set -XTypeApplications
 -- >>> :set -XDataKinds
 -- >>> :set -XDeriveGeneric
@@ -70,6 +72,9 @@ class HasType a s where
   --
   --  >>> human ^. typed @Int
   --  50
+  --
+  --  === /Type errors/
+  --
   --  >>> human ^. typed @String
   --  ...
   --  ...
@@ -78,6 +83,7 @@ class HasType a s where
   --  ... Human
   --  ... HumanNoTall
   --  ...
+  --
   --  >>> human ^. typed @Bool
   --  ...
   --  ...

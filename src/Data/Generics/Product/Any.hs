@@ -25,7 +25,7 @@
 module Data.Generics.Product.Any
   ( -- *Lenses
     --
-    --  $setup
+    -- $setup
     HasAny (..)
   ) where
 
@@ -35,6 +35,8 @@ import Data.Generics.Product.Positions
 import Data.Generics.Product.Typed
 
 -- $setup
+-- == /Running example:/
+--
 -- >>> :set -XTypeApplications
 -- >>> :set -XDataKinds
 -- >>> :set -XDeriveGeneric
@@ -51,7 +53,6 @@ import Data.Generics.Product.Typed
 -- human = Human "Tunyasz" 50 "London"
 -- :}
 
--- |Records that have generic lenses.
 class HasAny (sel :: k) s t a b | s sel k -> a where
   -- |A lens that focuses on a part of a product as identified by some
   --  selector. Currently supported selectors are field names, positions and
@@ -60,8 +61,10 @@ class HasAny (sel :: k) s t a b | s sel k -> a where
   --
   --  >>> human ^. the @Int
   --  50
+  --
   --  >>> human ^. the @"name"
   --  "Tunyasz"
+  --
   --  >>> human ^. the @3
   --  "London"
   the :: Lens s t a b
