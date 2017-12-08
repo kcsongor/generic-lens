@@ -55,12 +55,18 @@ import GHC.TypeLits (Symbol, ErrorMessage(..), TypeError)
 -- >>> :m +Data.Generics.Internal.Lens
 -- >>> :m +Data.Function
 -- >>> :{
--- data Human a = Human
---   { name    :: String
---   , age     :: Int
---   , address :: String
---   , other   :: a
---   }
+-- data Human a
+--   = Human
+--     { name    :: String
+--     , age     :: Int
+--     , address :: String
+--     , other   :: a
+--     }
+--   | HumanNoAddress
+--     { name    :: String
+--     , age     :: Int
+--     , other   :: a
+--     }
 --   deriving (Generic, Show)
 -- human :: Human Bool
 -- human = Human { name = "Tunyasz", age = 50, address = "London", other = False }
@@ -81,6 +87,17 @@ class HasField (field :: Symbol) s t a b | s field -> a, s field b -> t where
   --  human & field @"other" .~ (42 :: Int) :: Human Int
   --  >>> human & field @"other" .~ 42
   --  Human {name = "Tunyasz", age = 50, address = "London", other = 42}
+  --  >>> human & field @"weight" .~ 42
+  --  ...
+  --  ... The type Human Bool does not contain a field named 'weight'.
+  --  ...
+  --  >>> human & field @"address" .~ ""
+  --  ...
+  --  ... Not all constructors of the type Human Bool
+  --  ... contain a field named 'address'.
+  --  ... The offending constructors are:
+  --  ... HumanNoAddress
+  --  ...
   field :: Lens s t a b
 
 type HasField' field s a = HasField field s s a a
@@ -99,7 +116,7 @@ setField = set (field @f)
 
 instance  -- see Note [Changing type parameters]
   ( Generic s
-  , ErrorUnless field s (HasTotalFieldP field (Rep s))
+  , ErrorUnless field s (CollectField field (Rep s))
   , Generic t
   , s' ~ Proxied s
   , Generic s'
@@ -118,14 +135,24 @@ instance {-# OVERLAPPING #-} HasField f (Void2 t a) t a b where
 instance {-# OVERLAPPING #-} HasField f (Void1 a) (Void1 b) a b where
   field = undefined
 
-type family ErrorUnless (field :: Symbol) (s :: Type) (contains :: Bool) :: Constraint where
-  ErrorUnless field s 'False
+type family ErrorUnless (field :: Symbol) (s :: Type) (stat :: TypeStat) :: Constraint where
+  ErrorUnless field s ('TypeStat _ _ '[])
     = TypeError
         (     'Text "The type "
         ':<>: 'ShowType s
-        ':<>: 'Text " does not contain a field named "
-        ':<>: 'ShowType field
+        ':<>: 'Text " does not contain a field named '"
+        ':<>: 'Text field ':<>: 'Text "'."
         )
 
-  ErrorUnless _ _ 'True
+  ErrorUnless field s ('TypeStat (n ': ns) _ _)
+    = TypeError
+        (     'Text "Not all constructors of the type "
+        ':<>: 'ShowType s
+        ':$$: 'Text " contain a field named '"
+        ':<>: 'Text field ':<>: 'Text "'."
+        ':$$: 'Text "The offending constructors are:"
+        ':$$: ShowConstuctors (n ': ns)
+        )
+
+  ErrorUnless _ _ ('TypeStat '[] '[] _)
     = ()

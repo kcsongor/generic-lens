@@ -31,7 +31,7 @@ module Data.Generics.Sum.Typed
 
 import Data.Kind
 import GHC.Generics
-import GHC.TypeLits (TypeError, ErrorMessage (..))
+import GHC.TypeLits (TypeError, ErrorMessage (..), Symbol)
 import Data.Generics.Sum.Internal.Typed
 
 import Data.Generics.Internal.Families
@@ -49,6 +49,7 @@ import Data.Generics.Internal.Void
 --   = Dog Dog
 --   | Cat Name Age
 --   | Duck Age
+--   | Turtle Age
 --   deriving (Generic, Show)
 -- data Dog
 --   = MkDog
@@ -57,11 +58,11 @@ import Data.Generics.Internal.Void
 --   }
 --   deriving (Generic, Show)
 -- type Name = String
--- type Age  = Int
+-- newtype Age  = Age Int deriving Show
 -- dog, cat, duck :: Animal
--- dog = Dog (MkDog "Shep" 3)
--- cat = Cat "Mog" 5
--- duck = Duck 2
+-- dog = Dog (MkDog "Shep" (Age 3))
+-- cat = Cat "Mog" (Age 5)
+-- duck = Duck (Age 2)
 -- :}
 
 
@@ -71,13 +72,17 @@ class AsType a s where
   --  its field. Compatible with the lens package's 'Control.Lens.Prism' type.
   --
   --  >>> dog ^? _Typed @Dog
-  --  Just (MkDog {name = "Shep", age = 3})
-  --  >>> dog ^? _Typed @Age
-  --  Nothing
+  --  Just (MkDog {name = "Shep", age = Age 3})
   --  >>> cat ^? _Typed @(Name, Age)
-  --  Just ("Mog",5)
-  --  >>> duck ^? _Typed @Age
-  --  Just 2
+  --  Just ("Mog",Age 5)
+  --  >>> dog ^? _Typed @Age
+  --  ...
+  --  ...
+  --  ... The type Animal contains multiple constructors whose fields are of type Age.
+  --  ... The choice of constructor is thus ambiguous, could be any of:
+  --  ... Duck
+  --  ... Turtle
+  --  ...
   _Typed :: Prism' s a
 
   -- |Inject by type.
@@ -88,7 +93,7 @@ class AsType a s where
 
 instance
   ( Generic s
-  , ErrorUnlessOne a s (CountPartialType a (Rep s))
+  , ErrorUnlessOne a s (CollectPartialType a (Rep s))
   , GAsType (Rep s) a
   ) => AsType a s where
 
@@ -109,8 +114,11 @@ instance {-# OVERLAPPING #-} AsType Void a where
   injectTyped = undefined
   projectTyped = undefined
 
-type family ErrorUnlessOne (a :: Type) (s :: Type) (count :: Count) :: Constraint where
-  ErrorUnlessOne a s 'None
+type family ErrorUnlessOne (a :: Type) (s :: Type) (ctors :: [Symbol]) :: Constraint where
+  ErrorUnlessOne _ _ '[_]
+    = ()
+
+  ErrorUnlessOne a s '[]
     = TypeError
         (     'Text "The type "
         ':<>: 'ShowType s
@@ -118,14 +126,12 @@ type family ErrorUnlessOne (a :: Type) (s :: Type) (count :: Count) :: Constrain
         ':<>: 'ShowType a
         )
 
-  ErrorUnlessOne a s 'Multiple
+  ErrorUnlessOne a s cs
     = TypeError
         (     'Text "The type "
         ':<>: 'ShowType s
         ':<>: 'Text " contains multiple constructors whose fields are of type "
-        ':<>: 'ShowType a
-        ':<>: 'Text "; the choice of constructor is thus ambiguous"
+        ':<>: 'ShowType a ':<>: 'Text "."
+        ':$$: 'Text "The choice of constructor is thus ambiguous, could be any of:"
+        ':$$: ShowConstuctors cs
         )
-
-  ErrorUnlessOne _ _ 'One
-    = ()
