@@ -26,7 +26,7 @@
 module Data.Generics.Product.Typed
   ( -- *Lenses
     --
-    --  $setup
+    -- $setup
     HasType (..)
   ) where
 
@@ -40,20 +40,29 @@ import GHC.Generics (Generic (Rep))
 import GHC.TypeLits (TypeError, ErrorMessage (..))
 
 -- $setup
+-- == /Running example:/
+--
 -- >>> :set -XTypeApplications
 -- >>> :set -XDataKinds
 -- >>> :set -XDeriveGeneric
 -- >>> import GHC.Generics
 -- >>> :m +Data.Generics.Internal.Lens
 -- >>> :{
--- data Human = Human
---   { name    :: String
---   , age     :: Int
---   , address :: String
---   }
+-- data Human
+--   = Human
+--     { name    :: String
+--     , age     :: Int
+--     , address :: String
+--     , tall    :: Bool
+--     }
+--   | HumanNoTall
+--     { name    :: String
+--     , age     :: Int
+--     , address :: String
+--     }
 --   deriving (Generic, Show)
 -- human :: Human
--- human = Human "Tunyasz" 50 "London"
+-- human = Human "Tunyasz" 50 "London" False
 -- :}
 
 -- |Records that have a field with a unique type.
@@ -63,6 +72,25 @@ class HasType a s where
   --
   --  >>> human ^. typed @Int
   --  50
+  --
+  --  === /Type errors/
+  --
+  --  >>> human ^. typed @String
+  --  ...
+  --  ...
+  --  ... The type Human contains multiple values of type [Char].
+  --  ... The choice of value is thus ambiguous. The offending constructors are:
+  --  ... Human
+  --  ... HumanNoTall
+  --  ...
+  --
+  --  >>> human ^. typed @Bool
+  --  ...
+  --  ...
+  --  ... Not all constructors of the type Human contain a field of type Bool.
+  --  ... The offending constructors are:
+  --  ... HumanNoTall
+  --  ...
   typed :: Lens' s a
   typed f t
     = fmap (flip (setTyped @a) t) (f (getTyped @a t))
@@ -79,7 +107,7 @@ class HasType a s where
 
 instance
   ( Generic s
-  , ErrorUnlessOne a s (CountTotalType a (Rep s))
+  , ErrorUnlessOne a s (CollectTotalType a (Rep s))
   , GHasType (Rep s) a
   ) => HasType a s where
 
@@ -89,8 +117,8 @@ instance
 instance {-# OVERLAPPING #-} HasType a Void where
   typed = undefined
 
-type family ErrorUnlessOne (a :: Type) (s :: Type) (count :: Count) :: Constraint where
-  ErrorUnlessOne a s 'None
+type family ErrorUnlessOne (a :: Type) (s :: Type) (stat :: TypeStat) :: Constraint where
+  ErrorUnlessOne a s ('TypeStat '[_] '[] '[])
     = TypeError
         (     'Text "The type "
         ':<>: 'ShowType s
@@ -98,14 +126,25 @@ type family ErrorUnlessOne (a :: Type) (s :: Type) (count :: Count) :: Constrain
         ':<>: 'ShowType a
         )
 
-  ErrorUnlessOne a s 'Multiple
+  ErrorUnlessOne a s ('TypeStat (n ': ns) _ _)
+    = TypeError
+        (     'Text "Not all constructors of the type "
+        ':<>: 'ShowType s
+        ':<>: 'Text " contain a field of type "
+        ':<>: 'ShowType a ':<>: 'Text "."
+        ':$$: 'Text "The offending constructors are:"
+        ':$$: ShowConstuctors (n ': ns)
+        )
+
+  ErrorUnlessOne a s ('TypeStat _ (m ': ms) _)
     = TypeError
         (     'Text "The type "
         ':<>: 'ShowType s
         ':<>: 'Text " contains multiple values of type "
-        ':<>: 'ShowType a
-        ':<>: 'Text "; the choice of value is thus ambiguous"
+        ':<>: 'ShowType a ':<>: 'Text "."
+        ':$$: 'Text "The choice of value is thus ambiguous. The offending constructors are:"
+        ':$$: ShowConstuctors (m ': ms)
         )
 
-  ErrorUnlessOne _ _ 'One
+  ErrorUnlessOne _ _ ('TypeStat '[] '[] _)
     = ()

@@ -22,7 +22,7 @@
 module Data.Generics.Sum.Subtype
   ( -- *Prisms
     --
-    --  $setup
+    -- $setup
     AsSubtype (..)
   ) where
 
@@ -33,6 +33,8 @@ import Data.Generics.Sum.Internal.Subtype
 import GHC.Generics (Generic (Rep, to, from))
 
 -- $setup
+-- == /Running example:/
+--
 -- >>> :set -XTypeApplications
 -- >>> :set -XDataKinds
 -- >>> :set -XDeriveGeneric
@@ -77,8 +79,10 @@ class AsSubtype sub sup where
   --
   --  >>> _Sub # dog4 :: Animal
   --  Dog (MkDog {name = "Snowy", age = 4})
+  --
   --  >>> cat ^? _Sub :: Maybe FourLeggedAnimal
   --  Just (Cat4 "Mog" 5)
+  --
   --  >>> duck ^? _Sub :: Maybe FourLeggedAnimal
   --  Nothing
   _Sub :: Prism' sup sub

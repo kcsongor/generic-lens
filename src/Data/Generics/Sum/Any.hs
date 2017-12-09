@@ -24,7 +24,7 @@
 module Data.Generics.Sum.Any
   ( -- *Prisms
     --
-    --  $setup
+    -- $setup
     AsAny (..)
   ) where
 
@@ -33,6 +33,8 @@ import Data.Generics.Sum.Constructors
 import Data.Generics.Sum.Typed
 
 -- $setup
+-- == /Running example:/
+--
 -- >>> :set -XTypeApplications
 -- >>> :set -XDataKinds
 -- >>> :set -XDeriveGeneric
@@ -66,16 +68,22 @@ class AsAny (sel :: k) a s | s sel k -> a where
   --
   --  >>> dog ^? _As @"Dog"
   --  Just (MkDog {name = "Shep", age = 3})
+  --
   --  >>> dog ^? _As @Dog
   --  Just (MkDog {name = "Shep", age = 3})
+  --
   --  >>> dog ^? _As @"Cat"
   --  Nothing
+  --
   --  >>> cat ^? _As @(Name, Age)
   --  Just ("Mog",5)
+  --
   --  >>> cat ^? _As @"Cat"
   --  Just ("Mog",5)
+  --
   --  >>> _As @"Cat" # ("Garfield", 6) :: Animal
   --  Cat "Garfield" 6
+  --
   --  >>> duck ^? _As @Age
   --  Just 2
   _As :: Prism' s a

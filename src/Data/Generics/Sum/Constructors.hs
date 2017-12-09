@@ -26,7 +26,7 @@
 module Data.Generics.Sum.Constructors
   ( -- *Prisms
 
-    --  $setup
+    -- $setup
     AsConstructor (..)
   ) where
 
@@ -40,9 +40,13 @@ import GHC.Generics (Generic (Rep))
 import GHC.TypeLits (Symbol, TypeError, ErrorMessage (..))
 
 -- $setup
+-- == /Running example:/
+--
 -- >>> :set -XTypeApplications
 -- >>> :set -XDataKinds
 -- >>> :set -XDeriveGeneric
+-- >>> :set -XFlexibleContexts
+-- >>> :set -XTypeFamilies
 -- >>> import GHC.Generics
 -- >>> :m +Data.Generics.Internal.Lens
 -- >>> :m +Data.Generics.Product.Fields
@@ -84,6 +88,14 @@ class AsConstructor (ctor :: Symbol) s t a b | ctor s -> a, ctor t -> b where
   --
   --  >>> _Ctor @"Cat" # ("Garfield", 6) :: Animal Int
   --  Cat "Garfield" 6
+  --
+  --  === /Type errors/
+  --
+  --  >>> cat ^? _Ctor @"Turtle"
+  --  ...
+  --  ...
+  --  ... The type Animal Int does not contain a constructor named "Turtle"
+  --  ...
   _Ctor :: Prism s t a b
 
 instance
