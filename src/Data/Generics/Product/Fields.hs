@@ -160,7 +160,7 @@ type family ErrorUnless (field :: Symbol) (s :: Type) (stat :: TypeStat) :: Cons
         ':$$: 'Text " contain a field named '"
         ':<>: 'Text field ':<>: 'Text "'."
         ':$$: 'Text "The offending constructors are:"
-        ':$$: ShowConstuctors (n ': ns)
+        ':$$: ShowSymbols (n ': ns)
         )
 
   ErrorUnless _ _ ('TypeStat '[] '[] _)

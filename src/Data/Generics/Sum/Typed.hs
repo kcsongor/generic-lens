@@ -133,5 +133,5 @@ type family ErrorUnlessOne (a :: Type) (s :: Type) (ctors :: [Symbol]) :: Constr
         ':<>: 'Text " contains multiple constructors whose fields are of type "
         ':<>: 'ShowType a ':<>: 'Text "."
         ':$$: 'Text "The choice of constructor is thus ambiguous, could be any of:"
-        ':$$: ShowConstuctors cs
+        ':$$: ShowSymbols cs
         )

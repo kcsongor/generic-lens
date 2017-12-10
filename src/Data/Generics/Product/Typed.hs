@@ -133,7 +133,7 @@ type family ErrorUnlessOne (a :: Type) (s :: Type) (stat :: TypeStat) :: Constra
         ':<>: 'Text " contain a field of type "
         ':<>: 'ShowType a ':<>: 'Text "."
         ':$$: 'Text "The offending constructors are:"
-        ':$$: ShowConstuctors (n ': ns)
+        ':$$: ShowSymbols (n ': ns)
         )
 
   ErrorUnlessOne a s ('TypeStat _ (m ': ms) _)
@@ -143,7 +143,7 @@ type family ErrorUnlessOne (a :: Type) (s :: Type) (stat :: TypeStat) :: Constra
         ':<>: 'Text " contains multiple values of type "
         ':<>: 'ShowType a ':<>: 'Text "."
         ':$$: 'Text "The choice of value is thus ambiguous. The offending constructors are:"
-        ':$$: ShowConstuctors (m ': ms)
+        ':$$: ShowSymbols (m ': ms)
         )
 
   ErrorUnlessOne _ _ ('TypeStat '[] '[] _)

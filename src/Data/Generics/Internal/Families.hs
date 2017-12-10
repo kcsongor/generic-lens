@@ -19,7 +19,7 @@
 -----------------------------------------------------------------------------
 module Data.Generics.Internal.Families
   ( module Families
-  , ShowConstuctors
+  , ShowSymbols
   ) where
 
 import Data.Generics.Internal.Families.Collect   as Families
@@ -28,8 +28,8 @@ import Data.Generics.Internal.Families.Changing  as Families
 
 import GHC.TypeLits (ErrorMessage (..), Symbol)
 
-type family ShowConstuctors (ctors :: [Symbol]) :: ErrorMessage where
-  ShowConstuctors '[]
+type family ShowSymbols (ctors :: [Symbol]) :: ErrorMessage where
+  ShowSymbols '[]
     = 'Text ""
-  ShowConstuctors (c ': cs)
-    = 'Text "* " ':<>: 'Text c ':$$: ShowConstuctors cs
+  ShowSymbols (c ': cs)
+    = 'Text "• " ':<>: 'Text c ':$$: ShowSymbols cs

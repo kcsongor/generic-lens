@@ -1,17 +1,17 @@
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE Rank2Types #-}
-{-# LANGUAGE AllowAmbiguousTypes       #-}
-{-# LANGUAGE DataKinds                 #-}
-{-# LANGUAGE DeriveGeneric             #-}
-{-# LANGUAGE DuplicateRecordFields     #-}
-{-# LANGUAGE FlexibleContexts          #-}
-{-# LANGUAGE NoMonomorphismRestriction #-}
-{-# LANGUAGE PartialTypeSignatures     #-}
-{-# LANGUAGE TypeApplications          #-}
-{-# LANGUAGE UndecidableInstances      #-}
-
-{-# OPTIONS_GHC -fno-warn-unused-imports  #-}
+{-# LANGUAGE AllowAmbiguousTypes         #-}
+{-# LANGUAGE DataKinds                   #-}
+{-# LANGUAGE DeriveGeneric               #-}
+{-# LANGUAGE DuplicateRecordFields       #-}
+{-# LANGUAGE FlexibleContexts            #-}
+{-# LANGUAGE GADTs                       #-}
+{-# LANGUAGE NoMonomorphismRestriction   #-}
+{-# LANGUAGE PartialTypeSignatures       #-}
+{-# LANGUAGE Rank2Types                  #-}
+{-# LANGUAGE ScopedTypeVariables         #-}
+{-# LANGUAGE TypeApplications            #-}
+{-# LANGUAGE UndecidableInstances        #-}
+{-# OPTIONS_GHC -Wno-missing-signatures  #-}
+{-# OPTIONS_GHC -fno-warn-unused-imports #-}
 
 module Examples where
 

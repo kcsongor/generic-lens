@@ -32,11 +32,14 @@ module Data.Generics.Product.Subtype
     Subtype (..)
   ) where
 
+import Data.Generics.Internal.Families
 import Data.Generics.Internal.Lens
 import Data.Generics.Internal.Void
 import Data.Generics.Product.Internal.Subtype
 
 import GHC.Generics (Generic (Rep, to, from) )
+import GHC.TypeLits (Symbol, TypeError, ErrorMessage (..))
+import Data.Kind (Type, Constraint)
 
 -- $setup
 -- == /Running example:/
@@ -86,6 +89,12 @@ class Subtype sup sub where
   -- >>> upcast human :: Animal
   -- Animal {name = "Tunyasz", age = 50}
   --
+  -- >>> upcast (upcast human :: Animal) :: Human
+  -- ...
+  -- ... The type 'Human' is not a subtype of 'Animal'.
+  -- ... The following fields are missing from 'Human':
+  -- ... address
+  -- ...
   upcast :: sub -> sup
   upcast s = s ^. super @sup
 
@@ -98,12 +107,12 @@ class Subtype sup sub where
 
   {-# MINIMAL super | smash, upcast #-}
 
--- TODO: improve type error by showing a diff of fields
 instance
   ( Generic a
   , Generic b
   , GSmash (Rep a) (Rep b)
   , GUpcast (Rep a) (Rep b)
+  , ErrorUnless b a (CollectFieldsOrdered (Rep b) \\ CollectFieldsOrdered (Rep a))
   ) => Subtype b a where
     smash p b = to $ gsmash (from p) (from b)
     upcast    = to . gupcast . from
@@ -113,3 +122,18 @@ instance {-# OVERLAPPING #-} Subtype a Void where
   super = undefined
 instance {-# OVERLAPPING #-} Subtype Void a where
   super = undefined
+
+type family ErrorUnless (sub :: Type) (sup :: Type) (diff :: [Symbol]) :: Constraint where
+  ErrorUnless _ _ '[]
+    = ()
+
+  ErrorUnless sub sup fs
+    = TypeError
+        (     'Text "The type '"
+        ':<>: 'ShowType sub
+        ':<>: 'Text "' is not a subtype of '"
+        ':<>: 'ShowType sup ':<>: 'Text "'."
+        ':$$: 'Text "The following fields are missing from '"
+        ':<>: 'ShowType sub ':<>: 'Text "':"
+        ':$$: ShowSymbols fs
+        )

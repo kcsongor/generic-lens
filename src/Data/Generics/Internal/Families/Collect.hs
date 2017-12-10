@@ -18,13 +18,15 @@ module Data.Generics.Internal.Families.Collect
   ( CollectTotalType
   , CollectPartialType
   , CollectField
+  , CollectFieldsOrdered
   , TypeStat (..)
+  , type (\\)
   ) where
 
 import Data.Type.Bool     (If)
 import Data.Type.Equality (type (==))
 import GHC.Generics
-import GHC.TypeLits       (Symbol)
+import GHC.TypeLits       (Symbol, CmpSymbol)
 
 import Data.Generics.Internal.HList
 
@@ -98,3 +100,33 @@ type family (a :: Count) <|> (b :: Count) :: Count where
 type family (a :: Count) <&> (b :: Count) :: Count where
   a <&> a = a
   _ <&> _ = 'Multiple
+
+type family CollectFieldsOrdered (r :: * -> *) :: [Symbol] where
+  CollectFieldsOrdered (l :*: r)
+    = Merge (CollectFieldsOrdered l) (CollectFieldsOrdered r)
+  CollectFieldsOrdered (S1 ('MetaSel ('Just name) _ _ _) _)
+    = '[name]
+  CollectFieldsOrdered (M1 _ m a)
+    = CollectFieldsOrdered a
+  CollectFieldsOrdered _
+    = '[]
+
+type family Merge (xs :: [Symbol]) (ys :: [Symbol]) :: [Symbol] where
+  Merge xs '[] = xs
+  Merge '[] ys = ys
+  Merge (x ': xs) (y ': ys) = Merge' (CmpSymbol x y) x y xs ys
+
+type family Merge' (ord :: Ordering) (x :: Symbol) (y :: Symbol) (xs :: [Symbol]) (ys :: [Symbol]) :: [Symbol] where
+  Merge' 'LT x y xs ys = x ': Merge xs (y ': ys)
+  Merge' _ x y xs ys   = y ': Merge (x ': xs) ys
+
+type family (xs :: [Symbol]) \\ (ys :: [Symbol]) :: [Symbol] where
+  xs \\ '[] = xs
+  '[] \\ xs = '[]
+  (x ': xs) \\ (y ': ys) = Sub' (CmpSymbol x y) x y xs ys
+
+infixr 5 \\
+type family Sub' (ord :: Ordering) (x :: Symbol) (y :: Symbol) (xs :: [Symbol]) (ys :: [Symbol]) :: [Symbol] where
+  Sub' 'LT x y xs ys = x ': (xs \\ y ': ys)
+  Sub' 'GT x _ xs ys = (x ': xs) \\ ys
+  Sub' 'EQ _ _ xs ys = xs \\ ys
