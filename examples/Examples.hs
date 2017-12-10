@@ -20,6 +20,7 @@ import Data.Generics.Internal.Lens
 import Data.Generics.Product
 import Data.Generics.Sum
 import GHC.Generics
+import Data.Generics.Labels
 
 data Animal = Animal
   { name :: String
@@ -102,3 +103,10 @@ stuff ::
   , HasField "bar" a' b' s t
   ) => s' -> t'
 stuff r = r & field @"test" . field @"bar" . position @15 .~ "hello"
+
+stuff' ::
+  ( HasPosition 15 s t a String
+  , HasField "test" s' t' a' b'
+  , HasField "bar" a' b' s t
+  ) => s' -> t'
+stuff' r = r & #test . #bar . position @15 .~ "hello"
