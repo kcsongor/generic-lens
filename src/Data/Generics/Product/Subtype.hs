@@ -91,8 +91,8 @@ class Subtype sup sub where
   --
   -- >>> upcast (upcast human :: Animal) :: Human
   -- ...
-  -- ... The type 'Human' is not a subtype of 'Animal'.
-  -- ... The following fields are missing from 'Human':
+  -- ... The type 'Animal' is not a subtype of 'Human'.
+  -- ... The following fields are missing from 'Animal':
   -- ... address
   -- ...
   upcast :: sub -> sup
@@ -123,11 +123,11 @@ instance {-# OVERLAPPING #-} Subtype a Void where
 instance {-# OVERLAPPING #-} Subtype Void a where
   super = undefined
 
-type family ErrorUnless (sub :: Type) (sup :: Type) (diff :: [Symbol]) :: Constraint where
+type family ErrorUnless (sup :: Type) (sub :: Type) (diff :: [Symbol]) :: Constraint where
   ErrorUnless _ _ '[]
     = ()
 
-  ErrorUnless sub sup fs
+  ErrorUnless sup sub fs
     = TypeError
         (     'Text "The type '"
         ':<>: 'ShowType sub
