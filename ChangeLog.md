@@ -1,3 +1,7 @@
+## 0.5.1.0
+- Add `IsLabel` orhpan instance in `Data.Generics.Labels`
+- Fix error message in subtype lens
+
 ## 0.5.0.0
 
 - Lenses and prisms are now type-changing.

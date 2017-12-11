@@ -17,8 +17,8 @@
 -- Stability   : experimental
 -- Portability : non-portable
 --
--- Provide an (orphan) IsLabel instance for field lenses
---
+-- Provides an (orphan) IsLabel instance for field lenses.
+-- Use at your own risk.
 --------------------------------------------------------------------------------
 
 module Data.Generics.Labels () where
