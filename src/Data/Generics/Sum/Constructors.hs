@@ -110,7 +110,8 @@ instance
   , '(t, b) ~ Infer s' a' a (PickTv a' b)
   ) => AsConstructor ctor s t a b where
 
-  _Ctor = repIso . _GCtor @ctor
+  _Ctor eta = prismRavel (repIso . _GCtor @ctor) eta
+  {-# INLINE _Ctor #-}
 
 -- See Note [Uncluttering type signatures]
 instance {-# OVERLAPPING #-} AsConstructor ctor (Void1 a) (Void1 b) a b where

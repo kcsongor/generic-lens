@@ -13,7 +13,9 @@
 module Main where
 
 import GHC.Generics
+import Data.Profunctor
 import Data.Generics.Product
+import Data.Generics.Sum
 import Test.Inspection
 
 main :: IO ()
@@ -34,7 +36,14 @@ data Record3 a = MkRecord3
   } deriving (Generic, Show)
 
 type Lens' s a = Lens s s a a
+type Prism' s a = Prism s s a a
 type Lens s t a b = forall f. Functor f => (a -> f b) -> s -> f t
+type Prism s t a b =
+  forall p f . (Choice p, Applicative f) => p a (f b) -> p s (f t)
+
+prism :: (b -> t) -> (s -> Either t a) -> Prism s t a b
+prism bt seta = dimap seta (either pure (fmap bt)) . right'
+{-# INLINE prism #-}
 
 fieldALensManual :: Lens' Record Int
 fieldALensManual f (MkRecord a b) = (\a' -> MkRecord a' b) <$> f a
@@ -52,6 +61,19 @@ subtypeLensManual f record
   = fmap (\ds -> case record of
                   MkRecord _ b -> MkRecord (case ds of {MkRecord2 g1 -> g1}) b
          ) (f (MkRecord2 (case record of {MkRecord a _ -> a})))
+
+data Sum1 = A Char | B Int | C () | D () deriving (Generic, Show)
+
+sum1PrismManual :: Prism' Sum1 Int
+sum1PrismManual = prism g f
+ where
+   f s1 = case s1 of
+            B i -> Right i
+            s   -> Left s
+   g = B
+
+
+
 
 --------------------------------------------------------------------------------
 -- * Tests
@@ -81,6 +103,9 @@ typeChangingGenericPos = position @1
 typeChangingGenericCompose :: Lens (Record3 (Record3 a)) (Record3 (Record3 b)) a b
 typeChangingGenericCompose = field @"fieldA" . field @"fieldA"
 
+sum1PrismB :: Prism' Sum1 Int
+sum1PrismB = _Ctor @"B"
+
 inspect $ 'fieldALensManual === 'fieldALensName
 inspect $ 'fieldALensManual === 'fieldALensType
 inspect $ 'fieldALensManual === 'fieldALensPos
@@ -88,3 +113,5 @@ inspect $ 'subtypeLensManual === 'subtypeLensGeneric
 inspect $ 'typeChangingManual === 'typeChangingGeneric
 inspect $ 'typeChangingManual === 'typeChangingGenericPos
 inspect $ 'typeChangingManualCompose === 'typeChangingGenericCompose
+
+--inspect $ 'sum1PrismManual === 'sum1PrismB

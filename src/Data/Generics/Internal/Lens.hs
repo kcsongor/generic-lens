@@ -141,3 +141,37 @@ proj fa = Coyoneda id fa
 
 ravel :: Functor f => ((a -> Coyoneda f b) -> s -> Coyoneda f t) -> (a -> f b) -> (s -> f t)
 ravel coy f s = inj $ coy (\a -> proj (f a)) s
+
+--------------------------------------------------------------------------------
+
+-- Pull dimaps to left and rights to right
+
+data PrismBoggle p a b where
+  DRight :: (p x y) -> PrismBoggle p (Either z x) (Either z y)
+  DMap :: (c -> a) -> (b -> d) -> (p a b) -> PrismBoggle p c d
+  Dirty :: p a b -> PrismBoggle p a b
+
+instance Choice p => Profunctor (PrismBoggle p) where
+  dimap f g (Dirty pab) = DMap f g pab
+  dimap f g (DMap f' g' pab) = DMap (f' . f) (g . g') pab
+  dimap f g (DRight pab)     =  DMap f g (right' pab)
+
+instance Choice p => Choice (PrismBoggle p) where
+  right' (Dirty pab) = DRight pab
+  right' (DMap f g pab) = DMap (fmap f) (fmap g) (right' pab)
+  right' (DRight pab)   = DRight (right' pab)
+
+projPrism :: p a b -> PrismBoggle p a b
+projPrism pab = Dirty pab
+
+
+injPrism :: Choice p => PrismBoggle p a b -> p a b
+injPrism (Dirty pab) = pab
+injPrism (DMap f g pab) = dimap f g pab
+injPrism (DRight pab) = right' pab
+
+prismRavel :: (Choice p, Applicative f)
+           => (PrismBoggle p a (Boggle f b) -> PrismBoggle p s (Boggle f t))
+           -> (p a (f b) -> p s (f t))
+prismRavel coy pafb = (rmap inj (injPrism (coy (projPrism (rmap proj pafb)))))
+
