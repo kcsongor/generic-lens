@@ -20,10 +20,11 @@ module Data.Generics.Internal.Lens where
 import Control.Applicative    (Const(..))
 import Data.Functor.Identity  (Identity(..))
 import Data.Monoid            (First (..))
-import Data.Profunctor        (Choice(right'), Profunctor(dimap))
+import Data.Profunctor        (Choice(right'), Profunctor(dimap, rmap))
 import Data.Profunctor.Unsafe ((#.), (.#))
 import Data.Tagged
 import GHC.Generics           ((:*:)(..), (:+:)(..), Generic(..), M1(..), Rep)
+import Boggle hiding (Dirty)
 
 -- | Type alias for lens
 type Lens' s a
@@ -150,9 +151,24 @@ ravel coy f s = inj $ coy (\a -> proj (f a)) s
 
 -- Pull dimaps to left and rights to right
 
+newtype MergeRight p a b = MergeRight (PrismBoggle p a b)
+{-
+instance Choice p => Profunctor (MergeRight p) where
+  dimap f g (MergeRight (Dirty pab)) = MergeRight (DMap f g pab)
+  dimap f g (MergeRight (DMap f' g' pab)) = MergeRight (DMap (f' . f) (g . g') pab)
+  dimap f g (MergeRight (DRight pab))     =  MergeRight (DMap f g (right' pab))
+
+instance Choice p => Choice (MergeRight p) where
+  right' (MergeRight (Dirty pab)) = MergeRight (DRight pab)
+  right' (MergeRight (DMap f g pab)) = MergeRight (DMap (fmap f) (fmap g) (right' pab))
+  right' (MergeRight (DRight pab))   = MergeRight (DMap assoc' assoc (right' pab))
+  -}
+
 data PrismBoggle p a b where
-  DRight :: (p x y) -> PrismBoggle p (Either z x) (Either z y)
+  DRight :: Bool -> (p x y) -> PrismBoggle p (Either z x) (Either z y)
   DMap :: (c -> a) -> (b -> d) -> (p a b) -> PrismBoggle p c d
+  --DAssoc :: p (Either (Either a b) c) (Either (Either a b) c) -> PrismBoggle p (Either a (Either b c)) (Either a (Either b c))
+--  DAssoc :: p (Either a (Either b c)) (Either a (Either b c)) -> PrismBoggle p (Either (Either a b)c) (Either (Either a b) c)
   Dirty :: p a b -> PrismBoggle p a b
 
 instance Choice p => Profunctor (PrismBoggle p) where
@@ -165,8 +181,25 @@ instance Choice p => Choice (PrismBoggle p) where
   right' (DMap f g pab) = DMap (fmap f) (fmap g) (right' pab)
   right' (DRight pab)   = DRight (right' pab)
 
+assoc :: Either a (Either b c) -> Either (Either a b) c
+assoc e = case e of
+            Left a -> Left (Left a)
+            Right ebc -> case ebc of
+                           Left b -> Left (Right b)
+                           Right c -> Right c
+
+assoc' :: Either (Either a b) c -> Either a (Either b c)
+assoc' e = case e of
+             Right c -> Right (Right c)
+             Left eab -> case eab of
+                           Left a -> Left a
+                           Right b -> Right (Left b)
+
 projPrism :: p a b -> PrismBoggle p a b
 projPrism pab = Dirty pab
+
+--rightFuse :: Choice p => p a b -> p (Either c (Either d a)) (Either c (Either d b))
+rightFuse x = injPrism (projPrism (injPrism (right' (right' (right' (projPrism x))))))
 
 
 injPrism :: Choice p => PrismBoggle p a b -> p a b
@@ -177,5 +210,6 @@ injPrism (DRight pab) = right' pab
 prismRavel :: (Choice p, Applicative f)
            => (PrismBoggle p a (Boggle f b) -> PrismBoggle p s (Boggle f t))
            -> (p a (f b) -> p s (f t))
-prismRavel coy pafb = (rmap inj (injPrism (coy (projPrism (rmap proj pafb)))))
+prismRavel coy pafb = injPrism (dimap id lowerBoggle (coy (dimap id liftBoggle (projPrism pafb))))
+{-# INLINE prismRavel #-}
 

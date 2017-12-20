@@ -41,6 +41,7 @@ type Prism' s a = Prism s s a a
 type Lens s t a b = forall f. Functor f => (a -> f b) -> s -> f t
 type Prism s t a b =
   forall p f . (Choice p, Applicative f) => p a (f b) -> p s (f t)
+type Traversal' s a = forall f. Applicative f => (a -> f a) -> s -> f s
 
 prism :: (b -> t) -> (s -> Either t a) -> Prism s t a b
 prism bt seta = dimap seta (either pure (fmap bt)) . right'
@@ -51,9 +52,16 @@ data Record4 a = MkRecord4
   , fieldB :: a
   } deriving (Generic1)
 
-type Lens' s a = forall f. Functor f => (a -> f a) -> s -> f s
+data Record5 = MkRecord5
+  { fieldA :: Int
+  , fieldB :: Int
+  , fieldC :: String
+  , fieldD :: Int
+  , fieldE :: Char
+  , fieldF :: Int
+  } deriving Generic
 
-type Traversal' s a = forall f. Applicative f => (a -> f a) -> s -> f s
+
 
 typeChangingManual :: Lens (Record3 a) (Record3 b) a b
 typeChangingManual f (MkRecord3 a b) = (\a' -> MkRecord3 a' b) <$> f a
@@ -63,11 +71,11 @@ typeChangingManualCompose = typeChangingManual . typeChangingManual
 
 newtype L s a = L (Lens' s a)
 
-intTraversalManual :: Traversal' Record3 Int
-intTraversalManual f (MkRecord3 a b c d e f') =
-    (\a1 a2 a3 a4 -> MkRecord3 a1 a2 c a3 e a4) <$> f a <*> f b <*> f d <*> f f'
+intTraversalManual :: Traversal' Record5 Int
+intTraversalManual f (MkRecord5 a b c d e f') =
+    (\a1 a2 a3 a4 -> MkRecord5 a1 a2 c a3 e a4) <$> f a <*> f b <*> f d <*> f f'
 
-intTraversalDerived :: Traversal' Record3 Int
+intTraversalDerived :: Traversal' Record5 Int
 intTraversalDerived = types
 
 
@@ -92,8 +100,6 @@ sum1PrismManual = prism g f
             B i -> Right i
             s   -> Left s
    g = B
-
-
 
 
 --------------------------------------------------------------------------------

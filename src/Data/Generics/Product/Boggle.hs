@@ -76,3 +76,8 @@ instance GTraversable Par1 where
 instance Traversable t => GTraversable (Rec1 t) where
   gtraverse f (Rec1 x) = Rec1 <$> liftBoggle (traverse f x)
   {-# INLINE gtraverse #-}
+
+
+-------------------------------------------------------------------------------
+
+
