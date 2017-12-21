@@ -174,12 +174,12 @@ data PrismBoggle p a b where
 instance Choice p => Profunctor (PrismBoggle p) where
   dimap f g (Dirty pab) = DMap f g pab
   dimap f g (DMap f' g' pab) = DMap (f' . f) (g . g') pab
-  dimap f g (DRight pab)     =  DMap f g (right' pab)
+  dimap f g (DRight pab)  =  DMap f g (right' pab)
 
 instance Choice p => Choice (PrismBoggle p) where
   right' (Dirty pab) = DRight pab
   right' (DMap f g pab) = DMap (fmap f) (fmap g) (right' pab)
-  right' (DRight pab)   = DRight (right' pab)
+  right' (DRight pab)   = DMap assoc assoc' (right' pab)
 
 assoc :: Either a (Either b c) -> Either (Either a b) c
 assoc e = case e of
@@ -208,8 +208,8 @@ injPrism (DMap f g pab) = dimap f g pab
 injPrism (DRight pab) = right' pab
 
 prismRavel :: (Choice p, Applicative f)
-           => (PrismBoggle p a (Boggle f b) -> PrismBoggle p s (Boggle f t))
+           => (PrismBoggle (PrismBoggle p) a (Boggle f b) -> PrismBoggle (PrismBoggle p) s (Boggle f t))
            -> (p a (f b) -> p s (f t))
-prismRavel coy pafb = injPrism (dimap id lowerBoggle (coy (dimap id liftBoggle (projPrism pafb))))
+prismRavel coy pafb = injPrism (injPrism (dimap id lowerBoggle (coy (dimap id liftBoggle (projPrism (projPrism pafb))))))
 {-# INLINE prismRavel #-}
 
