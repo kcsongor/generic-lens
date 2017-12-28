@@ -132,7 +132,7 @@ instance  -- see Note [Changing type parameters]
   , GHasField' field (Rep s) a
   , GHasField' field (Rep s') a'
   , GHasField field (Rep s) (Rep t) a b
-  , '(t, b) ~ Infer s' a' a (PickTv a' b)
+  , t ~ Infer s a' b
   ) => HasField field s t a b where
 
   field f s = ravel (repLens . gfield @field) f s
