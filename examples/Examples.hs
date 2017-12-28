@@ -1,17 +1,18 @@
-{-# LANGUAGE AllowAmbiguousTypes         #-}
-{-# LANGUAGE DataKinds                   #-}
-{-# LANGUAGE DeriveGeneric               #-}
-{-# LANGUAGE DuplicateRecordFields       #-}
-{-# LANGUAGE FlexibleContexts            #-}
-{-# LANGUAGE GADTs                       #-}
-{-# LANGUAGE NoMonomorphismRestriction   #-}
-{-# LANGUAGE PartialTypeSignatures       #-}
-{-# LANGUAGE Rank2Types                  #-}
-{-# LANGUAGE ScopedTypeVariables         #-}
-{-# LANGUAGE TypeApplications            #-}
-{-# LANGUAGE UndecidableInstances        #-}
-{-# OPTIONS_GHC -Wno-missing-signatures  #-}
-{-# OPTIONS_GHC -fno-warn-unused-imports #-}
+{-# LANGUAGE AllowAmbiguousTypes          #-}
+{-# LANGUAGE DataKinds                    #-}
+{-# LANGUAGE DeriveGeneric                #-}
+{-# LANGUAGE DuplicateRecordFields        #-}
+{-# LANGUAGE FlexibleContexts             #-}
+{-# LANGUAGE GADTs                        #-}
+{-# LANGUAGE NoMonomorphismRestriction    #-}
+{-# LANGUAGE OverloadedLabels             #-}
+{-# LANGUAGE PartialTypeSignatures        #-}
+{-# LANGUAGE Rank2Types                   #-}
+{-# LANGUAGE ScopedTypeVariables          #-}
+{-# LANGUAGE TypeApplications             #-}
+{-# LANGUAGE UndecidableInstances         #-}
+{-# OPTIONS_GHC -Wno-missing-signatures   #-}
+{-# OPTIONS_GHC -fno-warn-unused-imports  #-}
 
 module Examples where
 
@@ -110,3 +111,17 @@ stuff' ::
   , HasField "bar" a' b' s t
   ) => s' -> t'
 stuff' r = r & #test . #bar . position @15 .~ "hello"
+
+data Foo m s = Foo
+  { foo1 :: m s
+  , foo2 :: [s]
+  } deriving Generic
+
+modifyFoo2 :: Foo (Either String) Int -> Foo Maybe Int
+modifyFoo2 x = x & field @"foo1" .~ pure (1 :: Int)
+
+data Bar a b = Bar
+  { barField :: (a, b)
+  } deriving Generic
+
+modifiedBar = (Bar ("hello", "world")) & field @"barField" .~ ('c', 1 :: Int)
