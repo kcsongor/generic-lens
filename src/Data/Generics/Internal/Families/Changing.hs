@@ -62,7 +62,7 @@ data Sub where
   Sub :: Peano -> k -> Sub
 
 type family Unify (a :: k) (b :: k) :: [Sub] where
-  Unify (a b) a' = If (IsPTag b) '[Bar (a b) a'] (Baz (a b) a')
+  Unify (a b) a' = If (IsPTag b) '[HandleP (a b) a'] (HandleOther (a b) a')
   Unify a a = '[]
   Unify a b = TypeError
                 ( 'Text "Couldn't match type "
@@ -71,18 +71,18 @@ type family Unify (a :: k) (b :: k) :: [Sub] where
                   ':<>: 'ShowType b
                 )
 
-type family Bar a b where
-  Bar (p n _ 'PTag) a' = 'Sub n a'
+type family HandleP a b where
+  HandleP (p n _ 'PTag) a' = 'Sub n a'
 
-type family Baz a b where
-  Baz (a x) (b y) = Unify x y ++ Unify a b
-  Baz a a = '[]
-  Baz a b = TypeError
-               ( 'Text "Couldn't match type "
-                 ':<>: 'ShowType a
-                 ':<>: 'Text " with "
-                 ':<>: 'ShowType b
-               )
+type family HandleOther a b where
+  HandleOther (a x) (b y) = Unify x y ++ Unify a b
+  HandleOther a a = '[]
+  HandleOther a b = TypeError
+                     ( 'Text "Couldn't match type "
+                       ':<>: 'ShowType a
+                       ':<>: 'Text " with "
+                       ':<>: 'ShowType b
+                     )
 
 type family IsPTag (a :: k) :: Bool where
   IsPTag 'PTag = 'True
