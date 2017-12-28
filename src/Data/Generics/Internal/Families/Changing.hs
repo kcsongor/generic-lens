@@ -11,6 +11,7 @@
 module Data.Generics.Internal.Families.Changing
   ( Proxied
   , Infer
+  , HasParams
   ) where
 
 import GHC.TypeLits (TypeError, ErrorMessage (..))
@@ -90,6 +91,10 @@ type family IsPTag (a :: k) :: Bool where
 type family (xs :: [k]) ++ (ys :: [k]) :: [k] where
   '[] ++ ys = ys
   (x ': xs) ++ ys = x ': (xs ++ ys)
+
+type family HasParams (a :: *) :: Bool where
+  HasParams (a b) = 'True
+  HasParams _     = 'False
 
 type family Infer (s :: *) (a' :: *) (b :: *) :: * where
   Infer s a' b
