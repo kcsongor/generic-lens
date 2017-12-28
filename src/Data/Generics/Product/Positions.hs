@@ -43,7 +43,7 @@ import Data.Generics.Internal.Families
 import Data.Generics.Product.Internal.Positions
 
 import Data.Kind      (Constraint, Type)
-import Data.Type.Bool (type (&&))
+import Data.Type.Bool (type (&&), If)
 import GHC.Generics
 import GHC.TypeLits   (type (<=?),  Nat, TypeError, ErrorMessage(..))
 
@@ -70,7 +70,7 @@ import GHC.TypeLits   (type (<=?),  Nat, TypeError, ErrorMessage(..))
 -- :}
 
 -- |Records that have a field at a given position.
-class HasPosition (i :: Nat) s t a b | s i -> a, s i b -> t where
+class HasPosition (i :: Nat) s t a b | s i -> a, s i b -> t, t i a -> s where
   -- |A lens that focuses on a field at a given position. Compatible with the
   --  lens package's 'Control.Lens.Lens' type.
   --
@@ -100,16 +100,21 @@ instance  -- see Note [Changing type parameters]
   , ErrorUnless i s (0 <? i && i <=? Size (Rep s))
   , Generic t
   , s' ~ Proxied s
+  , t' ~ Proxied t
+  , Generic s'
+  , Generic t'
   , GHasPosition' i (Rep s) a
   , GHasPosition' i (Rep s') a'
+  , GHasPosition' i (Rep t') b'
   , GHasPosition 1 i (Rep s) (Rep t) a b
-  , t ~ Infer s a' b
+  , t ~ If (HasParams s) (Infer s a' b) s
+  , s ~ If (HasParams t) (Infer t b' a) t
   ) => HasPosition i s t a b where
 
   position f s = ravel (repLens . gposition @1 @i) f s
 
 -- See Note [Uncluttering type signatures]
-instance {-# OVERLAPPING #-} HasPosition f (Void2 a t) t a b where
+instance {-# OVERLAPPING #-} HasPosition f (Void1 a) (Void1 b) a b where
   position = undefined
 
 type family ErrorUnless (i :: Nat) (s :: Type) (hasP :: Bool) :: Constraint where

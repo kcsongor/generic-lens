@@ -44,6 +44,7 @@ import Data.Generics.Product.Internal.Fields
 import Data.Kind    (Constraint, Type)
 import GHC.Generics
 import GHC.TypeLits (Symbol, ErrorMessage(..), TypeError)
+import Data.Type.Bool (If)
 
 -- $setup
 -- == /Running example:/
@@ -75,7 +76,7 @@ import GHC.TypeLits (Symbol, ErrorMessage(..), TypeError)
 -- :}
 
 -- |Records that have a field with a given name.
-class HasField (field :: Symbol) s t a b | s field -> a, s field b -> t where
+class HasField (field :: Symbol) s t a b | s field -> a, s field b -> t, t field a -> s where
   -- |A lens that focuses on a field with a given name. Compatible with the
   --  lens package's 'Control.Lens.Lens' type.
   --
@@ -128,19 +129,20 @@ instance  -- see Note [Changing type parameters]
   , ErrorUnless field s (CollectField field (Rep s))
   , Generic t
   , s' ~ Proxied s
+  , t' ~ Proxied t
   , Generic s'
+  , Generic t'
   , GHasField' field (Rep s) a
   , GHasField' field (Rep s') a'
+  , GHasField' field (Rep t') b'
   , GHasField field (Rep s) (Rep t) a b
-  , t ~ Infer s a' b
+  , t ~ If (HasParams s) (Infer s a' b) s
+  , s ~ If (HasParams t) (Infer t b' a) t
   ) => HasField field s t a b where
 
   field f s = ravel (repLens . gfield @field) f s
 
--- See Note [Uncluttering type signatures]
-instance {-# OVERLAPPING #-} HasField f (Void2 t a) t a b where
-  field = undefined
-
+-- -- See Note [Uncluttering type signatures]
 instance {-# OVERLAPPING #-} HasField f (Void1 a) (Void1 b) a b where
   field = undefined
 

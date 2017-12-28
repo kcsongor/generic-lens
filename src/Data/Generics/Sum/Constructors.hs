@@ -38,6 +38,7 @@ import Data.Generics.Sum.Internal.Constructors
 import Data.Kind    (Constraint, Type)
 import GHC.Generics (Generic (Rep))
 import GHC.TypeLits (Symbol, TypeError, ErrorMessage (..))
+import Data.Type.Bool (If)
 
 -- $setup
 -- == /Running example:/
@@ -103,11 +104,15 @@ instance
   , ErrorUnless ctor s (HasCtorP ctor (Rep s))
   , Generic t
   , s' ~ Proxied s
+  , t' ~ Proxied s
   , Generic s'
+  , Generic t'
   , GAsConstructor' ctor (Rep s) a
   , GAsConstructor' ctor (Rep s') a'
+  , GAsConstructor' ctor (Rep t') b'
   , GAsConstructor ctor (Rep s) (Rep t) a b
-  , t ~ Infer s' a' b
+  , t ~ If (HasParams s) (Infer s a' b) s
+  , s ~ If (HasParams t) (Infer t b' a) t
   ) => AsConstructor ctor s t a b where
 
   _Ctor = repIso . _GCtor @ctor
