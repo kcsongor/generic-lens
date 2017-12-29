@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE AllowAmbiguousTypes    #-}
 {-# LANGUAGE ConstraintKinds        #-}
 {-# LANGUAGE DataKinds              #-}
@@ -99,8 +100,13 @@ instance  -- see Note [Changing type parameters]
   ( Generic s
   , ErrorUnless i s (0 <? i && i <=? Size (Rep s))
   , Generic t
+  -- see Note [CPP in instance constraints]
+#if __GLASGOW_HASKELL__ < 802
+  , '(s', t') ~ '(Proxied s, Proxied t)
+#else
   , s' ~ Proxied s
   , t' ~ Proxied t
+#endif
   , Generic s'
   , Generic t'
   , GHasPosition' i (Rep s) a

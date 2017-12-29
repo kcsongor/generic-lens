@@ -1,4 +1,5 @@
 {-# LANGUAGE AllowAmbiguousTypes    #-}
+{-# LANGUAGE CPP                    #-}
 {-# LANGUAGE DataKinds              #-}
 {-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE FunctionalDependencies #-}
@@ -102,8 +103,13 @@ instance
   ( Generic s
   , ErrorUnless ctor s (HasCtorP ctor (Rep s))
   , Generic t
+  -- see Note [CPP in instance constraints]
+#if __GLASGOW_HASKELL__ < 802
+  , '(s', t') ~ '(Proxied s, Proxied t)
+#else
   , s' ~ Proxied s
-  , t' ~ Proxied s
+  , t' ~ Proxied t
+#endif
   , Generic s'
   , Generic t'
   , GAsConstructor' ctor (Rep s) a

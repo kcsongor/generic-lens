@@ -1,4 +1,5 @@
 {-# LANGUAGE AllowAmbiguousTypes     #-}
+{-# LANGUAGE CPP                     #-}
 {-# LANGUAGE ConstraintKinds         #-}
 {-# LANGUAGE DataKinds               #-}
 {-# LANGUAGE FlexibleInstances       #-}
@@ -127,15 +128,20 @@ instance  -- see Note [Changing type parameters]
   ( Generic s
   , ErrorUnless field s (CollectField field (Rep s))
   , Generic t
+  -- see Note [CPP in instance constraints]
+#if __GLASGOW_HASKELL__ < 802
+  , '(s', t') ~ '(Proxied s, Proxied t)
+#else
   , s' ~ Proxied s
   , t' ~ Proxied t
+#endif
   , Generic s'
   , Generic t'
   , GHasField' field (Rep s) a
   , GHasField' field (Rep s') a'
+  , GHasField' field (Rep t') b'
   , GHasField field (Rep s) (Rep t) a b
   , t ~ Infer s a' b
-  , GHasField' field (Rep t') b'
   , s ~ Infer t b' a
   ) => HasField field s t a b where
 
