@@ -11,7 +11,6 @@
 module Data.Generics.Internal.Families.Changing
   ( Proxied
   , Infer
-  , HasParams
   ) where
 
 import GHC.TypeLits (TypeError, ErrorMessage (..))
@@ -92,13 +91,10 @@ type family (xs :: [k]) ++ (ys :: [k]) :: [k] where
   '[] ++ ys = ys
   (x ': xs) ++ ys = x ': (xs ++ ys)
 
-type family HasParams (a :: *) :: Bool where
-  HasParams (a b) = 'True
-  HasParams _     = 'False
-
 type family Infer (s :: *) (a' :: *) (b :: *) :: * where
-  Infer s a' b
-    = ReplaceArgs s (Unify a' b)
+  Infer (s a) a' b
+    = ReplaceArgs (s a) (Unify a' b)
+  Infer s _ _ = s
 
 --------------------------------------------------------------------------------
 

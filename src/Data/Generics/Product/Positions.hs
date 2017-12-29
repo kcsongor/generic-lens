@@ -43,7 +43,7 @@ import Data.Generics.Internal.Families
 import Data.Generics.Product.Internal.Positions
 
 import Data.Kind      (Constraint, Type)
-import Data.Type.Bool (type (&&), If)
+import Data.Type.Bool (type (&&))
 import GHC.Generics
 import GHC.TypeLits   (type (<=?),  Nat, TypeError, ErrorMessage(..))
 
@@ -105,10 +105,10 @@ instance  -- see Note [Changing type parameters]
   , Generic t'
   , GHasPosition' i (Rep s) a
   , GHasPosition' i (Rep s') a'
-  , GHasPosition' i (Rep t') b'
   , GHasPosition 1 i (Rep s) (Rep t) a b
-  , t ~ If (HasParams s) (Infer s a' b) s
-  , s ~ If (HasParams t) (Infer t b' a) t
+  , t ~ Infer s a' b
+  , GHasPosition' i (Rep t') b'
+  , s ~ Infer t b' a
   ) => HasPosition i s t a b where
 
   position f s = ravel (repLens . gposition @1 @i) f s
