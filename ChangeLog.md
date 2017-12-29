@@ -1,10 +1,7 @@
-## 0.6.0.0
+## 0.5.1.0
 - Infer input type from result type (#25)
 - Allow changing of multiple type parameters (#24)
 - Allow changing of type parameters that have kinds other than `*` (#23)
-
-## 0.5.1.0
-- Add `IsLabel` orphan instance in `Data.Generics.Labels`
 - Fix error message in subtype lens
 
 ## 0.5.0.0

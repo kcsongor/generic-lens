@@ -44,7 +44,6 @@ import Data.Generics.Product.Internal.Fields
 import Data.Kind    (Constraint, Type)
 import GHC.Generics
 import GHC.TypeLits (Symbol, ErrorMessage(..), TypeError)
-import Data.Type.Bool (If)
 
 -- $setup
 -- == /Running example:/
@@ -134,10 +133,10 @@ instance  -- see Note [Changing type parameters]
   , Generic t'
   , GHasField' field (Rep s) a
   , GHasField' field (Rep s') a'
-  , GHasField' field (Rep t') b'
   , GHasField field (Rep s) (Rep t) a b
-  , t ~ If (HasParams s) (Infer s a' b) s
-  , s ~ If (HasParams t) (Infer t b' a) t
+  , t ~ Infer s a' b
+  , GHasField' field (Rep t') b'
+  , s ~ Infer t b' a
   ) => HasField field s t a b where
 
   field f s = ravel (repLens . gfield @field) f s
