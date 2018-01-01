@@ -23,7 +23,7 @@ import Data.Monoid            (First (..))
 import Data.Profunctor        (Choice(right'), Profunctor(dimap))
 import Data.Profunctor.Unsafe ((#.), (.#))
 import Data.Tagged
-import GHC.Generics           ((:*:)(..), (:+:)(..), Generic(..), M1(..), Rep)
+import GHC.Generics           ((:*:)(..), (:+:)(..), Generic(..), M1(..), K1(..), Rep)
 
 -- | Type alias for lens
 type Lens' s a
@@ -104,10 +104,16 @@ repIso = dimap from (fmap to)
 mIso :: Iso (M1 i c f p) (M1 i c g p) (f p) (g p)
 mIso = dimap unM1 (fmap M1)
 
+kIso :: Iso (K1 r a p) (K1 r b p) a b
+kIso = dimap unK1 (fmap K1)
+
 -- These are specialised versions of the Isos above. On GHC 8.0.2, having
 -- these functions eta-expanded allows the optimiser to inline these functions.
 mLens :: Lens (M1 i c f p) (M1 i c g p) (f p) (g p)
 mLens f s = mIso f s
+
+kLens :: Lens (K1 r a p) (K1 r b p) a b
+kLens f s = kIso f s
 
 repLens :: (Generic a, Generic b) => Lens a b (Rep a x) (Rep b x)
 repLens f s = repIso f s
