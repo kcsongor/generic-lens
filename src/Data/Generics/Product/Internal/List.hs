@@ -1,3 +1,5 @@
+{-# LANGUAGE TypeInType #-}
+{-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE AllowAmbiguousTypes    #-}
@@ -39,6 +41,7 @@ module Data.Generics.Product.Internal.List () where
 import GHC.TypeLits
 import Data.Generics.Internal.HList (type (++), Splittable (..))
 import Data.Generics.Internal.Lens
+import Data.Generics.Internal.Void
 
 import Data.Kind    (Type)
 import GHC.Generics
@@ -66,7 +69,7 @@ class GIsList
   (f :: Type -> Type)
   (g :: Type -> Type)
   (as :: [(Symbol, Type)])
-  (bs :: [(Symbol, Type)]) | f -> as, g -> bs where
+  (bs :: [(Symbol, Type)]) | f -> as, g -> bs, bs f -> g, as g -> f where
 
   -- TODO: Iso?
   glist :: Lens (f x) (g x) (List as) (List bs)
@@ -74,21 +77,31 @@ class GIsList
 
 instance
   ( GIsList l l as as
+  , GIsList l l' as as'
   , GIsList r r bs bs
+  , GIsList r r' bs bs'
   , GIsList l' l' as' as'
   , GIsList r' r' bs' bs'
+  , SameSplit as bs cs as' bs' cs'
   , cs ~ (as ++ bs)
   , cs' ~ (as' ++ bs')
   , Splittable List as bs cs
   , Splittable List as' bs' cs'
   ) => GIsList (l :*: r) (l' :*: r') cs cs' where
 
-  glist f (l :*: r) = (\(a, b) -> a ^. glist' :*: b ^. glist') <$> lr'
-    where lr' = split <$> f (append' (l ^. glist) (r ^. glist))
+  -- TODO: make split type-changing so this can be written as a single lens.
+  glist f (l :*: r) = (\(a, b) -> a ^. glist' :*: b ^. glist') . split <$> f (append' (l ^. glist) (r ^. glist))
 
   glist' f xs = (\(l :*: r) -> append' (l ^. glist) (r ^. glist))
                 <$> f (l' ^. glist' :*: r' ^. glist')
     where (l', r') = split xs
+
+-- as ++ bs == cs
+-- as' ++ bs' == cs'
+class SameSplit (as :: [k]) (bs :: [k]) (cs :: [k]) (as' :: [k]) (bs' :: [k]) (cs' :: [k]) | as bs cs cs' -> as' bs', as' bs' cs cs' -> as bs, as bs -> cs, as' bs' -> cs'
+instance SameSplit '[] bs bs '[] bs' bs'
+instance SameSplit xs bs cs xs' bs' cs'
+  => SameSplit (x ': xs) bs (x ': cs) (x' ': xs') bs' (x' ': cs')
 
 instance {-# OVERLAPS #-}
   GIsList (S1 ('MetaSel ('Just field) u s i) (Rec0 a))
@@ -130,6 +143,28 @@ data Test = Test
   , bar :: String
   } deriving Generic
 
+data Test2 = Test2
+  { foo :: Int
+  , bar :: String
+  , baz :: Char
+  } deriving Generic
+
+class Extend f g as | f g -> as where
+  extend :: f -> List as -> g
+
+instance
+  ( IsList f f fs fs
+  , cs ~ (fs ++ as)
+  , IsList g g cs cs
+  , PrefixOf fs cs as
+  ) => Extend f g as where
+
+  extend f as = ((f ^. list) `append'` as) ^. list'
+
+class PrefixOf as bs cs | as bs -> cs
+instance PrefixOf '[] cs cs
+instance PrefixOf xs ys cs => PrefixOf (x ': xs) (x ': ys) cs
+
 --------------------------------------------------------------------------------
 
 instance Splittable List '[] bs bs where
@@ -140,3 +175,22 @@ instance Splittable List as bs cs => Splittable List (a ': as) bs (a ': cs) wher
     = (a :> as', bs)
     where (as', bs) = split as
 
+-- type family Length xs where
+--   Length '[] = 0
+--   Length (x ': xs) = 1 + Length xs
+
+class IndexList (i :: Nat) as bs a b | i as -> a, i bs -> b, i as b -> bs, i bs a -> as where
+  point :: Lens (List as) (List bs) a b
+
+instance {-# OVERLAPPING #-}
+  ( as ~ ('(f, a) ': as')
+  , bs ~ ('(f, b) ': as')
+  ) => IndexList 0 as bs a b where
+  point f (x :> xs) = (:> xs) <$> f x
+
+instance
+  ( IndexList (n - 1) as' bs' a b
+  , as ~ (x ': as')
+  , bs ~ (x ': bs')
+  ) => IndexList n as bs a b where
+  point f (x :> xs) = (x :>) <$> point @(n - 1) f xs

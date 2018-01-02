@@ -1,3 +1,5 @@
+{-# LANGUAGE TypeFamilyDependencies #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE GADTs         #-}
 {-# LANGUAGE Rank2Types    #-}
@@ -24,6 +26,7 @@ import Data.Profunctor        (Choice(right'), Profunctor(dimap))
 import Data.Profunctor.Unsafe ((#.), (.#))
 import Data.Tagged
 import GHC.Generics           ((:*:)(..), (:+:)(..), Generic(..), M1(..), K1(..), Rep)
+import Unsafe.Coerce
 
 -- | Type alias for lens
 type Lens' s a
@@ -31,6 +34,9 @@ type Lens' s a
 
 type Lens s t a b
   = forall f. Functor f => (a -> f b) -> s -> f t
+
+type LensLike f s t a b
+  = (a -> f b) -> s -> f t
 
 -- | Type alias for prism
 type Prism s t a b
@@ -147,3 +153,42 @@ proj fa = Coyoneda id fa
 
 ravel :: Functor f => ((a -> Coyoneda f b) -> s -> Coyoneda f t) -> (a -> f b) -> (s -> f t)
 ravel coy f s = inj $ coy (\a -> proj (f a)) s
+
+--------------------------------------------------------------------------------
+
+newtype AlongsideLeft f b a = AlongsideLeft { getAlongsideLeft :: f (Inj a b) }
+newtype AlongsideRight f b a = AlongsideRight { getAlongsideRight :: f (Inj b a) }
+
+type family Inj a b = r | r -> a b where
+  Inj (a x) (b x) = (a :*: b) x
+
+(??) :: Functor f => f (a -> b) -> a -> f b
+fab ?? a = fmap ($ a) fab
+
+injLeft :: (a -> c) -> Inj a b -> Inj c b
+injLeft = unsafeCoerce injLeft'
+  where injLeft' :: (a x -> c x) -> Inj (a x) (b x) -> Inj (c x) (b x)
+        injLeft' f prod
+          = case prod of
+            (l :*: r) -> f l :*: r
+
+injRight :: (b -> c) -> Inj a b -> Inj a c
+injRight = unsafeCoerce injRight'
+  where injRight' :: (b x -> c x) -> Inj (a x) (b x) -> Inj (a x) (c x)
+        injRight' f prod
+          = case prod of
+            (l :*: r) -> l :*: f r
+
+instance Functor f => Functor (AlongsideLeft f b) where
+  fmap f = AlongsideLeft . fmap (injLeft f) . getAlongsideLeft
+
+instance Functor f => Functor (AlongsideRight f b) where
+  fmap f = AlongsideRight . fmap (injRight f) . getAlongsideRight
+
+alongside' :: LensLike (AlongsideLeft f (b' x)) (s x)  (t x) (a x) (b x)
+          -> LensLike (AlongsideRight f (t x)) (s' x) (t' x) (a' x) (b' x)
+          -> LensLike f ((s :*: s') x) ((t :*: t') x) ((a :*: a') x) ((b :*: b') x)
+alongside' l1 l2 f (a1 :*: a2)
+  = getAlongsideRight $ l2 ?? a2 $ \b2 -> AlongsideRight
+  $ getAlongsideLeft  $ l1 ?? a1 $ \b1 -> AlongsideLeft
+  $ f (b1 :*: b2)
