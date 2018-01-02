@@ -25,6 +25,7 @@ module Data.Generics.Internal.HList
 
   , ListTuple (..)
 
+  , Splittable (..)
   , GCollectible (..)
   ) where
 
@@ -51,13 +52,13 @@ head' (x :> _) = x
 --------------------------------------------------------------------------------
 -- * Split HList
 
-class Splittable (as :: [Type]) (bs :: [Type]) (cs :: [Type]) | as bs -> cs, as cs -> bs where
-  split :: HList cs -> (HList as, HList bs)
+class Splittable f as bs cs | as bs -> cs, as cs -> bs where
+  split :: f cs -> (f as, f bs)
 
-instance Splittable '[] bs bs where
+instance Splittable HList '[] bs bs where
   split bs = (Nil, bs)
 
-instance Splittable as bs cs => Splittable (a ': as) bs (a ': cs) where
+instance Splittable HList as bs cs => Splittable HList (a ': as) bs (a ': cs) where
   split (a :> as)
     = (a :> as', bs)
     where (as', bs) = split as
@@ -212,7 +213,7 @@ instance
   ( GCollectible l as
   , GCollectible r bs
   , cs ~ (as ++ bs)
-  , Splittable as bs cs
+  , Splittable HList as bs cs
   ) => GCollectible (l :*: r) cs where
   type GCollect (l :*: r) = GCollect l ++ GCollect r
 
