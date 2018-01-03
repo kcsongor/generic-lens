@@ -50,7 +50,6 @@ library
                     , Data.Generics.Sum.Internal.Typed
                     , Data.Generics.Sum.Internal.Subtype
 
-                    , Data.Generics.Product.Internal.Fields
                     , Data.Generics.Product.Internal.Positions
                     , Data.Generics.Product.Internal.Subtype
                     , Data.Generics.Product.Internal.Typed

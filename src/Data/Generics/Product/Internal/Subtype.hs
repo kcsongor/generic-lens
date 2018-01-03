@@ -32,7 +32,7 @@ module Data.Generics.Product.Internal.Subtype
 
 import Data.Generics.Internal.Families
 import Data.Generics.Internal.Lens
-import Data.Generics.Product.Internal.Fields
+import Data.Generics.Product.Internal.List
 
 import Data.Kind (Type)
 import GHC.Generics
@@ -47,10 +47,10 @@ instance (GUpcast sub a, GUpcast sub b) => GUpcast sub (a :*: b) where
   gupcast rep = gupcast rep :*: gupcast rep
 
 instance
-  GHasField field sub sub t t
+  GHasKey field sub sub t t
   => GUpcast sub (S1 ('MetaSel ('Just field) p f b) (Rec0 t)) where
 
-  gupcast r = M1 (K1 (r ^. gfield @field))
+  gupcast r = M1 (K1 (r ^. gkey @field))
 
 instance GUpcast sub sup => GUpcast sub (C1 c sup) where
   gupcast = M1 . gupcast
@@ -84,9 +84,9 @@ class GSmashLeaf sub sup (w :: Bool) where
   gsmashLeaf :: sup p -> sub p -> sub p
 
 instance
-  GHasField field sup sup t t
+  GHasKey field sup sup t t
   => GSmashLeaf (S1 ('MetaSel ('Just field) p f b) (Rec0 t)) sup 'True where
-  gsmashLeaf sup _ = M1 (K1 (sup ^. gfield @field))
+  gsmashLeaf sup _ = M1 (K1 (sup ^. gkey @field))
 
 instance GSmashLeaf (S1 ('MetaSel ('Just field) p f b) (Rec0 t)) sup 'False where
   gsmashLeaf _ = id

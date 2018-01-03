@@ -1,4 +1,6 @@
+{-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE AllowAmbiguousTypes    #-}
+{-# LANGUAGE CPP                    #-}
 {-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE GADTs                  #-}
@@ -9,6 +11,11 @@
 {-# LANGUAGE TypeInType             #-}
 {-# LANGUAGE TypeOperators          #-}
 {-# LANGUAGE UndecidableInstances   #-}
+
+#if __GLASGOW_HASKELL__ == 802
+{-# OPTIONS_GHC -fno-solve-constant-dicts #-}
+#endif
+
 
 -----------------------------------------------------------------------------
 -- |
@@ -28,6 +35,9 @@ module Data.Generics.Product.Internal.List
   , IndexList (..)
   , List (..)
   , type (++)
+  , Elem
+  , GHasKey (..)
+  , GHasKey'
   ) where
 
 import GHC.TypeLits
@@ -43,6 +53,11 @@ data List (as :: [(m, Type)]) where
 type family ((as :: [k]) ++ (bs :: [k])) :: [k] where
   '[]       ++ bs = bs
   (a ': as) ++ bs = a ': as ++ bs
+
+class Elem (as :: [(k, Type)]) (key :: k) (i :: Nat) a | as key -> i a
+instance pos ~ 0 => Elem ('(key, a) ': xs) key pos a
+instance {-# OVERLAPPABLE #-}
+  (Elem xs key i a, pos ~ (i + 1)) => Elem (x ': xs) key pos a
 
 class GIsList
   (m :: Type)
@@ -121,3 +136,23 @@ instance
   ) => IndexList n as bs a b where
   point f (x :> xs) = (x :>) <$> point @(n - 1) f xs
   {-# INLINE point #-}
+--------------------------------------------------------------------------------
+
+class GHasKey (key :: k) (s :: Type -> Type) (t :: Type -> Type) a b | s key -> a, t key -> b where
+  gkey :: Lens (s x) (t x) a b
+
+type GHasKey' key s a = GHasKey key s s a a
+
+instance (GHasKey key l l' a b, GHasKey key r r' a b) =>  GHasKey key (l :+: r) (l' :+: r') a b where
+  gkey = sumIso . choosing (gkey @key) (gkey @key)
+
+instance (GHasKey key f g a b) => GHasKey key (M1 D meta f) (M1 D meta g) a b where
+  gkey = mLens . gkey @key
+
+instance
+  ( Elem as key i a
+  , Elem bs key i b
+  , IndexList i as bs a b
+  , GIsList k f g as bs
+  ) => GHasKey (key :: k) (M1 C meta f) (M1 C meta g) a b where
+  gkey = mIso . (glist @k) . point @i

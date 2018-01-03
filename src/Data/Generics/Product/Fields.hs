@@ -40,7 +40,7 @@ module Data.Generics.Product.Fields
 import Data.Generics.Internal.Families
 import Data.Generics.Internal.Lens
 import Data.Generics.Internal.Void
-import Data.Generics.Product.Internal.Fields
+import Data.Generics.Product.Internal.List
 
 import Data.Kind    (Constraint, Type)
 import GHC.Generics
@@ -137,15 +137,15 @@ instance  -- see Note [Changing type parameters]
 #endif
   , Generic s'
   , Generic t'
-  , GHasField' field (Rep s) a
-  , GHasField' field (Rep s') a'
-  , GHasField' field (Rep t') b'
-  , GHasField field (Rep s) (Rep t) a b
+  , GHasKey' field (Rep s) a
+  , GHasKey' field (Rep s') a'
+  , GHasKey' field (Rep t') b'
+  , GHasKey  field (Rep s) (Rep t) a b
   , t ~ Infer s a' b
   , s ~ Infer t b' a
   ) => HasField field s t a b where
 
-  field f s = ravel (repLens . gfield @field) f s
+  field f s = ravel (repLens . gkey @field) f s
 
 -- -- See Note [Uncluttering type signatures]
 instance {-# OVERLAPPING #-} HasField f (Void1 a) (Void1 b) a b where
