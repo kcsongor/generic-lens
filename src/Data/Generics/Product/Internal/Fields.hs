@@ -1,4 +1,5 @@
 {-# LANGUAGE AllowAmbiguousTypes    #-}
+{-# LANGUAGE CPP                    #-}
 {-# LANGUAGE ConstraintKinds        #-}
 {-# LANGUAGE DataKinds              #-}
 {-# LANGUAGE FlexibleInstances      #-}
@@ -11,6 +12,10 @@
 {-# LANGUAGE TypeFamilies           #-}
 {-# LANGUAGE TypeOperators          #-}
 {-# LANGUAGE UndecidableInstances   #-}
+
+#if __GLASGOW_HASKELL__ == 802
+{-# OPTIONS_GHC -fno-solve-constant-dicts #-}
+#endif
 
 -----------------------------------------------------------------------------
 -- |
