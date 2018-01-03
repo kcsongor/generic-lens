@@ -5,6 +5,7 @@
 {-# LANGUAGE ScopedTypeVariables    #-}
 {-# LANGUAGE TupleSections          #-}
 {-# LANGUAGE TypeApplications       #-}
+{-# LANGUAGE TypeFamilies           #-}
 {-# LANGUAGE TypeInType             #-}
 {-# LANGUAGE TypeOperators          #-}
 {-# LANGUAGE UndecidableInstances   #-}
@@ -26,10 +27,10 @@ module Data.Generics.Product.Internal.List
   ( GIsList (..)
   , IndexList (..)
   , List (..)
+  , type (++)
   ) where
 
 import GHC.TypeLits
-import Data.Generics.Internal.HList (type (++))
 import Data.Generics.Internal.Lens
 
 import Data.Kind    (Type)
@@ -38,6 +39,10 @@ import GHC.Generics
 data List (as :: [(m, Type)]) where
   Nil :: List '[]
   (:>) :: a -> List as -> List ('(s, a) ': as)
+
+type family ((as :: [k]) ++ (bs :: [k])) :: [k] where
+  '[]       ++ bs = bs
+  (a ': as) ++ bs = a ': as ++ bs
 
 class GIsList
   (m :: Type)

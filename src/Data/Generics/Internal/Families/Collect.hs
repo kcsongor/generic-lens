@@ -28,6 +28,7 @@ import Data.Type.Equality (type (==))
 import GHC.Generics
 import GHC.TypeLits       (Symbol, CmpSymbol)
 
+import Data.Generics.Product.Internal.List (type (++))
 import Data.Generics.Internal.HList
 
 data TypeStat

@@ -20,27 +20,22 @@
 -- Portability :  non-portable
 --
 -----------------------------------------------------------------------------
+-- TODO: this whole module is redundant now.
 module Data.Generics.Internal.HList
-  ( type (++)
-
-  , ListTuple (..)
-
+  ( ListTuple (..)
   , Splittable (..)
   , GCollectible (..)
   ) where
 
 import Data.Kind (Type)
 import GHC.Generics
+import Data.Generics.Product.Internal.List (type (++))
 
 data HList (xs :: [Type]) where
   Nil  :: HList '[]
   (:>) :: x -> HList xs -> HList (x ': xs)
 
 infixr 5 :>
-
-type family ((as :: [k]) ++ (bs :: [k])) :: [k] where
-  '[]       ++ bs = bs
-  (a ': as) ++ bs = a ': as ++ bs
 
 append :: HList as -> HList bs -> HList (as ++ bs)
 append Nil       ys = ys

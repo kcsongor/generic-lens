@@ -35,40 +35,30 @@ module Data.Generics.Product.Internal.Positions
 
 import Data.Generics.Internal.Lens
 
+import Data.Generics.Product.Internal.List
 import Data.Kind      (Type)
 import Data.Type.Bool (If, Not)
 import GHC.Generics
-import GHC.TypeLits   (type (<=?), type (+), Nat)
+import GHC.TypeLits   (type (<=?), type (+), type (-), Nat)
 
 -- |As 'HasPosition' but over generic representations as defined by
 --  "GHC.Generics".
-class GHasPosition (offset :: Nat) (i :: Nat) (s :: Type -> Type) (t :: Type -> Type) a b | s offset i -> a, s t offset i -> b where
+class GHasPosition (i :: Nat) (s :: Type -> Type) (t :: Type -> Type) a b | s i -> a, s t i -> b where
   gposition :: Lens (s x) (t x) a b
 
-type GHasPosition' i s a = GHasPosition 1 i s s a a
+type GHasPosition' i s a = GHasPosition i s s a a
 
-instance GHasPosition i i (K1 R a) (K1 R b) a b where
-  gposition f (K1 x) = fmap K1 (f x)
+instance (GHasPosition i l l' a b, GHasPosition i r r' a b) =>  GHasPosition i (l :+: r) (l' :+: r') a b where
+  gposition = sumIso . choosing (gposition @i) (gposition @i)
 
-instance GHasPosition offset i s t a b => GHasPosition offset i (M1 m meta s) (M1 m meta t) a b where
-  gposition = mLens . gposition @offset @i
+instance GHasPosition i s t a b => GHasPosition i (M1 D meta s) (M1 D meta t) a b where
+  gposition = mLens . gposition @i
 
 instance
-  ( goLeft  ~ (i <? (offset + Size l))
-  , offset' ~ (If goLeft offset (offset + Size l))
-  , GProductHasPosition offset' i l r l' r' a b goLeft
-  ) => GHasPosition offset i (l :*: r) (l' :*: r') a b where
-
-  gposition = gproductPosition @offset' @i @_ @_ @_ @_ @_ @_ @goLeft
-
-class GProductHasPosition (offset :: Nat) (i :: Nat) l r l' r' a b (left :: Bool) | offset i l r -> a, offset i l r l' r' -> b where
-  gproductPosition :: Lens ((l :*: r) x) ((l' :*: r') x) a b
-
-instance GHasPosition offset i l l' a b => GProductHasPosition offset i l r l' r a b 'True where
-  gproductPosition = first . gposition @offset @i
-
-instance GHasPosition offset i r r' a b => GProductHasPosition offset i l r l r' a b 'False where
-  gproductPosition = second . gposition @offset @i
+  ( IndexList (i - 1) as bs a b
+  , GIsList () f g as bs
+  ) => GHasPosition i (M1 C meta f) (M1 C meta g) a b where
+  gposition = mIso . (glist @()) . point @(i - 1)
 
 type family Size f :: Nat where
   Size (l :*: r)
