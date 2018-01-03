@@ -1,8 +1,9 @@
-{-# LANGUAGE DataKinds              #-}
-{-# LANGUAGE FlexibleContexts       #-}
+{-# LANGUAGE AllowAmbiguousTypes    #-}
 {-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE FunctionalDependencies #-}
-{-# LANGUAGE KindSignatures         #-}
+{-# LANGUAGE ScopedTypeVariables    #-}
+{-# LANGUAGE TypeApplications       #-}
+{-# LANGUAGE TypeInType             #-}
 {-# LANGUAGE UndecidableInstances   #-}
 
 -----------------------------------------------------------------------------
@@ -26,18 +27,18 @@ import Data.Generics.Internal.Lens
 import Data.Generics.Product.Internal.List
 import Data.Kind
 import GHC.Generics
-import GHC.TypeLits
 
 class IsList
+  (m :: Type)
   (f :: Type)
   (g :: Type)
-  (as :: [(Symbol, Type)])
-  (bs :: [(Symbol, Type)]) | f -> as, g -> bs where
+  (as :: [(m, Type)])
+  (bs :: [(m, Type)]) | m f -> as, m g -> bs where
   list  :: Iso f g (List as) (List bs)
 
 instance
   ( Generic f
   , Generic g
-  , GIsList (Rep f) (Rep g) as bs
-  ) => IsList f g as bs where
-  list = repIso . glist
+  , GIsList m (Rep f) (Rep g) as bs
+  ) => IsList m f g as bs where
+  list = repIso . (glist @m)

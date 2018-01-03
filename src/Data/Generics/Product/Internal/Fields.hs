@@ -63,6 +63,6 @@ instance
   ( Elem as field i a
   , Elem bs field i b
   , IndexList i as bs a b
-  , GIsList f g as bs
+  , GIsList Symbol f g as bs
   ) => GHasField field (M1 C meta f) (M1 C meta g) a b where
-  gfield = mIso . glist . point @i
+  gfield = mIso . (glist @Symbol) . point @i

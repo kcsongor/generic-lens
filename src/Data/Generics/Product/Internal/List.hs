@@ -1,19 +1,11 @@
 {-# LANGUAGE AllowAmbiguousTypes    #-}
-{-# LANGUAGE ConstraintKinds        #-}
-{-# LANGUAGE DataKinds              #-}
-{-# LANGUAGE FlexibleContexts       #-}
 {-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE GADTs                  #-}
-{-# LANGUAGE KindSignatures         #-}
-{-# LANGUAGE MultiParamTypeClasses  #-}
-{-# LANGUAGE PolyKinds              #-}
-{-# LANGUAGE Rank2Types             #-}
 {-# LANGUAGE ScopedTypeVariables    #-}
 {-# LANGUAGE TupleSections          #-}
 {-# LANGUAGE TypeApplications       #-}
-{-# LANGUAGE TypeFamilies           #-}
-{-# LANGUAGE TypeFamilyDependencies #-}
+{-# LANGUAGE TypeInType             #-}
 {-# LANGUAGE TypeOperators          #-}
 {-# LANGUAGE UndecidableInstances   #-}
 
@@ -43,33 +35,34 @@ import Data.Generics.Internal.Lens
 import Data.Kind    (Type)
 import GHC.Generics
 
-data List (as :: [(Symbol, Type)]) where
+data List (as :: [(m, Type)]) where
   Nil :: List '[]
   (:>) :: a -> List as -> List ('(s, a) ': as)
 
 class GIsList
+  (m :: Type)
   (f :: Type -> Type)
   (g :: Type -> Type)
-  (as :: [(Symbol, Type)])
-  (bs :: [(Symbol, Type)]) | f -> as, g -> bs, bs f -> g, as g -> f where
+  (as :: [(m, Type)])
+  (bs :: [(m, Type)]) | m f -> as, m g -> bs, bs f -> g, as g -> f where
 
   glist :: Iso (f x) (g x) (List as) (List bs)
 
   glistL :: Lens (f x) (g x) (List as) (List bs)
-  glistL f s = glist f s
+  glistL f s = glist @m f s
 
   glistR :: Lens (List bs) (List as) (g x) (f x)
-  glistR f s = fromIso glist f s
+  glistR f s = fromIso (glist @m) f s
 
 instance
-  ( GIsList l l' as as'
-  , GIsList r r' bs bs'
+  ( GIsList m l l' as as'
+  , GIsList m r r' bs bs'
   , Appending List as bs cs as' bs' cs'
   , cs ~ (as ++ bs)
   , cs' ~ (as' ++ bs')
-  ) => GIsList (l :*: r) (l' :*: r') cs cs' where
+  ) => GIsList m (l :*: r) (l' :*: r') cs cs' where
 
-  glist = prodIso . pairing glist glist . appending
+  glist = prodIso . pairing (glist @m) (glist @m) . appending
 
 -- as ++ bs == cs
 -- as' ++ bs' == cs'
@@ -84,16 +77,20 @@ instance Appending List as bs cs as' bs' cs'
   appending = pairing (fromIso consing) id . assoc3 . pairing id appending . consing
 
 instance {-# OVERLAPS #-}
-  GIsList (S1 ('MetaSel ('Just field) u s i) (Rec0 a))
+  GIsList Symbol
+          (S1 ('MetaSel ('Just field) u s i) (Rec0 a))
           (S1 ('MetaSel ('Just field) u s i) (Rec0 b))
           '[ '(field, a)] '[ '(field, b)] where
   glist = mIso . kIso . singleton
 
-instance GIsList U1 U1 '[] '[] where
+instance GIsList () (Rec0 a) (Rec0 b) '[ '( '(), a)] '[ '( '(), b)] where
+  glist = kIso . singleton
+
+instance GIsList m U1 U1 '[] '[] where
   glist = iso (const Nil) (const U1)
 
-instance GIsList f g as bs => GIsList (M1 m meta f) (M1 m meta g) as bs where
-  glist = mIso . glist
+instance GIsList m f g as bs => GIsList m (M1 t meta f) (M1 t meta g) as bs where
+  glist = mIso . glist @m
 
 singleton :: Iso a b (List '[ '(field, a)]) (List '[ '(field, b)])
 singleton = iso (:> Nil) (\(x :> _) -> x)
