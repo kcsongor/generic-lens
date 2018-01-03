@@ -79,8 +79,8 @@ class Appending f (as :: [k]) bs cs (as' :: [k]) bs' cs' | as bs cs cs' -> as' b
 instance Appending List '[] bs bs '[] bs' bs' where
   appending = iso snd (Nil,)
 
-instance Appending List xs bs cs xs' bs' cs'
-  => Appending List ('(f, x) ': xs) bs ('(f, x) ': cs) ('(f, x') ': xs') bs' ('(f, x') ': cs') where
+instance Appending List as bs cs as' bs' cs'
+  => Appending List ('(f, a) ': as) bs ('(f, a) ': cs) ('(f, a') ': as') bs' ('(f, a') ': cs') where
   appending = pairing (fromIso consing) id . assoc3 . pairing id appending . consing
 
 instance {-# OVERLAPS #-}
@@ -110,6 +110,7 @@ instance {-# OVERLAPPING #-}
   , bs ~ ('(f, b) ': as')
   ) => IndexList 0 as bs a b where
   point f (x :> xs) = (:> xs) <$> f x
+  {-# INLINE point #-}
 
 instance
   ( IndexList (n - 1) as' bs' a b
@@ -117,3 +118,4 @@ instance
   , bs ~ (x ': bs')
   ) => IndexList n as bs a b where
   point f (x :> xs) = (x :>) <$> point @(n - 1) f xs
+  {-# INLINE point #-}
