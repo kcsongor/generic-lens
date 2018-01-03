@@ -151,24 +151,9 @@ ravel coy f s = inj $ coy (\a -> proj (f a)) s
 
 -- Pull dimaps to left and rights to right
 
-newtype MergeRight p a b = MergeRight (PrismBoggle p a b)
-{-
-instance Choice p => Profunctor (MergeRight p) where
-  dimap f g (MergeRight (Dirty pab)) = MergeRight (DMap f g pab)
-  dimap f g (MergeRight (DMap f' g' pab)) = MergeRight (DMap (f' . f) (g . g') pab)
-  dimap f g (MergeRight (DRight pab))     =  MergeRight (DMap f g (right' pab))
-
-instance Choice p => Choice (MergeRight p) where
-  right' (MergeRight (Dirty pab)) = MergeRight (DRight pab)
-  right' (MergeRight (DMap f g pab)) = MergeRight (DMap (fmap f) (fmap g) (right' pab))
-  right' (MergeRight (DRight pab))   = MergeRight (DMap assoc' assoc (right' pab))
-  -}
-
 data PrismBoggle p a b where
-  DRight :: Bool -> (p x y) -> PrismBoggle p (Either z x) (Either z y)
+  DRight :: (p x y) -> PrismBoggle p (Either z x) (Either z y)
   DMap :: (c -> a) -> (b -> d) -> (p a b) -> PrismBoggle p c d
-  --DAssoc :: p (Either (Either a b) c) (Either (Either a b) c) -> PrismBoggle p (Either a (Either b c)) (Either a (Either b c))
---  DAssoc :: p (Either a (Either b c)) (Either a (Either b c)) -> PrismBoggle p (Either (Either a b)c) (Either (Either a b) c)
   Dirty :: p a b -> PrismBoggle p a b
 
 instance Choice p => Profunctor (PrismBoggle p) where
