@@ -44,7 +44,7 @@ instance GProductHasType l r a (HasTotalTypeP a l)
   gtyped = gproductTyped @_ @_ @_ @(HasTotalTypeP a l)
 
 instance (GHasType l a, GHasType r a) => GHasType (l :+: r) a where
-  gtyped = combine (gtyped @l) (gtyped @r)
+  gtyped = sumIso . choosing (gtyped @l) (gtyped @r)
 
 instance GHasType (K1 R a) a where
   gtyped f (K1 x) = fmap K1 (f x)

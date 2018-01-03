@@ -30,12 +30,12 @@ module Data.Generics.Product.Internal.Fields
   , GHasField'
   ) where
 
-import Data.Generics.Internal.Families
 import Data.Generics.Internal.Lens
+import Data.Generics.Product.Internal.List
 
 import Data.Kind    (Type)
 import GHC.Generics
-import GHC.TypeLits (Symbol)
+import GHC.TypeLits (Symbol, Nat, type (+))
 
 -- |As 'HasField' but over generic representations as defined by
 --  "GHC.Generics".
@@ -44,34 +44,16 @@ class GHasField (field :: Symbol) (s :: Type -> Type) (t :: Type -> Type) a b | 
 
 type GHasField' field s a = GHasField field s s a a
 
-instance GProductHasField field l r l' r' a b (HasTotalFieldP field l)
-      => GHasField field (l :*: r) (l' :*: r') a b where
+instance (GHasField field l l' a b, GHasField field r r' a b) =>  GHasField field (l :+: r) (l' :+: r') a b where
 
-  gfield = gproductField @field @_ @_ @_ @_ @_ @_ @(HasTotalFieldP field l)
+  gfield = sumIso . choosing (gfield @field) (gfield @field)
 
-instance (GHasField' field r a, GHasField' field l a, GHasField field l l' a b, GHasField field r r' a b)
-      =>  GHasField field (l :+: r) (l' :+: r') a b where
-
-  gfield f (L1 s) = fmap (\a -> L1 (set (gfield @field) a s)) (f (s ^. gfield @field))
-  gfield f (R1 t) = fmap (\a -> R1 (set (gfield @field) a t)) (f (t ^. gfield @field))
-
-instance GHasField field (K1 R a) (K1 R b) a b where
-  gfield f (K1 x) = fmap K1 (f x)
-
-instance GHasField field (S1 ('MetaSel ('Just field) upkd str infstr) (Rec0 a)) (S1 ('MetaSel ('Just field) upkd str infstr) (Rec0 b)) a b where
+instance (GHasField field f g a b) => GHasField field (M1 D meta f) (M1 D meta g) a b where
   gfield = mLens . gfield @field
 
-instance (Functor g, GHasField field f g a b) => GHasField field (M1 D meta f) (M1 D meta g) a b where
-  gfield = mLens . gfield @field
+class Elem (as :: [(Symbol, *)]) (field :: Symbol) (i :: Nat) a | as field -> i a
+instance pos ~ 0 => Elem ('(field, a) ': xs) field pos a
+instance {-# OVERLAPPABLE #-} (Elem xs field i a, pos ~ (i + 1)) => Elem (x ': xs) field pos a
 
-instance GHasField field f g a b => GHasField field (M1 C meta f) (M1 C meta g) a b where
-  gfield = mLens . gfield @field
-
-class GProductHasField (field :: Symbol) l r l' r' a b (left :: Bool) | field l r -> a, field l' r' -> b where
-  gproductField :: Lens ((l :*: r) x) ((l' :*: r') x) a b
-
-instance GHasField field l l' a b => GProductHasField field l r l' r a b 'True where
-  gproductField = first . gfield @field
-
-instance GHasField field r r' a b => GProductHasField field l r l r' a b 'False where
-  gproductField = second . gfield @field
+instance (Elem as field i a, Elem bs field i b,  IndexList i as bs a b, GIsList f g as bs) => GHasField field (M1 C meta f) (M1 C meta g) a b where
+  gfield = mLens . glist . point @i

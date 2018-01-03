@@ -29,6 +29,7 @@ library
                     , Data.Generics.Product.Positions
                     , Data.Generics.Product.Subtype
                     , Data.Generics.Product.Typed
+                    , Data.Generics.Product.List
                     --, Data.Generics.Labels
 
                     , Data.Generics.Sum
