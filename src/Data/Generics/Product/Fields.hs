@@ -40,7 +40,7 @@ module Data.Generics.Product.Fields
 import Data.Generics.Internal.Families
 import Data.Generics.Internal.Lens
 import Data.Generics.Internal.Void
-import Data.Generics.Product.Internal.List
+import Data.Generics.Product.Internal.Keyed
 
 import Data.Kind    (Constraint, Type)
 import GHC.Generics

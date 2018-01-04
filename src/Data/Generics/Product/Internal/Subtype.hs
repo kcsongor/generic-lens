@@ -32,7 +32,7 @@ module Data.Generics.Product.Internal.Subtype
 
 import Data.Generics.Internal.Families
 import Data.Generics.Internal.Lens
-import Data.Generics.Product.Internal.List
+import Data.Generics.Product.Internal.Keyed
 
 import Data.Kind (Type)
 import GHC.Generics
