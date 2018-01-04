@@ -52,7 +52,6 @@ library
 
                     , Data.Generics.Product.Internal.Positions
                     , Data.Generics.Product.Internal.Subtype
-                    , Data.Generics.Product.Internal.Typed
                     , Data.Generics.Product.Internal.List
 
   build-depends:      base        >= 4.9 && <= 5.0

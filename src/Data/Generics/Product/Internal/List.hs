@@ -1,3 +1,6 @@
+{-# LANGUAGE DeriveGeneric #-}
+
+{-# LANGUAGE TypeFamilyDependencies #-}
 {-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE AllowAmbiguousTypes    #-}
 {-# LANGUAGE CPP                    #-}
@@ -55,9 +58,8 @@ type family ((as :: [k]) ++ (bs :: [k])) :: [k] where
   (a ': as) ++ bs = a ': as ++ bs
 
 class Elem (as :: [(k, Type)]) (key :: k) (i :: Nat) a | as key -> i a
-instance pos ~ 0 => Elem ('(key, a) ': xs) key pos a
-instance {-# OVERLAPPABLE #-}
-  (Elem xs key i a, pos ~ (i + 1)) => Elem (x ': xs) key pos a
+instance {-# OVERLAPPING #-} pos ~ 0 => Elem ('(key, a) ': xs) key pos a
+instance (Elem xs key i a, pos ~ (i + 1)) => Elem (x ': xs) key pos a
 
 class GIsList
   (m :: Type)
@@ -84,8 +86,28 @@ instance
 
   glist = prodIso . pairing (glist @m) (glist @m) . appending
 
+instance GIsList m f g as bs => GIsList m (M1 t meta f) (M1 t meta g) as bs where
+  glist = mIso . glist @m
+
+instance {-# OVERLAPS #-}
+  GIsList Symbol
+          (S1 ('MetaSel ('Just field) u s i) (Rec0 a))
+          (S1 ('MetaSel ('Just field) u s i) (Rec0 b))
+          '[ '(field, a)] '[ '(field, b)] where
+  glist = mIso . kIso . singleton
+
+instance GIsList Type (Rec0 a) (Rec0 a) '[ '(a, a)] '[ '(a, a)] where
+  glist = kIso . singleton
+
+instance GIsList () (Rec0 a) (Rec0 b) '[ '( '(), a)] '[ '( '(), b)] where
+  glist = kIso . singleton
+
+instance GIsList m U1 U1 '[] '[] where
+  glist = iso (const Nil) (const U1)
+
+--------------------------------------------------------------------------------
 -- as ++ bs == cs
--- as' ++ bs' == cs'
+-- as' + == cs'
 class Appending f (as :: [k]) bs cs (as' :: [k]) bs' cs' | as bs cs cs' -> as' bs', as' bs' cs cs' -> as bs, as bs -> cs, as' bs' -> cs' where
   appending :: Iso (f as, f bs) (f as', f bs') (f cs) (f cs')
 
@@ -95,22 +117,6 @@ instance Appending List '[] bs bs '[] bs' bs' where
 instance Appending List as bs cs as' bs' cs'
   => Appending List ('(f, a) ': as) bs ('(f, a) ': cs) ('(f, a') ': as') bs' ('(f, a') ': cs') where
   appending = pairing (fromIso consing) id . assoc3 . pairing id appending . consing
-
-instance {-# OVERLAPS #-}
-  GIsList Symbol
-          (S1 ('MetaSel ('Just field) u s i) (Rec0 a))
-          (S1 ('MetaSel ('Just field) u s i) (Rec0 b))
-          '[ '(field, a)] '[ '(field, b)] where
-  glist = mIso . kIso . singleton
-
-instance GIsList () (Rec0 a) (Rec0 b) '[ '( '(), a)] '[ '( '(), b)] where
-  glist = kIso . singleton
-
-instance GIsList m U1 U1 '[] '[] where
-  glist = iso (const Nil) (const U1)
-
-instance GIsList m f g as bs => GIsList m (M1 t meta f) (M1 t meta g) as bs where
-  glist = mIso . glist @m
 
 singleton :: Iso a b (List '[ '(field, a)]) (List '[ '(field, b)])
 singleton = iso (:> Nil) (\(x :> _) -> x)

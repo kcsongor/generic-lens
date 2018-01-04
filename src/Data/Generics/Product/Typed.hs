@@ -33,7 +33,7 @@ module Data.Generics.Product.Typed
 import Data.Generics.Internal.Families
 import Data.Generics.Internal.Lens
 import Data.Generics.Internal.Void
-import Data.Generics.Product.Internal.Typed
+import Data.Generics.Product.Internal.List
 
 import Data.Kind    (Constraint, Type)
 import GHC.Generics (Generic (Rep))
@@ -108,10 +108,10 @@ class HasType a s where
 instance
   ( Generic s
   , ErrorUnlessOne a s (CollectTotalType a (Rep s))
-  , GHasType (Rep s) a
+  , GHasKey a (Rep s) (Rep s) a a
   ) => HasType a s where
 
-  typed = ravel (repLens . gtyped)
+  typed = ravel (repLens . gkey @a)
 
 -- See Note [Uncluttering type signatures]
 instance {-# OVERLAPPING #-} HasType a Void where
