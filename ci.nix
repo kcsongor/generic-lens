@@ -7,11 +7,8 @@ let
               { patches = ./head.hackage/patches; };
 
 
-            ghc802 = super.haskell.packages.ghc802;
-            ghc822 = super.haskell.packages.ghc822;
-
-            cabal2nix = self.packages.cabal2nix;
-
+            ghc802 = self.haskell.packages.ghc802;
+            ghc822 = self.haskell.packages.ghc822;
 
             # A modified package set intented to be used with ghcHEAD
             ghcHEAD = super.haskell.packages.ghcHEAD.override
@@ -20,7 +17,6 @@ let
                   // { mkDerivation = drv: sup.mkDerivation
                         ( drv // { jailbreak = true; doHaddock = false;});
                         generic-deriving = super.haskell.lib.dontCheck sup.generic-deriving;
-                        cabal2nix = sup.callHackage "cabal2nix" "2.7.2" {};
                        });
                    };
 
@@ -30,9 +26,14 @@ let
             };
           };
 
-  nixpkgs = import <nixpkgs> { overlays = [overlay]; };
+  nixpkgs = import ((import <nixpkgs> { }).fetchFromGitHub {
+  owner = "NixOS";
+  repo = "nixpkgs";
+  rev = "3cfa038870cb2f6017d1a3148aba6c83480eec62";
+  sha256 = "0v4gi55bmk70ynml4in765m4zq832g34lb52pgsvfyi4cg9f4vv3";
+}) { overlays = [overlay]; };
 in
-  { pkgSet ? "ghc802" }:
+  { pkgSet ? "ghc822" }:
   nixpkgs.${pkgSet}.callCabal2nix "generic-lens" ./. {}
 
 
