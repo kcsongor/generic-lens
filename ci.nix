@@ -15,6 +15,7 @@ let
       cabal-doctest = sup.callHackage "cabal-doctest" "1.0.3" {};
       haskell-src-exts = sup.callHackage "haskell-src-exts" "1.20.1" {};
       tasty = nixpkgs.haskell.lib.addBuildDepend sup.tasty sel.semigroups;
+      hspec-core = nixpkgs.haskell.lib.dontCheck sup.hspec-core;
 
     };
 

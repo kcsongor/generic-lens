@@ -14,5 +14,5 @@ matrix:
       env: HS_SET="ghcHEAD"
 
 script:
-  - nix-build ci.nix --argstr pkgSet $HS_SET
+  - nix-build ci.nix --argstr pkgSet $HS_SET -j8
 
