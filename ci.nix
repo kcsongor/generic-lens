@@ -10,6 +10,8 @@ let
             ghc802 = super.haskell.packages.ghc802;
             ghc822 = super.haskell.packages.ghc822;
 
+            cabal2nix = self.packages.cabal2nix;
+
 
             # A modified package set intented to be used with ghcHEAD
             ghcHEAD = super.haskell.packages.ghcHEAD.override
