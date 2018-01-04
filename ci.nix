@@ -1,11 +1,11 @@
 let
   overlay = self: super:
           {
-            simple-server = super.callPackage ./simple-serve/server.nix {};
-
             # An attribute which contains the head overrides.
+            # Should put some urls here
             patches = super.callPackage ./head.hackage/scripts/overrides.nix
               { patches = ./head.hackage/patches; };
+
 
             ghc802 = super.haskell.packages.ghc802;
             ghc822 = super.haskell.packages.ghc822;
@@ -18,6 +18,7 @@ let
                   // { mkDerivation = drv: sup.mkDerivation
                         ( drv // { jailbreak = true; doHaddock = false;});
                         generic-deriving = super.haskell.lib.dontCheck sup.generic-deriving;
+                        cabal2nix = sup.callHackage "cabal2nix" "2.7.2" {};
                        });
                    };
 
