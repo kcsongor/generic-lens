@@ -1,5 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
-
 {-# LANGUAGE TypeFamilyDependencies #-}
 {-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE AllowAmbiguousTypes    #-}
