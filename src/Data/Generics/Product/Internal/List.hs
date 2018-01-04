@@ -1,7 +1,6 @@
-{-# LANGUAGE TypeFamilyDependencies #-}
-{-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE AllowAmbiguousTypes    #-}
 {-# LANGUAGE CPP                    #-}
+{-# LANGUAGE ConstraintKinds        #-}
 {-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE GADTs                  #-}
@@ -37,8 +36,6 @@ module Data.Generics.Product.Internal.List
   , List (..)
   , type (++)
   , Elem
-  , GHasKey (..)
-  , GHasKey'
   ) where
 
 import GHC.TypeLits
@@ -54,6 +51,14 @@ data List (as :: [(m, Type)]) where
 type family ((as :: [k]) ++ (bs :: [k])) :: [k] where
   '[]       ++ bs = bs
   (a ': as) ++ bs = a ': as ++ bs
+
+instance Monoid (List '[]) where
+  mempty  = Nil
+  mappend _ _ = Nil
+
+instance (Monoid a, Monoid (List as)) => Monoid (List ('(k, a) ': as)) where
+  mempty = mempty :> mempty
+  mappend (x :> xs) (y :> ys) = mappend x y :> mappend xs ys
 
 class Elem (as :: [(k, Type)]) (key :: k) (i :: Nat) a | as key -> i a
 instance {-# OVERLAPPING #-} pos ~ 0 => Elem ('(key, a) ': xs) key pos a
@@ -140,23 +145,3 @@ instance
   ) => IndexList n as bs a b where
   point f (x :> xs) = (x :>) <$> point @(n - 1) f xs
   {-# INLINE point #-}
---------------------------------------------------------------------------------
-
-class GHasKey (key :: k) (s :: Type -> Type) (t :: Type -> Type) a b | s key -> a, t key -> b where
-  gkey :: Lens (s x) (t x) a b
-
-type GHasKey' key s a = GHasKey key s s a a
-
-instance (GHasKey key l l' a b, GHasKey key r r' a b) =>  GHasKey key (l :+: r) (l' :+: r') a b where
-  gkey = sumIso . choosing (gkey @key) (gkey @key)
-
-instance (GHasKey key f g a b) => GHasKey key (M1 D meta f) (M1 D meta g) a b where
-  gkey = mLens . gkey @key
-
-instance
-  ( Elem as key i a
-  , Elem bs key i b
-  , IndexList i as bs a b
-  , GIsList k f g as bs
-  ) => GHasKey (key :: k) (M1 C meta f) (M1 C meta g) a b where
-  gkey = mIso . (glist @k) . point @i
