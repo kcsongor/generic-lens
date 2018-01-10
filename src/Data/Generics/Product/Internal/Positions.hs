@@ -43,7 +43,7 @@ import GHC.TypeLits   (type (<=?), type (+), type (-), Nat)
 
 -- |As 'HasPosition' but over generic representations as defined by
 --  "GHC.Generics".
-class GHasPosition (i :: Nat) (s :: Type -> Type) (t :: Type -> Type) a b | s i -> a, s t i -> b where
+class GHasPosition (i :: Nat) (s :: Type -> Type) (t :: Type -> Type) a b | s i -> a, t i -> b, s t i -> b where
   gposition :: Lens (s x) (t x) a b
 
 type GHasPosition' i s a = GHasPosition i s s a a
