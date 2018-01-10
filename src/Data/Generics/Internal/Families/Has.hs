@@ -17,7 +17,7 @@
 module Data.Generics.Internal.Families.Has
   ( HasTotalFieldP
   , HasTotalTypeP
-  , HasPartialTypeTupleP
+  , HasPartialTypeP
   , HasCtorP
   , GTypes
   ) where
@@ -79,12 +79,12 @@ type family HasTotalTypeP a f :: Bool where
         ':<>: 'Text " is not a valid GHC.Generics representation type"
         )
 
-type family HasPartialTypeTupleP a f :: Bool where
-  HasPartialTypeTupleP t (l :+: r)
-    = HasPartialTypeTupleP t l || HasPartialTypeTupleP t r
-  HasPartialTypeTupleP t (C1 m f)
-    = t == ListToTuple (GTypes f)
-  HasPartialTypeTupleP t _
+type family HasPartialTypeP a f :: Bool where
+  HasPartialTypeP t (l :+: r)
+    = HasPartialTypeP t l || HasPartialTypeP t r
+  HasPartialTypeP t (C1 m f)
+    = t == GTypes f
+  HasPartialTypeP t _
     = 'False
 
 type family HasCtorP (ctor :: Symbol) f :: Bool where

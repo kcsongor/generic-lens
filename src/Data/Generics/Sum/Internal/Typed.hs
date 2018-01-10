@@ -1,14 +1,14 @@
-{-# LANGUAGE AllowAmbiguousTypes    #-}
-{-# LANGUAGE DataKinds              #-}
-{-# LANGUAGE FlexibleContexts       #-}
-{-# LANGUAGE FlexibleInstances      #-}
-{-# LANGUAGE KindSignatures         #-}
-{-# LANGUAGE MultiParamTypeClasses  #-}
-{-# LANGUAGE ScopedTypeVariables    #-}
-{-# LANGUAGE TypeApplications       #-}
-{-# LANGUAGE TypeFamilies           #-}
-{-# LANGUAGE TypeOperators          #-}
-{-# LANGUAGE UndecidableInstances   #-}
+{-# LANGUAGE AllowAmbiguousTypes   #-}
+{-# LANGUAGE DataKinds             #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE FlexibleInstances     #-}
+{-# LANGUAGE KindSignatures        #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
+{-# LANGUAGE TypeApplications      #-}
+{-# LANGUAGE TypeFamilies          #-}
+{-# LANGUAGE TypeOperators         #-}
+{-# LANGUAGE UndecidableInstances  #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -35,54 +35,25 @@ import Data.Generics.Product.Internal.List
 import Data.Generics.Internal.Lens
 
 -- |As 'AsType' but over generic representations as defined by "GHC.Generics".
-class GAsType (f :: Type -> Type) a where
-  _GTyped :: Prism' (f x) a
-  _GTyped = prism ginjectTyped gprojectTyped
-
-  ginjectTyped  :: a -> f x
-  gprojectTyped :: f x -> Either (f x) a
+class GAsType (f :: Type -> Type) (as :: [((), Type)]) where
+  _GTyped :: Prism' (f x) (List as)
 
 instance
-  ( GIsList Type f f as as
-  , ListTuple a as
-  ) => GAsType (M1 C meta f) a where
+  ( GIsList () f f as as
+  ) => GAsType (M1 C meta f) as where
+  _GTyped = mIso . glist @()
 
-  ginjectTyped
-    = M1 . (^. fromIso (glist @Type)) . tupleToList
-  gprojectTyped
-    = Right . listToTuple . (^. glist @Type) . unM1
-
-instance GSumAsType (HasPartialTypeTupleP a l) l r a => GAsType (l :+: r) a where
-  ginjectTyped
-    = ginjectSumTyped @(HasPartialTypeTupleP a l) @l @r @a
-  gprojectTyped
-    = gprojectSumTyped @(HasPartialTypeTupleP a l) @l @r @a
+instance GSumAsType (HasPartialTypeP a l) l r a => GAsType (l :+: r) a where
+  _GTyped = _GSumTyped @(HasPartialTypeP a l)
 
 instance GAsType f a => GAsType (M1 D meta f) a where
-  ginjectTyped
-    = M1 . ginjectTyped
-  gprojectTyped
-    = either (Left . M1) Right . gprojectTyped . unM1
+  _GTyped = mIso . _GTyped
 
-class GSumAsType (contains :: Bool) l r a where
-  _GSumTyped :: Prism' ((l :+: r) x) a
-  _GSumTyped = prism (ginjectSumTyped  @contains) (gprojectSumTyped @contains)
-
-  ginjectSumTyped  :: a -> (l :+: r) x
-  gprojectSumTyped :: (l :+: r) x -> Either ((l :+: r) x) a
+class GSumAsType (contains :: Bool) l r (a :: [((), Type)]) where
+  _GSumTyped :: Prism' ((l :+: r) x) (List a)
 
 instance GAsType l a => GSumAsType 'True l r a where
-  ginjectSumTyped
-    = L1 . ginjectTyped
-  gprojectSumTyped x
-    = case x of
-        L1 l -> either (Left . L1) Right (gprojectTyped l)
-        R1 _ -> Left x
+  _GSumTyped = left . _GTyped
 
 instance GAsType r a => GSumAsType 'False l r a where
-  ginjectSumTyped
-    = R1 . ginjectTyped
-  gprojectSumTyped x
-    = case x of
-        R1 r -> either (Left . R1) Right (gprojectTyped r)
-        L1 _ -> Left x
+  _GSumTyped = right . _GTyped

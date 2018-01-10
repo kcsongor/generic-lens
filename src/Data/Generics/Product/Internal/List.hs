@@ -37,6 +37,9 @@ module Data.Generics.Product.Internal.List
   , type (++)
   , Elem
   , ListTuple (..)
+  , TupleToList
+  , Permuting (..)
+  , Appending (..)
   ) where
 
 import GHC.TypeLits
@@ -131,6 +134,33 @@ consing :: Iso (a, List as) (b, List bs) (List ('(f, a) ': as)) (List ('(f, b) '
 consing = iso (\(x, xs) -> x :> xs) (\(x :> xs) -> (x, xs))
 
 --------------------------------------------------------------------------------
+
+-- This ended up not being used now... still cool to have
+flipping :: Iso' (List (a1 ': a2 ': as)) (List (a2 ': a1 ': as))
+flipping = iso
+  (\(a1 :> a2 :> as) -> a2 :> a1 :> as)
+  (\(a2 :> a1 :> as) -> a1 :> a2 :> as)
+
+class Inserting f a as bs | bs a -> as where
+  inserting :: Iso' (f (a ': as)) (f bs)
+
+instance Inserting f a as (a ': as) where
+  inserting = id
+
+instance Inserting List a as bs => Inserting List a ('(fb, b) ': as) ('(fb, b) ': bs) where
+  inserting = flipping . fromIso consing . pairing id (inserting @_ @a) . consing
+
+class Permuting f as bs where
+  permuting :: Iso' (f as) (f bs)
+
+instance Permuting List '[] '[] where
+  permuting = id
+
+instance (Permuting List as as', Inserting List '(fa, a) as' bs')
+  => Permuting List ('(fa, a) ': as) bs' where
+  permuting = fromIso consing . pairing id permuting . consing . (inserting @_ @'(fa, _))
+
+--------------------------------------------------------------------------------
 class IndexList (i :: Nat) as bs a b | i as -> a, i bs -> b, i as b -> bs, i bs a -> as where
   point :: Lens (List as) (List bs) a b
 
@@ -154,6 +184,9 @@ instance
 
 class ListTuple (tuple :: Type) (as :: [(k, Type)]) | as -> tuple where
   type ListToTuple as :: Type
+  tupled :: Iso' (List as) tuple
+  tupled = iso listToTuple tupleToList
+
   tupleToList :: tuple -> List as
   listToTuple :: List as -> tuple
 
@@ -287,3 +320,24 @@ instance ListTuple (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q, r, s) '[ '(f
     = a :> b :> c :> d:> e :> f :> g :> h :> j :> k :> l :> m :> n :> o :> p :> q :> r :> s :> Nil
   listToTuple (a :> b :> c :> d :> e :> f :> g :> h :> j :> k :> l :> m :> n :> o :> p :> q :> r :> s :> Nil)
     = (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q, r, s)
+
+type family TupleToList a where
+  TupleToList () = '[]
+  TupleToList (a, b) = '[ '( '(), a), '( '(), b)]
+  TupleToList (a, b, c) = '[ '( '(), a), '( '(), b), '( '(), c)]
+  TupleToList (a, b, c, d) = '[ '( '(), a), '( '(), b), '( '(), c), '( '(), d)]
+  TupleToList (a, b, c, d, e) = '[ '( '(), a), '( '(), b), '( '(), c), '( '(), d), '( '(), e)]
+  TupleToList (a, b, c, d, e, f) = '[ '( '(), a), '( '(), b), '( '(), c), '( '(), d), '( '(), e), '( '(), f)]
+  TupleToList (a, b, c, d, e, f, g) = '[ '( '(), a), '( '(), b), '( '(), c), '( '(), d), '( '(), e), '( '(), f), '( '(), g)]
+  TupleToList (a, b, c, d, e, f, g, h) = '[ '( '(), a), '( '(), b), '( '(), c), '( '(), d), '( '(), e), '( '(), f), '( '(), g), '( '(), h)]
+  TupleToList (a, b, c, d, e, f, g, h, j) = '[ '( '(), a), '( '(), b), '( '(), c), '( '(), d), '( '(), e), '( '(), f), '( '(), g), '( '(), h), '( '(), j)]
+  TupleToList (a, b, c, d, e, f, g, h, j, k) = '[ '( '(), a), '( '(), b), '( '(), c), '( '(), d), '( '(), e), '( '(), f), '( '(), g), '( '(), h), '( '(), j), '( '(), k)]
+  TupleToList (a, b, c, d, e, f, g, h, j, k, l) = '[ '( '(), a), '( '(), b), '( '(), c), '( '(), d), '( '(), e), '( '(), f), '( '(), g), '( '(), h), '( '(), j), '( '(), k), '( '(), l)]
+  TupleToList (a, b, c, d, e, f, g, h, j, k, l, m) = '[ '( '(), a), '( '(), b), '( '(), c), '( '(), d), '( '(), e), '( '(), f), '( '(), g), '( '(), h), '( '(), j), '( '(), k), '( '(), l), '( '(), m)]
+  TupleToList (a, b, c, d, e, f, g, h, j, k, l, m, n) = '[ '( '(), a), '( '(), b), '( '(), c), '( '(), d), '( '(), e), '( '(), f), '( '(), g), '( '(), h), '( '(), j), '( '(), k), '( '(), l), '( '(), m), '( '(), n)]
+  TupleToList (a, b, c, d, e, f, g, h, j, k, l, m, n, o) = '[ '( '(), a), '( '(), b), '( '(), c), '( '(), d), '( '(), e), '( '(), f), '( '(), g), '( '(), h), '( '(), j), '( '(), k), '( '(), l), '( '(), m), '( '(), n), '( '(), o)]
+  TupleToList (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p) = '[ '( '(), a), '( '(), b), '( '(), c), '( '(), d), '( '(), e), '( '(), f), '( '(), g), '( '(), h), '( '(), j), '( '(), k), '( '(), l), '( '(), m), '( '(), n), '( '(), o), '( '(), p)]
+  TupleToList (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q) = '[ '( '(), a), '( '(), b), '( '(), c), '( '(), d), '( '(), e), '( '(), f), '( '(), g), '( '(), h), '( '(), j), '( '(), k), '( '(), l), '( '(), m), '( '(), n), '( '(), o), '( '(), p), '( '(), q)]
+  TupleToList (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q, r) = '[ '( '(), a), '( '(), b), '( '(), c), '( '(), d), '( '(), e), '( '(), f), '( '(), g), '( '(), h), '( '(), j), '( '(), k), '( '(), l), '( '(), m), '( '(), n), '( '(), o), '( '(), p), '( '(), q), '( '(), r)]
+  TupleToList (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q, r, s) = '[ '( '(), a), '( '(), b), '( '(), c), '( '(), d), '( '(), e), '( '(), f), '( '(), g), '( '(), h), '( '(), j), '( '(), k), '( '(), l), '( '(), m), '( '(), n), '( '(), o), '( '(), p), '( '(), q), '( '(), r), '( '(), s)]
+  TupleToList a = '[ '( '(), a)]

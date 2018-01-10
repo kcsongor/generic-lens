@@ -22,7 +22,7 @@ module Data.Generics.Internal.Lens where
 import Control.Applicative    (Const(..))
 import Data.Functor.Identity  (Identity(..))
 import Data.Monoid            (First (..))
-import Data.Profunctor        (Choice(right'), Profunctor(..))
+import Data.Profunctor        (Choice(..), Profunctor(..))
 import Data.Profunctor.Unsafe ((#.), (.#))
 import Data.Tagged
 import GHC.Generics           ((:*:)(..), (:+:)(..), Generic(..), M1(..), K1(..), Rep)
@@ -245,3 +245,71 @@ pairing :: Iso s t a b -> Iso s' t' a' b' -> Iso (s, s') (t, t') (a, a') (b, b')
 pairing f g = withIso f $ \ sa bt -> withIso g $ \s'a' b't' ->
   iso (bmap sa s'a') (bmap bt b't')
   where bmap f' g' (a, b) = (f' a, g' b)
+
+--------------------------------------------------------------------------------
+-- Prism stuff
+
+type APrism s t a b = Market a b a (Identity b) -> Market a b s (Identity t)
+
+-- without :: APrism s t a b
+--         -> APrism u v c d
+--         -> Prism (Either s u) (Either t v) (Either a c) (Either b d)
+-- without k =
+--   withPrism k         $ \bt seta k' ->
+--   withPrism k'        $ \dv uevc    ->
+--   prism (bimapE bt dv) $ \su ->
+--   case su of
+--     Left s  -> bimapE Left Left (seta s)
+--     Right u -> bimapE Right Right (uevc u)
+--   where bimapE :: (a -> b) -> (c -> d) -> Either a c -> Either b d
+--         bimapE f _ (Left a) = Left (f a)
+--         bimapE _ g (Right a) = Right (g a)
+--         {-# INLINE bimapE #-}
+
+without' :: APrism s t a b -> APrism s t c d -> Prism s t (Either a c) (Either b d)
+without' k =
+  withPrism k  $ \bt _ k' ->
+  withPrism k' $ \dt setc ->
+    prism (foldEither bt dt) $ \s -> fmap Right (setc s)
+  where foldEither _ g (Right r) = g r
+        foldEither f _ (Left l) = f l
+
+withPrism :: APrism s t a b -> ((b -> t) -> (s -> Either t a) -> r) -> r
+withPrism k f = case coerce (k (Market Identity Right)) of
+  Market bt seta -> f bt seta
+
+--------------------------------------------------------------------------------
+-- Market
+
+data Market a b s t = Market (b -> t) (s -> Either t a)
+
+
+instance Functor (Market a b s) where
+  fmap f (Market bt seta) = Market (f . bt) (either (Left . f) Right . seta)
+  {-# INLINE fmap #-}
+
+instance Profunctor (Market a b) where
+  dimap f g (Market bt seta) = Market (g . bt) (either (Left . g) Right . seta . f)
+  {-# INLINE dimap #-}
+  lmap f (Market bt seta) = Market bt (seta . f)
+  {-# INLINE lmap #-}
+  rmap f (Market bt seta) = Market (f . bt) (either (Left . f) Right . seta)
+  {-# INLINE rmap #-}
+  ( #. ) _ = coerce
+  {-# INLINE ( #. ) #-}
+  ( .# ) p _ = coerce p
+  {-# INLINE ( .# ) #-}
+
+instance Choice (Market a b) where
+  left' (Market bt seta) = Market (Left . bt) $ \sc -> case sc of
+    Left s -> case seta s of
+      Left t -> Left (Left t)
+      Right a -> Right a
+    Right c -> Left (Right c)
+  {-# INLINE left' #-}
+  right' (Market bt seta) = Market (Right . bt) $ \cs -> case cs of
+    Left c -> Left (Left c)
+    Right s -> case seta s of
+      Left t -> Left (Right t)
+      Right a -> Right a
+  {-# INLINE right' #-}
