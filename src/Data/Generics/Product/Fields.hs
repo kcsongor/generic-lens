@@ -76,7 +76,8 @@ import GHC.TypeLits (Symbol, ErrorMessage(..), TypeError)
 -- :}
 
 -- |Records that have a field with a given name.
-class HasField (field :: Symbol) s t a b | s field -> a, s field b -> t, t field a -> s where
+class HasField (field :: Symbol) s t a b
+  | s field -> a, t field -> b, s field b -> t, t field a -> s where
   -- |A lens that focuses on a field with a given name. Compatible with the
   --  lens package's 'Control.Lens.Lens' type.
   --

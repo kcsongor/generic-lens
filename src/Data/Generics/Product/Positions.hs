@@ -70,6 +70,12 @@ import GHC.TypeLits   (type (<=?),  Nat, TypeError, ErrorMessage(..))
 -- human = Human "Tunyasz" 50 "London"
 -- :}
 
+-- We would like to add the fundep 't i -> b', as HasField has, however on newer
+-- ghc's this fails. Perhaps it could be made to succeed by adding
+-- TypeFamilyDependencies to the type families used in the Context of the
+-- instances. I'm not going down that hole now because I don't expect it to be
+-- possible to write sufficient TypeFamilyDependencies.
+
 -- |Records that have a field at a given position.
 class HasPosition (i :: Nat) s t a b | s i -> a, s i b -> t, t i a -> s where
   -- |A lens that focuses on a field at a given position. Compatible with the
