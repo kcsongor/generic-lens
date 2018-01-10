@@ -31,7 +31,7 @@ import Data.Kind
 import GHC.Generics
 
 import Data.Generics.Internal.Families
-import Data.Generics.Internal.HList
+import Data.Generics.Product.Internal.List
 import Data.Generics.Internal.Lens
 
 -- |As 'AsType' but over generic representations as defined by "GHC.Generics".
@@ -43,14 +43,14 @@ class GAsType (f :: Type -> Type) a where
   gprojectTyped :: f x -> Either (f x) a
 
 instance
-  ( GCollectible f as
+  ( GIsList Type f f as as
   , ListTuple a as
   ) => GAsType (M1 C meta f) a where
 
   ginjectTyped
-    = M1 . gfromCollection . tupleToList
+    = M1 . (^. fromIso (glist @Type)) . tupleToList
   gprojectTyped
-    = Right . listToTuple . gtoCollection . unM1
+    = Right . listToTuple . (^. glist @Type) . unM1
 
 instance GSumAsType (HasPartialTypeTupleP a l) l r a => GAsType (l :+: r) a where
   ginjectTyped

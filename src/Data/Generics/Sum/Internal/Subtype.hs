@@ -25,7 +25,8 @@ module Data.Generics.Sum.Internal.Subtype
   ( GAsSubtype (..)
   ) where
 
-import Data.Generics.Internal.HList
+import Data.Generics.Internal.Lens
+import Data.Generics.Product.Internal.List
 import Data.Generics.Sum.Internal.Typed
 
 import Data.Kind
@@ -52,14 +53,14 @@ instance
 
 instance
   ( GAsType supf a
-  , GCollectible subf as
+  , GIsList Type subf subf as as
   , ListTuple a as
   ) => GAsSubtype (C1 meta subf) supf where
 
   ginjectSub
-    = ginjectTyped . listToTuple . gtoCollection . unM1
+    = ginjectTyped . listToTuple . (^. glist @Type) . unM1
   gprojectSub
-    = fmap (M1 . gfromCollection . tupleToList) . gprojectTyped
+    = fmap (M1 . (^. fromIso (glist @Type)) . tupleToList) . gprojectTyped
 
 instance GAsType supf a => GAsSubtype (S1 meta (Rec0 a)) supf where
   ginjectSub

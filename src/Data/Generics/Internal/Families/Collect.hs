@@ -29,7 +29,8 @@ import GHC.Generics
 import GHC.TypeLits       (Symbol, CmpSymbol)
 
 import Data.Generics.Product.Internal.List (type (++))
-import Data.Generics.Internal.HList
+import Data.Generics.Product.Internal.List
+import Data.Generics.Internal.Families.Has (GTypes)
 
 data TypeStat
   = TypeStat
@@ -84,7 +85,7 @@ type family CollectPartialType t f :: [Symbol] where
   CollectPartialType t (l :+: r)
     = CollectPartialType t l ++ CollectPartialType t r
   CollectPartialType t (C1 ('MetaCons ctor _ _) f)
-    = If (t == ListToTuple (GCollect f)) '[ctor] '[]
+    = If (t == ListToTuple (GTypes f)) '[ctor] '[]
   CollectPartialType t (D1 _ f)
     = CollectPartialType t f
 

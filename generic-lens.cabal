@@ -43,7 +43,6 @@ library
                     , Data.Generics.Internal.Families.Changing
                     , Data.Generics.Internal.Families.Collect
                     , Data.Generics.Internal.Families.Has
-                    , Data.Generics.Internal.HList
                     , Data.Generics.Internal.Void
 
                     , Data.Generics.Sum.Internal.Constructors
