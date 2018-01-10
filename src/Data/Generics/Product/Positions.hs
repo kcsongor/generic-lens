@@ -71,7 +71,8 @@ import GHC.TypeLits   (type (<=?),  Nat, TypeError, ErrorMessage(..))
 -- :}
 
 -- |Records that have a field at a given position.
-class HasPosition (i :: Nat) s t a b | s i -> a, s i b -> t, t i a -> s where
+class HasPosition (i :: Nat) s t a b
+  | s i -> a, t i -> b, s i b -> t, t i a -> s where
   -- |A lens that focuses on a field at a given position. Compatible with the
   --  lens package's 'Control.Lens.Lens' type.
   --
