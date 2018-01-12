@@ -47,7 +47,7 @@ type PrismP s t a b =
 type Traversal' s a = forall f. Applicative f => (a -> f a) -> s -> f s
 
 prism :: (b -> t) -> (s -> Either t a) -> PrismP s t a b
-prism bt seta = dimap seta (either id bt) . right'
+prism bt seta eta = dimap seta (either id bt) (right' eta)
 {-# INLINE prism #-}
 
 data Record4 a = MkRecord4
@@ -97,7 +97,7 @@ subtypeLensManual f record
 data Sum1 = A Char | B Int | C () | D () deriving (Generic, Show)
 
 sum1PrismManual :: PrismP Sum1 Sum1 Int Int
-sum1PrismManual = prism g f
+sum1PrismManual eta = prism g f eta
  where
    f s1 = case s1 of
             B i -> Right i
