@@ -21,10 +21,12 @@ import Control.Applicative    (Const(..))
 import Data.Functor.Identity  (Identity(..))
 import Data.Monoid            (First (..))
 import Data.Profunctor        (Choice(right'), Profunctor(dimap, rmap))
+import Data.Profunctor.Extra
 import Data.Profunctor.Unsafe ((#.), (.#))
 import Data.Tagged
 import GHC.Generics           ((:*:)(..), (:+:)(..), Generic(..), M1(..), Rep)
 import Boggle hiding (Dirty)
+import Debug.Trace
 
 -- | Type alias for lens
 type Lens' s a
@@ -41,6 +43,12 @@ type Traversal' s a
 type Prism s t a b
   = forall p f. (Choice p, Applicative f) => p a (f b) -> p s (f t)
 
+type PrismP s t a b
+  = forall p . (Choice p) => p a b -> p s t
+
+type PrismE s t a b
+  = forall p f. (MRight p, MProfunctor p) => p a b -> p s t
+
 type Prism' s a
   = Prism s s a a
 
@@ -49,6 +57,9 @@ type Iso' s a
 
 type Iso s t a b
   = forall p f. (Profunctor p, Functor f) => p a (f b) -> p s (f t)
+
+type IsoE s t a b
+  = forall p f. (MProfunctor p) => p a b -> p s t
 
 -- | Getting
 (^.) :: s -> ((a -> Const a a) -> s -> Const a s) -> a
@@ -89,6 +100,12 @@ left = prism L1 $ gsum Right (Left . R1)
 right :: Prism ((a :+: b) x) ((a :+: c) x) (b x) (c x)
 right = prism R1 $ gsum (Left . L1) Right
 
+leftE :: PrismE ((a :+: c) x) ((b :+: c) x) (a x) (b x)
+leftE = prismE L1 $ gsum Right (Left . R1)
+
+rightE :: PrismE ((a :+: b) x) ((a :+: c) x) (b x) (c x)
+rightE = prismE  R1 $ gsum (Left . L1) Right
+
 gsum :: (a x -> c) -> (b x -> c) -> ((a :+: b) x) -> c
 gsum f _ (L1 x) =  f x
 gsum _ g (R1 y) =  g y
@@ -97,6 +114,9 @@ combine :: Lens' (s x) a -> Lens' (t x) a -> Lens' ((s :+: t) x) a
 combine sa _ f (L1 s) = fmap (\a -> L1 (set sa a s)) (f (s ^. sa))
 combine _ ta f (R1 t) = fmap (\a -> R1 (set ta a t)) (f (t ^. ta))
 
+prismE :: (b -> t) -> (s -> Either t a) -> PrismE s t a b
+prismE bt seta = mdimap (liftFun seta) (EitherFun id bt) . mright
+
 prism :: (b -> t) -> (s -> Either t a) -> Prism s t a b
 prism bt seta = dimap seta (either pure (fmap bt)) . right'
 
@@ -104,10 +124,19 @@ prism bt seta = dimap seta (either pure (fmap bt)) . right'
 repIso :: (Generic a, Generic b) => Iso a b (Rep a x) (Rep b x)
 repIso = dimap from (fmap to)
 
+repIsoE :: (Generic a, Generic b) => IsoE a b (Rep a x) (Rep b x)
+repIsoE = ddimap from to
+
+
 -- | 'M1' is just a wrapper around `f p`
 --mIso :: Iso' (M1 i c f p) (f p)
 mIso :: Iso (M1 i c f p) (M1 i c g p) (f p) (g p)
 mIso = dimap unM1 (fmap M1)
+
+-- | 'M1' is just a wrapper around `f p`
+--mIso :: Iso' (M1 i c f p) (f p)
+mIsoE :: IsoE (M1 i c f p) (M1 i c g p) (f p) (g p)
+mIsoE = ddimap unM1 M1
 
 -- These are specialised versions of the Isos above. On GHC 8.0.2, having
 -- these functions eta-expanded allows the optimiser to inline these functions.
@@ -151,6 +180,18 @@ ravel coy f s = inj $ coy (\a -> proj (f a)) s
 
 -- Pull dimaps to left and rights to right
 
+{-
+instance Choice p => Profunctor (MergeRight p) where
+  dimap f g (MergeRight (Dirty pab)) = MergeRight (DMap f g pab)
+  dimap f g (MergeRight (DMap f' g' pab)) = MergeRight (DMap (f' . f) (g . g') pab)
+  dimap f g (MergeRight (DRight pab))     =  MergeRight (DMap f g (right' pab))
+
+instance Choice p => Choice (MergeRight p) where
+  right' (MergeRight (Dirty pab)) = MergeRight (DRight pab)
+  right' (MergeRight (DMap f g pab)) = MergeRight (DMap (fmap f) (fmap g) (right' pab))
+  right' (MergeRight (DRight pab))   = MergeRight (DMap assoc' assoc (right' pab))
+  -}
+{-
 data PrismBoggle p a b where
   DRight :: (p x y) -> PrismBoggle p (Either z x) (Either z y)
   DMap :: (c -> a) -> (b -> d) -> (p a b) -> PrismBoggle p c d
@@ -184,17 +225,19 @@ projPrism :: p a b -> PrismBoggle p a b
 projPrism pab = Dirty pab
 
 --rightFuse :: Choice p => p a b -> p (Either c (Either d a)) (Either c (Either d b))
-rightFuse x = injPrism (projPrism (injPrism (right' (right' (right' (projPrism x))))))
+rightFuse x = injPrism (injPrism (right' (right' (right' (projPrism (projPrism x))))))
 
 
 injPrism :: Choice p => PrismBoggle p a b -> p a b
 injPrism (Dirty pab) = pab
 injPrism (DMap f g pab) = dimap f g pab
 injPrism (DRight pab) = right' pab
+-}
 
-prismRavel :: (Choice p, Applicative f)
-           => (PrismBoggle (PrismBoggle p) a (Boggle f b) -> PrismBoggle (PrismBoggle p) s (Boggle f t))
-           -> (p a (f b) -> p s (f t))
-prismRavel coy pafb = injPrism (injPrism (dimap id lowerBoggle (coy (dimap id liftBoggle (projPrism (projPrism pafb))))))
+prismRavel :: (Profunctor p, Choice p) =>
+                 (forall p . (MProfunctor p, MRight p) =>  p a b -> p s t)
+                 -> p a b -> p s t
+prismRavel l pab = wrappedProfunctor (ravelFusionStack l (WrappedProfunctor pab))
 {-# INLINE prismRavel #-}
+
 

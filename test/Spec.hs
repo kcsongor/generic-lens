@@ -41,10 +41,13 @@ type Prism' s a = Prism s s a a
 type Lens s t a b = forall f. Functor f => (a -> f b) -> s -> f t
 type Prism s t a b =
   forall p f . (Choice p, Applicative f) => p a (f b) -> p s (f t)
+
+type PrismP s t a b =
+  forall p . (Choice p) => p a b -> p s t
 type Traversal' s a = forall f. Applicative f => (a -> f a) -> s -> f s
 
-prism :: (b -> t) -> (s -> Either t a) -> Prism s t a b
-prism bt seta = dimap seta (either pure (fmap bt)) . right'
+prism :: (b -> t) -> (s -> Either t a) -> PrismP s t a b
+prism bt seta = dimap seta (either id bt) . right'
 {-# INLINE prism #-}
 
 data Record4 a = MkRecord4
@@ -93,7 +96,7 @@ subtypeLensManual f record
 
 data Sum1 = A Char | B Int | C () | D () deriving (Generic, Show)
 
-sum1PrismManual :: Prism' Sum1 Int
+sum1PrismManual :: PrismP Sum1 Sum1 Int Int
 sum1PrismManual = prism g f
  where
    f s1 = case s1 of
@@ -130,7 +133,7 @@ typeChangingGenericPos = position @1
 typeChangingGenericCompose :: Lens (Record3 (Record3 a)) (Record3 (Record3 b)) a b
 typeChangingGenericCompose = field @"fieldA" . field @"fieldA"
 
-sum1PrismB :: Prism' Sum1 Int
+sum1PrismB :: PrismP Sum1 Sum1 Int Int
 sum1PrismB = _Ctor @"B"
 
 inspect $ 'fieldALensManual === 'fieldALensName
@@ -141,5 +144,4 @@ inspect $ 'typeChangingManual === 'typeChangingGeneric
 inspect $ 'typeChangingManual === 'typeChangingGenericPos
 inspect $ 'typeChangingManualCompose === 'typeChangingGenericCompose
 inspect $ 'intTraversalManual === 'intTraversalDerived
-
---inspect $ 'sum1PrismManual === 'sum1PrismB
+inspect $ 'sum1PrismManual === 'sum1PrismB

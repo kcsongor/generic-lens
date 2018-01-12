@@ -9,6 +9,7 @@
 {-# LANGUAGE TypeFamilies           #-}
 {-# LANGUAGE TypeOperators          #-}
 {-# LANGUAGE UndecidableInstances   #-}
+{-# LANGUAGE FlexibleContexts       #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -38,6 +39,7 @@ import Data.Generics.Sum.Internal.Constructors
 import Data.Kind    (Constraint, Type)
 import GHC.Generics (Generic (Rep))
 import GHC.TypeLits (Symbol, TypeError, ErrorMessage (..))
+import Data.Profunctor.Extra
 
 -- $setup
 -- == /Running example:/
@@ -96,7 +98,7 @@ class AsConstructor (ctor :: Symbol) s t a b | ctor s -> a, ctor t -> b where
   --  ...
   --  ... The type Animal Int does not contain a constructor named "Turtle"
   --  ...
-  _Ctor :: Prism s t a b
+  _Ctor :: PrismP s t a b
 
 instance
   ( Generic s
@@ -110,8 +112,21 @@ instance
   , '(t, b) ~ Infer s' a' a (PickTv a' b)
   ) => AsConstructor ctor s t a b where
 
-  _Ctor eta = prismRavel (repIso . _GCtor @ctor) eta
+  _Ctor eta = prismRavel (repIsoE . _GCtor @ctor) eta
   {-# INLINE _Ctor #-}
+
+-- Used for testing the optimisation passes
+_CtorRaw :: forall ctor s t s' a' a b . ( Generic s
+  , ErrorUnless ctor s (HasCtorP ctor (Rep s))
+  , Generic t
+  , s' ~ Proxied s
+  , Generic s'
+  , GAsConstructor' ctor (Rep s) a
+  , GAsConstructor' ctor (Rep s') a'
+  , GAsConstructor ctor (Rep s) (Rep t) a b
+  , '(t, b) ~ Infer s' a' a (PickTv a' b)
+  ) => PrismE s t a b
+_CtorRaw = repIsoE . _GCtor @ctor
 
 -- See Note [Uncluttering type signatures]
 instance {-# OVERLAPPING #-} AsConstructor ctor (Void1 a) (Void1 b) a b where
