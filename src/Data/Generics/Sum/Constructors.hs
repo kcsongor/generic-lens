@@ -29,6 +29,7 @@ module Data.Generics.Sum.Constructors
 
     -- $setup
     AsConstructor (..)
+    , _CtorRaw
   ) where
 
 import Data.Generics.Internal.Families
@@ -98,7 +99,7 @@ class AsConstructor (ctor :: Symbol) s t a b | ctor s -> a, ctor t -> b where
   --  ...
   --  ... The type Animal Int does not contain a constructor named "Turtle"
   --  ...
-  _Ctor :: PrismP s t a b
+  _Ctor :: Prism s t a b
 
 instance
   ( Generic s

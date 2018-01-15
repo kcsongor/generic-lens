@@ -15,6 +15,7 @@ module Main where
 import GHC.Generics
 import Data.Profunctor
 import Data.Generics.Product
+import Data.Generics.Internal.Lens (prismPRavel)
 import Data.Generics.Sum
 import Data.Generics.Product.Boggle
 import Test.Inspection
@@ -46,9 +47,12 @@ type PrismP s t a b =
   forall p . (Choice p) => p a b -> p s t
 type Traversal' s a = forall f. Applicative f => (a -> f a) -> s -> f s
 
-prism :: (b -> t) -> (s -> Either t a) -> PrismP s t a b
-prism bt seta eta = dimap seta (either id bt) (right' eta)
+prism :: (b -> t) -> (s -> Either t a) -> Prism s t a b
+prism bt seta eta = dimap (\x -> plus pure id (seta x)) (either id (\x -> fmap bt x)) (right' eta)
 {-# INLINE prism #-}
+
+plus f g (Left x) = Left (f x)
+plus f g (Right y) = Right (g y)
 
 data Record4 a = MkRecord4
   { fieldA :: a
@@ -96,7 +100,7 @@ subtypeLensManual f record
 
 data Sum1 = A Char | B Int | C () | D () deriving (Generic, Show)
 
-sum1PrismManual :: PrismP Sum1 Sum1 Int Int
+sum1PrismManual :: Prism Sum1 Sum1 Int Int
 sum1PrismManual eta = prism g f eta
  where
    f s1 = case s1 of
@@ -133,8 +137,11 @@ typeChangingGenericPos = position @1
 typeChangingGenericCompose :: Lens (Record3 (Record3 a)) (Record3 (Record3 b)) a b
 typeChangingGenericCompose = field @"fieldA" . field @"fieldA"
 
-sum1PrismB :: PrismP Sum1 Sum1 Int Int
+sum1PrismB :: Prism Sum1 Sum1 Int Int
 sum1PrismB = _Ctor @"B"
+
+sum1PrismBP :: PrismP Sum1 Sum1 Int Int
+sum1PrismBP = prismPRavel (_CtorRaw @"B")
 
 inspect $ 'fieldALensManual === 'fieldALensName
 inspect $ 'fieldALensManual === 'fieldALensType

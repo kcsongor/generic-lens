@@ -233,11 +233,19 @@ injPrism (Dirty pab) = pab
 injPrism (DMap f g pab) = dimap f g pab
 injPrism (DRight pab) = right' pab
 -}
-
-prismRavel :: (Profunctor p, Choice p) =>
+-- We don't need the full power of boggle, we just want to fuse together
+-- two `fmaps`
+prismRavel ::
                  (forall p . (MProfunctor p, MRight p) =>  p a b -> p s t)
-                 -> p a b -> p s t
-prismRavel l pab = wrappedProfunctor (ravelFusionStack l (WrappedProfunctor pab))
+                 -> Prism s t a b
+prismRavel l pab = wrappedProfunctor (lowerFusionStack (ddimap id lowerBoggle (wrappedVLMProfunctor (ravelFusionStack l (WrappedVLMProfunctor (ddimap id (liftBoggle) (liftFusionStack (WrappedProfunctor pab))))))))
 {-# INLINE prismRavel #-}
+
+prismPRavel ::
+                 (forall p . (MProfunctor p, MRight p) =>  p a b -> p s t)
+                 -> PrismP s t a b
+prismPRavel l pab = wrappedProfunctor (ravelFusionStack l ((WrappedProfunctor pab)))
+{-# INLINE prismPRavel #-}
+
 
 

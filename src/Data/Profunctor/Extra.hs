@@ -3,11 +3,14 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# OPTIONS_GHC -funfolding-creation-threshold=100000 #-}
 module Data.Profunctor.Extra where
 
 import Data.Profunctor
 import GHC.Generics
 import Debug.Trace
+import Boggle hiding ((<.>))
 
 
 -- Pull dimaps to left and rights to right
@@ -365,7 +368,7 @@ specRightFreeTheorem = ravelRightFreeTheorem testRightFreeTheorem
 ------------------------------------------------------------------------------
 -- A partial dimap fusion pass which only fuses functions such that
 -- we still have an EitherFun in the 2nd argument of dimap.
-
+{-
 data PartialFusion p a b where
   PFDMap :: Fun c a -> Fun b d -> p a b -> PartialFusion p c d
   PFDirty :: p a b -> PartialFusion p a b
@@ -408,7 +411,7 @@ ravelPartialFusion l pab = lowerPartialFusion (l (liftPartialFusion pab))
 -- Works
 specPartialFusion :: (MProfunctor p, MRight p) => p Int Int -> p Int Int
 specPartialFusion = ravelPartialFusion testPartialFusion
-
+-}
 ------------------------------------------------------------------------------
 -- We also lift the function space so that we can rewrite
 -- dimap f (either g h) (right r) = dimap (either g f) (either id h) (right r)
@@ -482,32 +485,41 @@ class MRight p where
 
 -- Run each stage individually
 
-stage1, stage2, stage3, stage4, stage5 :: (MProfunctor p, MRight p) => (forall p . (MProfunctor p, MRight p) => p a b) -> p a b
+stage1,  stage3, stage4, stage5 :: (MProfunctor p, MRight p) => (forall p . (MProfunctor p, MRight p) => p a b) -> p a b
 stage1 = lowerDimapSyntax
-stage2 = lowerPartialFusion
+--stage2 = lowerPartialFusion
 stage3 = lowerRightFreeTheorem
 stage4 = lowerRightFuse
 stage5 = lowerDimapK1
 
-ravelStage1, ravelStage2, ravelStage3, ravelStage4, ravelStage5, ravelStage3a
+ravelStage1,  ravelStage3, ravelStage4, ravelStage5, ravelStage3a
   :: (MProfunctor p, MRight p)
         => (forall p . (MProfunctor p, MRight p) => p a b -> p s t) ->
           p a b -> p s t
 
 ravelStage1 = ravelDimapSyntax
-ravelStage2 = ravelPartialFusion
+--ravelStage2 = ravelPartialFusion
 ravelStage3 = ravelRightFreeTheorem
 ravelStage3a = ravelDimapSyntaxFF
 ravelStage4 = ravelRightFuse
 ravelStage5 = ravelDimapK1
 
-type FusionStack p a b = DimapSyntax (RightFuse (RightFreeTheorem p)) a b
+newtype FusionStack p a b =
+  FusionStack { getFusionStack :: (DimapSyntax (RightFuse (RightFreeTheorem p)) a b) }
+
+instance (MRight p, MProfunctor p) => MProfunctor (FusionStack p) where
+  mdimap f g pab = FusionStack (mdimap f g (getFusionStack pab))
+  {-# INLINE mdimap #-}
+
+instance (MProfunctor p, MRight p) => MRight (FusionStack p) where
+  mright pab = FusionStack (mright (getFusionStack pab))
+  {-# INLINE mright #-}
 
 liftFusionStack :: MProfunctor p => p a b -> FusionStack p a b
-liftFusionStack = liftDimapSyntax . liftRightFuse . liftRightFreeTheorem
+liftFusionStack = FusionStack . liftDimapSyntax . liftRightFuse . liftRightFreeTheorem
 
 lowerFusionStack :: (MProfunctor p, MRight p) => FusionStack p a b -> p a b
-lowerFusionStack = lowerRightFreeTheorem . lowerRightFuse . lowerDimapSyntax
+lowerFusionStack = lowerRightFreeTheorem . lowerRightFuse . lowerDimapSyntax . getFusionStack
 {-# INLINE lowerFusionStack #-}
 
 ravelFusionStack :: (MProfunctor p, MRight p) =>
@@ -516,9 +528,22 @@ ravelFusionStack :: (MProfunctor p, MRight p) =>
 ravelFusionStack l pab = lowerFusionStack (l (liftFusionStack pab))
 {-# INLINE ravelFusionStack #-}
 
+{- This is morally correct but it doesn't optimise well,
+- it is also pointless doing it like this as it introduces a lot of
+- unecessary fmaps which we have to fuse together
+ravelVLFusionStack :: (MProfunctor p, MRight p, Applicative f) =>
+                 ((WrappedVLProfunctor (Boggle f) (FusionStack p)) a b
+                    -> ((WrappedVLProfunctor (Boggle f) (FusionStack p)) s t))
+                 -> p a (f b) -> p s (f t)
+ravelVLFusionStack l pab =
+      (lowerFusionStack (ddimap id lowerBoggle (wrappedVLProfunctor (
+        (l (WrappedVLProfunctor (ddimap id liftBoggle (liftFusionStack pab))))))))
+{-# INLINE ravelVLFusionStack #-}
+-}
+
 -- Works
-specFusionStack1 :: (MProfunctor p, MRight p) => p Int Int -> p Int Int
-specFusionStack1 pab = ravelFusionStack testPartialFusion pab
+--specFusionStack1 :: (MProfunctor p, MRight p) => p Int Int -> p Int Int
+--specFusionStack1 pab = ravelFusionStack testPartialFusion pab
 
 specFusionStack2 :: (MProfunctor p, MRight p) => p Int Int -> p Int Int
 specFusionStack2 pab = ravelFusionStack testRightFreeTheorem pab
@@ -527,6 +552,7 @@ specFusionStack2 pab = ravelFusionStack testRightFreeTheorem pab
 -- A wrapped profunctor which we can make an instance of our classes.
 --
 
+-- Use this adapter to get a profunctor lens
 newtype WrappedProfunctor p a b = WrappedProfunctor { wrappedProfunctor :: (p a b) }
 
 instance Profunctor p => MProfunctor (WrappedProfunctor p) where
@@ -536,6 +562,36 @@ instance Profunctor p => MProfunctor (WrappedProfunctor p) where
 instance Choice p => MRight (WrappedProfunctor p) where
   mright (WrappedProfunctor p) = WrappedProfunctor (right' p)
   {-# INLINE mright #-}
+
+-- | Use this adapter to get a VL lens
+newtype  WrappedVLMProfunctor f p a b
+  = WrappedVLMProfunctor { wrappedVLMProfunctor :: p a (f b) }
+
+instance (Functor f, MProfunctor p) => MProfunctor (WrappedVLMProfunctor f p) where
+  mdimap f g (WrappedVLMProfunctor pafb)
+    = WrappedVLMProfunctor (mdimap f (ffmap g) pafb)
+  {-# INLINE mdimap #-}
+
+instance (Applicative f, MRight p, MProfunctor p) => MRight (WrappedVLMProfunctor f p) where
+  mright (WrappedVLMProfunctor pafb)
+    = WrappedVLMProfunctor (mdimap (liftFun id) (EitherFun (pure . Left) (fmap Right)) (mright  pafb))
+  {-# INLINE mright #-}
+
+{-
+-- | Use this adapter to get a VL lens
+newtype  WrappedVLMProfunctor f p a b
+  = WrappedVLMProfunctor { wrappedVLProfunctor :: p a (f b) }
+
+instance (Functor f, MProfunctor p) => MProfunctor (WrappedVLMProfunctor f p) where
+  mdimap f g (WrappedVLProfunctor pafb)
+    = WrappedVLProfunctor (mdimap f (ffmap g) pafb)
+  {-# INLINE mdimap #-}
+
+instance (Applicative f, MRight p, MProfunctor p) => MRight (WrappedVLMProfunctor f p) where
+  mright (WrappedVLMProfunctor pafb)
+    = WrappedVLMProfunctor (ddimap id (either (pure . Left) (fmap Right)) (mright  pafb))
+  {-# INLINE mright #-}
+  -}
 
 
 
