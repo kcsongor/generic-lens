@@ -90,7 +90,7 @@ test-suite generic-lens-test
   ghc-options:        -Wall -O2
   if flag(dump-core)
     build-depends: dump-core
-    ghc-options: -fplugin=DumpCore -fplugin-opt DumpCore:core-html -ddump-to-file -funfolding-use-threshold=1000 -fsimpl-tick-factor=0 -ddump-simpl-stats
+    ghc-options: -fplugin=DumpCore -fplugin-opt DumpCore:core-html
 
 test-suite doctests
   default-language:   Haskell2010
