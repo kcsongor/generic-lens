@@ -47,8 +47,8 @@ instance
     R1 r -> ginjectSub r
   gprojectSub x
     = case gprojectSub x of
-        Left  _ -> fmap R1 (gprojectSub x)
         Right y -> Right (L1 y)
+        _ -> fmap R1 (gprojectSub x)
 
 instance
   ( GAsType supf a

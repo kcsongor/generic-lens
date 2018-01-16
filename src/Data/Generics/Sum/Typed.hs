@@ -99,6 +99,7 @@ instance
 
   _Typed
     = prism injectTyped (either (Left . to) Right . gprojectTyped . from)
+  {-# INLINE _Typed #-}
   injectTyped
     = to . ginjectTyped
   projectTyped

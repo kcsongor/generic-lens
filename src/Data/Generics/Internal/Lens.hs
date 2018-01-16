@@ -121,6 +121,10 @@ prism :: (b -> t) -> (s -> Either t a) -> Prism s t a b
 prism bt seta eta = dimap (\x -> plus pure id (seta x)) (either id (\x -> fmap bt x)) (right' eta)
 {-# INLINE prism #-}
 
+prismP :: (b -> t) -> (s -> Either t a) -> PrismP s t a b
+prismP bt seta eta = dimap seta (either id bt) (right' eta)
+{-# INLINE prismP #-}
+
 -- | A type and its generic representation are isomorphic
 repIso :: (Generic a, Generic b) => Iso a b (Rep a x) (Rep b x)
 repIso = dimap from (fmap to)
@@ -236,17 +240,155 @@ injPrism (DRight pab) = right' pab
 -}
 -- We don't need the full power of boggle, we just want to fuse together
 -- two `fmaps`
+{-
 prismRavel ::
                  (forall p . (MProfunctor p, MRight p) =>  p a b -> p s t)
                  -> Prism s t a b
 prismRavel l pab = wrappedProfunctor (lowerFusionStack (ddimap id lowerBoggle (wrappedVLMProfunctor (ravelFusionStack l (WrappedVLMProfunctor (ddimap id (liftBoggle) (liftFusionStack (WrappedProfunctor pab))))))))
-{-# INLINE prismRavel #-}
+-}
 
 prismPRavel ::
-                 (forall p . (MProfunctor p, MRight p) =>  p a b -> p s t)
+                 (Market a b a b -> Market a b s t)
                  -> PrismP s t a b
-prismPRavel l pab = wrappedProfunctor (ravelFusionStack l ((WrappedProfunctor pab)))
+prismPRavel l pab = (prism2prismp $ l idPrism) pab
 {-# INLINE prismPRavel #-}
+
+prismRavel ::
+                 (Market a b a b -> Market a b s t)
+                 -> Prism s t a b
+prismRavel l pab  = (prism2prismvl $ l idPrism) pab
+{-# INLINE prismRavel #-}
+
+------------------------------------------------------------------------------
+-- Prism: Market
+------------------------------------------------------------------------------
+
+-- | This type is used internally by the 'Control.Lens.Prism.Prism' code to
+-- provide efficient access to the two parts of a 'Prism'.
+data Market a b s t = Market (b -> t) (s -> Either t a)
+
+-- | @type 'Market'' a s t = 'Market' a a s t@
+type Market' a = Market a a
+
+instance Functor (Market a b s) where
+  fmap f (Market bt seta) = Market (f . bt) (either (Left . f) Right . seta)
+  {-# INLINE fmap #-}
+
+instance Profunctor (Market a b) where
+  dimap f g (Market bt seta) = Market (g . bt) (either (Left . g) Right . seta . f)
+  {-# INLINE dimap #-}
+
+instance Choice (Market a b) where
+  right' (Market bt seta) = Market (Right . bt) $ \cs -> case cs of
+    Left c -> Left (Left c)
+    Right s -> case seta s of
+      Left t -> Left (Right t)
+      Right a -> Right a
+  {-# INLINE right' #-}
+
+instance MProfunctor (Market a b) where
+  mdimap f g m = dimap (lowerFun f) (lowerFun g) m
+  {-# INLINE mdimap #-}
+
+instance MRight (Market a b) where
+  mright m = right' m
+  {-# INLINE mright #-}
+
+prism2prismp :: Market a b s t -> PrismP s t a b
+prism2prismp (Market bt seta) = prismP bt seta
+
+prism2prismvl :: Market a b s t -> Prism s t a b
+prism2prismvl  (Market bt seta) = prism bt seta
+{-# INLINE prism2prismvl #-}
+
+idPrism :: Market a b a b
+idPrism = Market id Right
+
+------------------------------------------------------------------------------
+
+newtype Curried f a =
+  Curried { runCurried :: forall r. f (a -> r) -> f r }
+
+instance Functor f => Functor (Curried f) where
+  fmap f (Curried g) = Curried (g . fmap (.f))
+  {-# INLINE fmap #-}
+
+instance (Functor f) => Applicative (Curried f) where
+  pure a = Curried (fmap ($ a))
+  {-# INLINE pure #-}
+  Curried mf <*> Curried ma = Curried (ma . mf . fmap (.))
+  {-# INLINE (<*>) #-}
+
+-- | The natural isomorphism between @f@ and @Curried f f@.
+-- @
+-- 'lowerCurried' '.' 'liftCurried' ≡ 'id'
+-- 'liftCurried' '.' 'lowerCurried' ≡ 'id'
+-- @
+--
+-- @
+-- 'lowerCurried' ('liftCurried' x)     -- definition
+-- 'lowerCurried' ('Curried' ('<*>' x))   -- definition
+-- ('<*>' x) ('pure' 'id')          -- beta reduction
+-- 'pure' 'id' '<*>' x              -- Applicative identity law
+-- x
+-- @
+liftCurried :: Applicative f => f a -> Curried f a
+liftCurried fa = Curried (<*> fa)
+{-# INLINE liftCurried #-}
+
+-- | Lower 'Curried' by applying 'pure' 'id' to the continuation.
+--
+-- See 'liftCurried'.
+lowerCurried :: Applicative f => Curried f a -> f a
+lowerCurried (Curried f) = f (pure id)
+{-# INLINE lowerCurried #-}
+
+confusing :: Applicative f => Traversal s t a b -> (a -> f b) -> s -> f t
+confusing t = \f -> lowerYoneda . lowerCurried . t (liftCurriedYoneda . f)
+  where
+  liftCurriedYoneda :: Applicative f => f a -> Curried (Yoneda f) a
+  liftCurriedYoneda fa = Curried (`yap` fa)
+  {-# INLINE liftCurriedYoneda #-}
+
+  yap :: Applicative f => Yoneda f (a -> b) -> f a -> Yoneda f b
+  yap (Yoneda k) fa = Yoneda (\ab_r -> k (ab_r .) <*> fa)
+  {-# INLINE yap #-}
+{-# INLINE confusing #-}
+
+-- | @Yoneda f a@ can be viewed as the partial application of 'fmap' to its second argument.
+newtype Yoneda f a = Yoneda { runYoneda :: forall b. (a -> b) -> f b }
+
+-- | The natural isomorphism between @f@ and @'Yoneda' f@ given by the Yoneda lemma
+-- is witnessed by 'liftYoneda' and 'lowerYoneda'
+--
+-- @
+-- 'liftYoneda' . 'lowerYoneda' ≡ 'id'
+-- 'lowerYoneda' . 'liftYoneda' ≡ 'id'
+-- @
+--
+-- @
+-- lowerYoneda (liftYoneda fa) =         -- definition
+-- lowerYoneda (Yoneda (\f -> fmap f a)) -- definition
+-- (\f -> fmap f fa) id                  -- beta reduction
+-- fmap id fa                            -- functor law
+-- fa
+-- @
+--
+-- @
+-- 'lift' = 'liftYoneda'
+-- @
+liftYoneda :: Functor f => f a -> Yoneda f a
+liftYoneda a = Yoneda (\f -> fmap f a)
+
+lowerYoneda :: Yoneda f a -> f a
+lowerYoneda (Yoneda f) = f id
+
+instance Functor (Yoneda f) where
+  fmap f m = Yoneda (\k -> runYoneda m (k . f))
+
+instance Applicative f => Applicative (Yoneda f) where
+  pure a = Yoneda (\f -> pure (f a))
+  Yoneda m <*> Yoneda n = Yoneda (\f -> m (f .) <*> n id)
 
 
 

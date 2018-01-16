@@ -37,7 +37,7 @@ import Boggle
 -- |As 'HasTypes' but over generic representations as defined by
 --  "GHC.Generics".
 class GHasTypes (f :: Type -> Type) a where
-  gtypes :: forall g . Applicative g => (a -> g a) -> f a -> Boggle g (f a)
+  gtypes :: forall g . Applicative g => (a -> g a) -> f a -> g (f a)
 
 instance (GHasTypes l a, GHasTypes r a) => GHasTypes (l :*: r) a where
   gtypes f (l :*: r) = (:*:) <$> gtypes f l <*> gtypes f r
@@ -47,7 +47,7 @@ instance (GHasTypes l a, GHasTypes r a) => GHasTypes (l :*: r) a where
 -- instance (GHasTypes l a, GHasTypes r a) => GHasTypes (l :+: r) a where
 
 instance GHasTypes (K1 R a) a where
-  gtypes f (K1 x) = fmap K1 (liftBoggle (f x))
+  gtypes f (K1 x) = fmap K1 (f x)
   {-# INLINE gtypes #-}
 
 

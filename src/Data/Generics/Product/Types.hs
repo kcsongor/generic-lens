@@ -47,5 +47,6 @@ instance
   , GHasTypes (Rep s) a
   ) => HasTypes a s where
 
-  types f s = lowerBoggle (to <$> gtypes f (from s))
+  types = confusing (\f s -> to <$> gtypes f (from s))
+  {-# INLINE types #-}
 

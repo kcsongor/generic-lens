@@ -10,7 +10,6 @@
 {-# LANGUAGE TypeApplications                #-}
 {-# LANGUAGE TemplateHaskell                 #-}
 -- For the VL prism test
-{-# OPTIONS_GHC -funfolding-use-threshold=1000 #-}
 
 module Main where
 
@@ -87,7 +86,7 @@ newtype L s a = L (Lens' s a)
 
 intTraversalManual :: Traversal' Record5 Int
 intTraversalManual f (MkRecord5 a b c d e f') =
-    (\a1 a2 a3 a4 -> MkRecord5 a1 a2 c a3 e a4) <$> f a <*> f b <*> f d <*> f f'
+    pure (\a1 a2 a3 a4 -> MkRecord5 a1 a2 c a3 e a4) <*> f a <*> f b <*> f d <*> f f'
 
 intTraversalDerived :: Traversal' Record5 Int
 intTraversalDerived = types
