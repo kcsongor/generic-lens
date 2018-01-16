@@ -10,7 +10,7 @@
 {-# LANGUAGE TypeApplications                #-}
 {-# LANGUAGE TemplateHaskell                 #-}
 -- For the VL prism test
-{-# OPTIONS_GHC -funfolding-use-threshold=100 #-}
+{-# OPTIONS_GHC -funfolding-use-threshold=1000 #-}
 
 module Main where
 
@@ -106,6 +106,7 @@ subtypeLensManual f record
          ) (f (MkRecord2 (case record of {MkRecord a _ -> a})))
 
 data Sum1 = A Char | B Int | C () | D () deriving (Generic, Show)
+data Sum2 = A2 Char | B2 Int deriving (Generic, Show)
 
 sum1PrismManual :: Prism Sum1 Sum1 Int Int
 sum1PrismManual eta = prism g f eta
@@ -122,6 +123,17 @@ sum1PrismPManual eta = prismP g f eta
             B i -> Right i
             s   -> Left s
    g = B
+
+subtypePrismManual :: Prism Sum1 Sum1 Sum2 Sum2
+subtypePrismManual eta = prism g f eta
+  where
+    f s1 = case s1 of
+             A c -> Right (A2 c)
+             B i -> Right (B2 i)
+             C _   -> Left s1
+             D _   -> Left s1
+    g (A2 c) = A c
+    g (B2 i) = B i
 
 
 --------------------------------------------------------------------------------
@@ -158,6 +170,12 @@ sum1PrismB = _Ctor @"B"
 sum1PrismBP :: PrismP Sum1 Sum1 Int Int
 sum1PrismBP = prismPRavel (_CtorRaw @"B")
 
+subtypePrismGeneric :: Prism Sum1 Sum1 Sum2 Sum2
+subtypePrismGeneric = _Sub
+
+sum1TypePrism :: Prism Sum1 Sum1 Int Int
+sum1TypePrism = _Typed @Int
+
 inspect $ 'fieldALensManual === 'fieldALensName
 inspect $ 'fieldALensManual === 'fieldALensType
 inspect $ 'fieldALensManual === 'fieldALensPos
@@ -168,5 +186,7 @@ inspect $ 'typeChangingManualCompose === 'typeChangingGenericCompose
 inspect $ 'intTraversalManual === 'intTraversalDerived
 inspect $ 'sum1PrismManual === 'sum1PrismB
 inspect $ 'sum1PrismPManual === 'sum1PrismBP
+inspect $ 'subtypePrismManual === 'subtypePrismGeneric
+inspect $ 'sum1PrismManual === 'sum1TypePrism
 
 
