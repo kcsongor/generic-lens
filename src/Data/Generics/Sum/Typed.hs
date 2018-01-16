@@ -98,7 +98,7 @@ instance
   ) => AsType a s where
 
   _Typed
-    = repIso . _GTyped
+    = prism injectTyped (either (Left . to) Right . gprojectTyped . from)
   injectTyped
     = to . ginjectTyped
   projectTyped
