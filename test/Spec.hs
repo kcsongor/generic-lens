@@ -1,4 +1,4 @@
-{-# OPTIONS_GHC -O -fplugin Test.Inspection.Plugin #-}
+{-# OPTIONS_GHC -O -fplugin Test.Inspection.Plugin -dsuppress-all #-}
 
 {-# LANGUAGE AllowAmbiguousTypes             #-}
 {-# LANGUAGE DataKinds                       #-}
