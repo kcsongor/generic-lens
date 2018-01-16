@@ -118,7 +118,8 @@ prismE :: (b -> t) -> (s -> Either t a) -> PrismE s t a b
 prismE bt seta = mdimap (liftFun seta) (EitherFun id bt) . mright
 
 prism :: (b -> t) -> (s -> Either t a) -> Prism s t a b
-prism bt seta = dimap seta (either pure (fmap bt)) . right'
+prism bt seta eta = dimap (\x -> plus pure id (seta x)) (either id (\x -> fmap bt x)) (right' eta)
+{-# INLINE prism #-}
 
 -- | A type and its generic representation are isomorphic
 repIso :: (Generic a, Generic b) => Iso a b (Rep a x) (Rep b x)
