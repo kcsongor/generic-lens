@@ -1,4 +1,4 @@
-{-# OPTIONS_GHC -O -fplugin Test.Inspection.Plugin -dsuppress-all #-}
+{-# OPTIONS_GHC -O -fplugin Test.Inspection.Plugin #-}
 
 {-# LANGUAGE AllowAmbiguousTypes             #-}
 {-# LANGUAGE DataKinds                       #-}
@@ -10,7 +10,7 @@
 {-# LANGUAGE TypeApplications                #-}
 {-# LANGUAGE TemplateHaskell                 #-}
 -- For the VL prism test
-{-# OPTIONS_GHC -funfolding-use-threshold=70 #-}
+{-# OPTIONS_GHC -funfolding-use-threshold=100 #-}
 
 module Main where
 
@@ -53,6 +53,11 @@ prism :: (b -> t) -> (s -> Either t a) -> Prism s t a b
 prism bt seta eta = dimap (\x -> plus pure id (seta x)) (either id (\x -> fmap bt x)) (right' eta)
 {-# INLINE prism #-}
 
+prismP :: (b -> t) -> (s -> Either t a) -> PrismP s t a b
+prismP bt seta eta = dimap seta (either id bt) (right' eta)
+{-# INLINE prismP #-}
+
+plus :: (a -> b) -> (c -> d) -> Either a c -> Either b d
 plus f g (Left x) = Left (f x)
 plus f g (Right y) = Right (g y)
 
@@ -110,6 +115,14 @@ sum1PrismManual eta = prism g f eta
             s   -> Left s
    g = B
 
+sum1PrismPManual :: PrismP Sum1 Sum1 Int Int
+sum1PrismPManual eta = prismP g f eta
+ where
+   f s1 = case s1 of
+            B i -> Right i
+            s   -> Left s
+   g = B
+
 
 --------------------------------------------------------------------------------
 -- * Tests
@@ -154,3 +167,6 @@ inspect $ 'typeChangingManual === 'typeChangingGenericPos
 inspect $ 'typeChangingManualCompose === 'typeChangingGenericCompose
 inspect $ 'intTraversalManual === 'intTraversalDerived
 inspect $ 'sum1PrismManual === 'sum1PrismB
+inspect $ 'sum1PrismPManual === 'sum1PrismBP
+
+
