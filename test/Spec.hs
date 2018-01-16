@@ -9,6 +9,8 @@
 {-# LANGUAGE ScopedTypeVariables             #-}
 {-# LANGUAGE TypeApplications                #-}
 {-# LANGUAGE TemplateHaskell                 #-}
+-- For the VL prism test
+{-# OPTIONS_GHC -funfolding-use-threshold=70 #-}
 
 module Main where
 
