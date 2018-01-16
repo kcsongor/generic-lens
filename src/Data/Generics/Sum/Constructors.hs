@@ -113,7 +113,7 @@ instance
   , '(t, b) ~ Infer s' a' a (PickTv a' b)
   ) => AsConstructor ctor s t a b where
 
-  _Ctor eta = prismRavel (repIsoE . _GCtor @ctor) eta
+  _Ctor eta = prismRavel (repIsoP . _GCtor @ctor) eta
   {-# INLINE _Ctor #-}
 
 -- Used for testing the optimisation passes
@@ -126,8 +126,8 @@ _CtorRaw :: forall ctor s t s' a' a b . ( Generic s
   , GAsConstructor' ctor (Rep s') a'
   , GAsConstructor ctor (Rep s) (Rep t) a b
   , '(t, b) ~ Infer s' a' a (PickTv a' b)
-  ) => PrismE s t a b
-_CtorRaw = repIsoE . _GCtor @ctor
+  ) => PrismP s t a b
+_CtorRaw = repIsoP . _GCtor @ctor
 
 -- See Note [Uncluttering type signatures]
 instance {-# OVERLAPPING #-} AsConstructor ctor (Void1 a) (Void1 b) a b where

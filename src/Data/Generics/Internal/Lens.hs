@@ -46,9 +46,6 @@ type Prism s t a b
 type PrismP s t a b
   = forall p . (Choice p) => p a b -> p s t
 
-type PrismE s t a b
-  = forall p f. (MRight p, MProfunctor p) => p a b -> p s t
-
 type Prism' s a
   = Prism s s a a
 
@@ -60,6 +57,9 @@ type Iso s t a b
 
 type IsoE s t a b
   = forall p f. (MProfunctor p) => p a b -> p s t
+
+type IsoP s t a b
+  = forall p f. (Profunctor p) => p a b -> p s t
 
 -- | Getting
 (^.) :: s -> ((a -> Const a a) -> s -> Const a s) -> a
@@ -97,14 +97,14 @@ second f (a :*: b)
 left :: Prism ((a :+: c) x) ((b :+: c) x) (a x) (b x)
 left = prism L1 $ gsum Right (Left . R1)
 
+leftP :: PrismP ((a :+: c) x) ((b :+: c) x) (a x) (b x)
+leftP = prismP L1 $ gsum Right (Left . R1)
+
 right :: Prism ((a :+: b) x) ((a :+: c) x) (b x) (c x)
 right = prism R1 $ gsum (Left . L1) Right
 
-leftE :: PrismE ((a :+: c) x) ((b :+: c) x) (a x) (b x)
-leftE = prismE L1 $ gsum Right (Left . R1)
-
-rightE :: PrismE ((a :+: b) x) ((a :+: c) x) (b x) (c x)
-rightE = prismE  R1 $ gsum (Left . L1) Right
+rightP :: PrismP ((a :+: b) x) ((a :+: c) x) (b x) (c x)
+rightP = prismP R1 $ gsum (Left . L1) Right
 
 gsum :: (a x -> c) -> (b x -> c) -> ((a :+: b) x) -> c
 gsum f _ (L1 x) =  f x
@@ -113,9 +113,6 @@ gsum _ g (R1 y) =  g y
 combine :: Lens' (s x) a -> Lens' (t x) a -> Lens' ((s :+: t) x) a
 combine sa _ f (L1 s) = fmap (\a -> L1 (set sa a s)) (f (s ^. sa))
 combine _ ta f (R1 t) = fmap (\a -> R1 (set ta a t)) (f (t ^. ta))
-
-prismE :: (b -> t) -> (s -> Either t a) -> PrismE s t a b
-prismE bt seta = mdimap (liftFun seta) (EitherFun id bt) . mright
 
 prism :: (b -> t) -> (s -> Either t a) -> Prism s t a b
 prism bt seta eta = dimap (\x -> plus pure id (seta x)) (either id (\x -> fmap bt x)) (right' eta)
@@ -129,8 +126,9 @@ prismP bt seta eta = dimap seta (either id bt) (right' eta)
 repIso :: (Generic a, Generic b) => Iso a b (Rep a x) (Rep b x)
 repIso = dimap from (fmap to)
 
-repIsoE :: (Generic a, Generic b) => IsoE a b (Rep a x) (Rep b x)
-repIsoE = ddimap from to
+-- | A type and its generic representation are isomorphic
+repIsoP :: (Generic a, Generic b) => IsoP a b (Rep a x) (Rep b x)
+repIsoP = dimap from to
 
 
 -- | 'M1' is just a wrapper around `f p`
@@ -140,8 +138,8 @@ mIso = dimap unM1 (fmap M1)
 
 -- | 'M1' is just a wrapper around `f p`
 --mIso :: Iso' (M1 i c f p) (f p)
-mIsoE :: IsoE (M1 i c f p) (M1 i c g p) (f p) (g p)
-mIsoE = ddimap unM1 M1
+mIsoP :: IsoP (M1 i c f p) (M1 i c g p) (f p) (g p)
+mIsoP = dimap unM1 M1
 
 -- These are specialised versions of the Isos above. On GHC 8.0.2, having
 -- these functions eta-expanded allows the optimiser to inline these functions.
