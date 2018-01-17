@@ -1,0 +1,4 @@
+[submodule "inspection-testing"]
+	path = inspection-testing
+	url = https://github.com/nomeata/inspection-testing.git
+	branch = master

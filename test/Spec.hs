@@ -16,7 +16,7 @@ module Main where
 import GHC.Generics
 import Data.Profunctor
 import Data.Generics.Product
-import Data.Generics.Internal.Lens (prismPRavel)
+import Data.Generics.Internal.Lens (prismPRavel, plus)
 import Data.Generics.Sum
 import Test.Inspection
 import Test.HUnit
@@ -57,10 +57,6 @@ prismP :: (b -> t) -> (s -> Either t a) -> PrismP s t a b
 prismP bt seta eta = dimap seta (either id bt) (right' eta)
 {-# INLINE prismP #-}
 
-plus :: (a -> b) -> (c -> d) -> Either a c -> Either b d
-plus f g (Left x) = Left (f x)
-plus f g (Right y) = Right (g y)
-
 data Record4 a = MkRecord4
   { fieldA :: a
   , fieldB :: a
@@ -91,10 +87,6 @@ intTraversalManual f (MkRecord5 a b c d e f') =
 
 intTraversalDerived :: Traversal' Record5 Int
 intTraversalDerived = types
-
-
-intTraversalDerived3 :: Traversal' (Record4 Int) Int
-intTraversalDerived3 = genericTraverse
 
 fieldALensManual :: Lens' Record Int
 fieldALensManual f (MkRecord a b) = (\a' -> MkRecord a' b) <$> f a
