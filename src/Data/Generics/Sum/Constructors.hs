@@ -40,7 +40,6 @@ import Data.Generics.Sum.Internal.Constructors
 import Data.Kind    (Constraint, Type)
 import GHC.Generics (Generic (Rep))
 import GHC.TypeLits (Symbol, TypeError, ErrorMessage (..))
-import Data.Profunctor.Extra
 
 -- $setup
 -- == /Running example:/

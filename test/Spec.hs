@@ -18,7 +18,6 @@ import Data.Profunctor
 import Data.Generics.Product
 import Data.Generics.Internal.Lens (prismPRavel)
 import Data.Generics.Sum
-import Data.Generics.Product.Boggle
 import Test.Inspection
 import Test.HUnit
 import Util

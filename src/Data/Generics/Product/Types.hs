@@ -30,14 +30,10 @@ module Data.Generics.Product.Types
     HasTypes (..)
   ) where
 
---import Data.Generics.Internal.Families
 import Data.Generics.Internal.Lens
 import Data.Generics.Product.Internal.Types
 
---import Data.Kind    (Constraint, Type)
 import GHC.Generics (Generic (Rep), from, to)
-import Boggle
---import GHC.TypeLits (TypeError, ErrorMessage (..))
 
 class HasTypes a s where
   types :: Traversal' s a

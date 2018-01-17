@@ -27,9 +27,6 @@ library
                     , Data.Generics.Product.Typed
                     , Data.Generics.Labels
                     , Data.Generics.Product.Types
-                    , Data.Generics.Product.Boggle
-
-                    , Boggle
 
                     , Data.Generics.Sum
                     , Data.Generics.Sum.Any
@@ -54,7 +51,6 @@ library
                     , Data.Generics.Product.Internal.Subtype
                     , Data.Generics.Product.Internal.Typed
                     , Data.Generics.Product.Internal.Types
-                    , Data.Profunctor.Extra
 
   build-depends:      base        >= 4.9 && <= 5.0
                     , profunctors >= 5.0 && <= 6.0

@@ -20,13 +20,10 @@ module Data.Generics.Internal.Lens where
 import Control.Applicative    (Const(..))
 import Data.Functor.Identity  (Identity(..))
 import Data.Monoid            (First (..))
-import Data.Profunctor        (Choice(right'), Profunctor(dimap, rmap))
-import Data.Profunctor.Extra
+import Data.Profunctor        (Choice(right'), Profunctor(dimap))
 import Data.Profunctor.Unsafe ((#.), (.#))
 import Data.Tagged
 import GHC.Generics           ((:*:)(..), (:+:)(..), Generic(..), M1(..), Rep)
-import Boggle hiding (Dirty)
-import Debug.Trace
 
 -- | Type alias for lens
 type Lens' s a
@@ -38,6 +35,9 @@ type Lens s t a b
 -- | Type alias for traversal
 type Traversal' s a
   = forall f. Applicative f => (a -> f a) -> s -> f s
+
+type Traversal s t a b
+  = forall f. Applicative f => (a -> f b) -> s -> f t
 
 -- | Type alias for prism
 type Prism s t a b
@@ -55,11 +55,8 @@ type Iso' s a
 type Iso s t a b
   = forall p f. (Profunctor p, Functor f) => p a (f b) -> p s (f t)
 
-type IsoE s t a b
-  = forall p f. (MProfunctor p) => p a b -> p s t
-
 type IsoP s t a b
-  = forall p f. (Profunctor p) => p a b -> p s t
+  = forall p. (Profunctor p) => p a b -> p s t
 
 -- | Getting
 (^.) :: s -> ((a -> Const a a) -> s -> Const a s) -> a
@@ -121,6 +118,11 @@ prism bt seta eta = dimap (\x -> plus pure id (seta x)) (either id (\x -> fmap b
 prismP :: (b -> t) -> (s -> Either t a) -> PrismP s t a b
 prismP bt seta eta = dimap seta (either id bt) (right' eta)
 {-# INLINE prismP #-}
+
+plus :: (a -> b) -> (c -> d) -> Either a c -> Either b d
+plus f _ (Left x) = Left (f x)
+plus _ g (Right y) = Right (g y)
+
 
 -- | A type and its generic representation are isomorphic
 repIso :: (Generic a, Generic b) => Iso a b (Rep a x) (Rep b x)
@@ -283,14 +285,6 @@ instance Choice (Market a b) where
       Left t -> Left (Right t)
       Right a -> Right a
   {-# INLINE right' #-}
-
-instance MProfunctor (Market a b) where
-  mdimap f g m = dimap (lowerFun f) (lowerFun g) m
-  {-# INLINE mdimap #-}
-
-instance MRight (Market a b) where
-  mright m = right' m
-  {-# INLINE mright #-}
 
 prism2prismp :: Market a b s t -> PrismP s t a b
 prism2prismp (Market bt seta) = prismP bt seta

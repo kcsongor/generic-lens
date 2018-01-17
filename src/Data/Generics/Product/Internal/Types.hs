@@ -27,12 +27,8 @@ module Data.Generics.Product.Internal.Types
   ( GHasTypes (..)
   ) where
 
---import Data.Generics.Internal.Families
-import Data.Generics.Internal.Lens
-
 import Data.Kind    (Type)
 import GHC.Generics
-import Boggle
 
 -- |As 'HasTypes' but over generic representations as defined by
 --  "GHC.Generics".
