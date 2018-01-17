@@ -20,9 +20,11 @@ import Data.Generics.Internal.Lens (prismPRavel)
 import Data.Generics.Sum
 import Data.Generics.Product.Boggle
 import Test.Inspection
+import Test.HUnit
+import Util
 
 main :: IO ()
-main = putStrLn "Hello world"
+main = () <$ runTestTT tests
 
 data Record = MkRecord
   { fieldA :: Int
@@ -175,17 +177,16 @@ subtypePrismGeneric = _Sub
 sum1TypePrism :: Prism Sum1 Sum1 Int Int
 sum1TypePrism = _Typed @Int
 
-inspect $ 'fieldALensManual === 'fieldALensName
-inspect $ 'fieldALensManual === 'fieldALensType
-inspect $ 'fieldALensManual === 'fieldALensPos
-inspect $ 'subtypeLensManual === 'subtypeLensGeneric
-inspect $ 'typeChangingManual === 'typeChangingGeneric
-inspect $ 'typeChangingManual === 'typeChangingGenericPos
-inspect $ 'typeChangingManualCompose === 'typeChangingGenericCompose
-inspect $ 'intTraversalManual === 'intTraversalDerived
-inspect $ 'sum1PrismManual === 'sum1PrismB
-inspect $ 'sum1PrismPManual === 'sum1PrismBP
-inspect $ 'subtypePrismManual === 'subtypePrismGeneric
-inspect $ 'sum1PrismManual === 'sum1TypePrism
-
-
+tests = TestList $ map mkHUnitTest
+  [ $(inspectTest $ 'fieldALensManual === 'fieldALensName)
+  , $(inspectTest $ 'fieldALensManual === 'fieldALensType)
+  , $(inspectTest $ 'fieldALensManual === 'fieldALensPos)
+  , $(inspectTest $ 'subtypeLensManual === 'subtypeLensGeneric)
+  , $(inspectTest $ 'typeChangingManual === 'typeChangingGeneric)
+  , $(inspectTest $ 'typeChangingManual === 'typeChangingGenericPos)
+  , $(inspectTest $ 'typeChangingManualCompose === 'typeChangingGenericCompose)
+  , $(inspectTest $ 'intTraversalManual === 'intTraversalDerived)
+  , $(inspectTest $ 'sum1PrismManual === 'sum1PrismB)
+  , $(inspectTest $ 'sum1PrismPManual === 'sum1PrismBP)
+  , $(inspectTest $ 'subtypePrismManual === 'subtypePrismGeneric)
+  , $(inspectTest $ 'sum1PrismManual === 'sum1TypePrism) ]
