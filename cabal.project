@@ -1,1 +1,2 @@
-packages: generic-lens.cabal, inspection-testing/inspection-testing.cabal
+packages: generic-lens.cabal
+optional-packages: inspection-testing/inspection-testing.cabal
