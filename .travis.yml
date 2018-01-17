@@ -8,7 +8,7 @@ language: c
 sudo: false
 
 git:
-  submodules: false  # whether to recursively clone submodules
+  submodules: true  # whether to recursively clone submodules
 
 cache:
   directories:
