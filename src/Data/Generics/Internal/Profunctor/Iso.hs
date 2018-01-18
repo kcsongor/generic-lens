@@ -1,9 +1,7 @@
 {-# LANGUAGE GADTs                     #-}
-{-# LANGUAGE LambdaCase                #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
 {-# LANGUAGE Rank2Types                #-}
 {-# LANGUAGE ScopedTypeVariables       #-}
-{-# LANGUAGE TupleSections             #-}
 {-# LANGUAGE TypeFamilies              #-}
 {-# LANGUAGE TypeFamilyDependencies    #-}
 {-# LANGUAGE TypeOperators             #-}
@@ -48,10 +46,10 @@ kIso = iso unK1 K1
 
 sumIso :: Iso ((a :+: b) x) ((a' :+: b') x) (Either (a x) (b x)) (Either (a' x) (b' x))
 sumIso = iso back forth
-  where forth (Left l)  = (L1 l)
-        forth (Right r) = (R1 r)
-        back (L1 l) = (Left l)
-        back (R1 r) = (Right r)
+  where forth (Left l)  = L1 l
+        forth (Right r) = R1 r
+        back (L1 l) = Left l
+        back (R1 r) = Right r
 
 prodIso :: Iso ((a :*: b) x) ((a' :*: b') x) (a x, b x) (a' x, b' x)
 prodIso = iso (\(a :*: b) -> (a, b)) (\(a, b) -> (a :*: b))

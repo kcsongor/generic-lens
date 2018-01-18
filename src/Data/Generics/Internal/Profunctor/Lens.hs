@@ -1,5 +1,4 @@
 {-# LANGUAGE GADTs                     #-}
-{-# LANGUAGE LambdaCase                #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
 {-# LANGUAGE Rank2Types                #-}
 {-# LANGUAGE ScopedTypeVariables       #-}
@@ -74,12 +73,12 @@ build p = unTagged . p . Tagged
 -- | Lens focusing on the first element of a product
 first :: Lens ((a :*: b) x) ((a' :*: b) x) (a x) (a' x)
 first
-  = lens (\(a :*: _) -> a) (\((_ :*: b), a') -> a' :*: b)
+  = lens (\(a :*: _) -> a) (\(_ :*: b, a') -> a' :*: b)
 
 -- | Lens focusing on the second element of a product
 second :: Lens ((a :*: b) x) ((a :*: b') x) (b x) (b' x)
 second
-  = lens (\(_ :*: b) -> b) (\((a :*: _), b') -> a :*: b')
+  = lens (\(_ :*: b) -> b) (\(a :*: _, b') -> a :*: b')
 
 fork :: (a -> b) -> (a -> c) -> a -> (b, c)
 fork f g a = (f a, g a)

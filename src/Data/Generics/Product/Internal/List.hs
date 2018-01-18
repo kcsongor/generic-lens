@@ -38,8 +38,6 @@ module Data.Generics.Product.Internal.List
   , Elem
   , ListTuple (..)
   , TupleToList
-  , Permuting (..)
-  , Appending (..)
   ) where
 
 import GHC.TypeLits
@@ -160,7 +158,7 @@ instance Permuting List '[] '[] where
 
 instance (Permuting List as as', Inserting List '(fa, a) as' bs')
   => Permuting List ('(fa, a) ': as) bs' where
-  permuting = fromIso consing . pairing id permuting . consing . (inserting @_ @'(fa, _))
+  permuting = fromIso consing . pairing id permuting . consing . inserting @_ @'(fa, _)
 
 --------------------------------------------------------------------------------
 class IndexList (i :: Nat) as bs a b | i as -> a, i bs -> b, i as b -> bs, i bs a -> as where
@@ -170,7 +168,7 @@ instance {-# OVERLAPPING #-}
   ( as ~ ('(f, a) ': as')
   , bs ~ ('(f, b) ': as')
   ) => IndexList 0 as bs a b where
-  point = lens (\(x :> _) -> x) (\((_ :> xs), x') -> x' :> xs)
+  point = lens (\(x :> _) -> x) (\(_ :> xs, x') -> x' :> xs)
   {-# INLINE point #-}
 
 instance

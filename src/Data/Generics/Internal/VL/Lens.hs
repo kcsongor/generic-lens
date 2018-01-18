@@ -1,9 +1,7 @@
 {-# LANGUAGE GADTs                     #-}
-{-# LANGUAGE LambdaCase                #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
 {-# LANGUAGE Rank2Types                #-}
 {-# LANGUAGE ScopedTypeVariables       #-}
-{-# LANGUAGE TupleSections             #-}
 {-# LANGUAGE TypeFamilies              #-}
 {-# LANGUAGE TypeFamilyDependencies    #-}
 {-# LANGUAGE TypeOperators             #-}
@@ -37,7 +35,7 @@ view :: ((a -> Const a a) -> s -> Const a s) -> s -> a
 view l s = (^.) s l
 
 set :: Lens s t a b -> b -> s -> t
-set l x = runIdentity . (l (Identity . const x))
+set l x = runIdentity . l (Identity . const x)
 
 lens2lensvl :: ALens a b s t -> Lens s t a b
 lens2lensvl (ALens _get _set) = lens _get _set

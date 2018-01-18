@@ -96,7 +96,7 @@ class AsType a s where
   -- |Project by type.
   projectTyped :: s -> Maybe a
   projectTyped
-    = either (const Nothing) Just . (match _Typed)
+    = either (const Nothing) Just . match _Typed
 
 instance
   ( Generic s

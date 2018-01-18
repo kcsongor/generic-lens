@@ -3,7 +3,6 @@
 {-# LANGUAGE NoMonomorphismRestriction #-}
 {-# LANGUAGE Rank2Types                #-}
 {-# LANGUAGE ScopedTypeVariables       #-}
-{-# LANGUAGE TupleSections             #-}
 {-# LANGUAGE TypeFamilies              #-}
 {-# LANGUAGE TypeFamilyDependencies    #-}
 {-# LANGUAGE TypeOperators             #-}
@@ -106,7 +105,7 @@ instance Profunctor (Market a b) where
   {-# INLINE ( .# ) #-}
 
 instance Choice (Market a b) where
-  left' (Market bt seta) = Market (Left . bt) $ \sc -> case sc of
+  left' (Market bt seta) = Market (Left . bt) $ \case
     Left s -> case seta s of
       Left t -> Left (Left t)
       Right a -> Right a

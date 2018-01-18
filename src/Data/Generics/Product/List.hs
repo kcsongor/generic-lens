@@ -46,7 +46,7 @@ instance
   , Generic g
   , GIsList m (Rep f) (Rep g) as bs
   ) => IsList m f g as bs where
-  list = repIso . (glist @m)
+  list = repIso . glist @m
 
 class IsList Symbol f g as bs => IsRecord f g (as :: [(Symbol, Type)]) (bs :: [(Symbol, Type)]) | f -> as, g -> bs
 instance IsList Symbol f g as bs => IsRecord f g as bs

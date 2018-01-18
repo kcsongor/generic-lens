@@ -3,7 +3,6 @@
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE KindSignatures        #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE TypeApplications      #-}
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE TypeOperators         #-}
 
@@ -28,6 +27,7 @@ import Data.Generics.Internal.Families.Changing  as Families
 
 import GHC.TypeLits (ErrorMessage (..), Symbol)
 
+-- * Stuff
 type family ShowSymbols (ctors :: [Symbol]) :: ErrorMessage where
   ShowSymbols '[]
     = 'Text ""

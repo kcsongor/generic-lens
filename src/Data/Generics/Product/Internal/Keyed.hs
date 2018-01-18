@@ -4,7 +4,6 @@
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE GADTs                  #-}
 {-# LANGUAGE ScopedTypeVariables    #-}
-{-# LANGUAGE TupleSections          #-}
 {-# LANGUAGE TypeApplications       #-}
 {-# LANGUAGE TypeFamilies           #-}
 {-# LANGUAGE TypeInType             #-}
@@ -50,5 +49,5 @@ instance
   , IndexList i as bs a b
   , GIsList k f g as bs
   ) => GHasKey (key :: k) (M1 C meta f) (M1 C meta g) a b where
-  gkey = mIso . (glist @k) . point @i
+  gkey = mIso . glist @k . point @i
 
