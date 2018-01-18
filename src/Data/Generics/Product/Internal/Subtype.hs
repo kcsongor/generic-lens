@@ -50,7 +50,7 @@ instance
   GHasKey field sub sub t t
   => GUpcast sub (S1 ('MetaSel ('Just field) p f b) (Rec0 t)) where
 
-  gupcast r = M1 (K1 (r ^. gkey @field))
+  gupcast r = M1 (K1 (view (gkey @field) r))
 
 instance GUpcast sub sup => GUpcast sub (C1 c sup) where
   gupcast = M1 . gupcast
@@ -86,7 +86,7 @@ class GSmashLeaf sub sup (w :: Bool) where
 instance
   GHasKey field sup sup t t
   => GSmashLeaf (S1 ('MetaSel ('Just field) p f b) (Rec0 t)) sup 'True where
-  gsmashLeaf sup _ = M1 (K1 (sup ^. gkey @field))
+  gsmashLeaf sup _ = M1 (K1 (view (gkey @field) sup))
 
 instance GSmashLeaf (S1 ('MetaSel ('Just field) p f b) (Rec0 t)) sup 'False where
   gsmashLeaf _ = id

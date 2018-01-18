@@ -86,7 +86,7 @@ class HasPosition (i :: Nat) s t a b | s i -> a, t i -> b, s i b -> t, t i a -> 
   --  ...
   --  ... The type Human does not contain a field at position 4
   --  ...
-  position :: Lens s t a b
+  position :: LensVL s t a b
 
 type HasPosition' i s a = HasPosition i s s a a
 
@@ -94,7 +94,7 @@ getPosition :: forall i s a. HasPosition' i s a => s -> a
 getPosition s = s ^. position @i
 
 setPosition :: forall i s a. HasPosition' i s a => a -> s -> s
-setPosition = set (position @i)
+setPosition = setVL (position @i)
 
 instance  -- see Note [Changing type parameters]
   ( Generic s

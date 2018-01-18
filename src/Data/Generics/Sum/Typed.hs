@@ -85,17 +85,17 @@ class AsType a s where
   --  ... Duck
   --  ... Turtle
   --  ...
-  _Typed :: Prism' s a
+  _Typed :: PrismVL' s a
 
   -- |Inject by type.
   injectTyped :: a -> s
   injectTyped
-    = (_Typed #)
+    = buildVL _Typed
 
   -- |Project by type.
   projectTyped :: s -> Maybe a
   projectTyped
-    = either (const Nothing) Just . (withPrism _Typed (\_ b -> b))
+    = either (const Nothing) Just . (matchVL _Typed)
 
 instance
   ( Generic s
@@ -112,7 +112,8 @@ instance
 --    = to . ginjectTyped
 --  projectTyped
 --    = either (const Nothing) Just . gprojectTyped . from
-  _Typed = repIso . _GTyped @_ @as . tupled
+  _Typed = prismVLRavel (repIso . _GTyped @_ @as . tupled)
+  {-# INLINE _Typed #-}
 
 -- See Note [Uncluttering type signatures]
 instance {-# OVERLAPPING #-} AsType a Void where

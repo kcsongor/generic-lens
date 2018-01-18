@@ -92,7 +92,7 @@ class AsSubtype sub sup where
 
   -- |Injects a subtype into a supertype (upcast).
   injectSub  :: sub -> sup
-  injectSub = (_Sub @sub @sup #)
+  injectSub = build (_Sub @sub @sup)
 
   -- |Projects a subtype from a supertype (downcast).
   projectSub :: sup -> Either sup sub

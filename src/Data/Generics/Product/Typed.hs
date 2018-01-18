@@ -91,9 +91,9 @@ class HasType a s where
   --  ... The offending constructors are:
   --  ... HumanNoTall
   --  ...
-  typed :: Lens' s a
-  typed f t
-    = fmap (flip (setTyped @a) t) (f (getTyped @a t))
+  typed :: LensVL s s a a
+  typed
+    = lensVL (getTyped @a) (uncurry (setTyped @a) . swap)
 
   -- |Get field at type.
   getTyped :: s -> a
@@ -101,7 +101,7 @@ class HasType a s where
 
   -- |Set field at type.
   setTyped :: a -> s -> s
-  setTyped = set (typed @a)
+  setTyped = setVL (typed @a)
 
   {-# MINIMAL typed | setTyped, getTyped #-}
 

@@ -47,6 +47,7 @@ import Data.Generics.Internal.Lens
 
 import Data.Kind    (Type)
 import GHC.Generics
+import Data.Profunctor
 
 data List (as :: [(m, Type)]) where
   Nil :: List '[]
@@ -80,10 +81,10 @@ class GIsList
   glist :: Iso (f x) (g x) (List as) (List bs)
 
   glistL :: Lens (f x) (g x) (List as) (List bs)
-  glistL f s = glist @m f s
+  glistL f = glist @m f
 
   glistR :: Lens (List bs) (List as) (g x) (f x)
-  glistR f s = fromIso (glist @m) f s
+  glistR f = fromIso (glist @m) f
 
 instance
   ( GIsList m l l' as as'
@@ -168,15 +169,15 @@ instance {-# OVERLAPPING #-}
   ( as ~ ('(f, a) ': as')
   , bs ~ ('(f, b) ': as')
   ) => IndexList 0 as bs a b where
-  point f (x :> xs) = (:> xs) <$> f x
+  point = lens (\(x :> xs) -> x) (\((x :> xs), x') -> x' :> xs)
   {-# INLINE point #-}
 
 instance
   ( IndexList (n - 1) as' bs' a b
-  , as ~ (x ': as')
-  , bs ~ (x ': bs')
+  , as ~ ('(f, x) ': as')
+  , bs ~ ('(f, x) ': bs')
   ) => IndexList n as bs a b where
-  point f (x :> xs) = (x :>) <$> point @(n - 1) f xs
+  point = fromIso consing . alongside id (point @(n-1)) . second'
   {-# INLINE point #-}
 
 --------------------------------------------------------------------------------

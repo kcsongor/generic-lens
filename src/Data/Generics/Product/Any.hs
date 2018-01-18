@@ -67,7 +67,7 @@ class HasAny (sel :: k) s t a b | s sel k -> a where
   --
   --  >>> human ^. the @3
   --  "London"
-  the :: Lens s t a b
+  the :: LensVL s t a b
 
 instance HasPosition i s t a b => HasAny i s t a b where
   the = position @i

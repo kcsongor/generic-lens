@@ -98,7 +98,7 @@ class AsConstructor (ctor :: Symbol) s t a b | ctor s -> a, ctor t -> b where
   --  ...
   --  ... The type Animal Int does not contain a constructor named "Turtle"
   --  ...
-  _Ctor :: Prism s t a b
+  _Ctor :: PrismVL s t a b
 
 instance
   ( Generic s
@@ -121,7 +121,7 @@ instance
   , s ~ Infer t b' a
   ) => AsConstructor ctor s t a b where
 
-  _Ctor eta = prismRavel (repIsoP . _GCtor @ctor) eta
+  _Ctor eta = prismVLRavel (repIso . _GCtor @ctor) eta
   {-# INLINE _Ctor #-}
 
 -- See Note [Uncluttering type signatures]

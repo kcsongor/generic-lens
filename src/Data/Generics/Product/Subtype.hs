@@ -80,9 +80,9 @@ class Subtype sup sub where
   --
   -- >>> set (super @Animal) (Animal "dog" 10) human
   -- Human {name = "dog", age = 10, address = "London"}
-  super  :: Lens' sub sup
-  super f sub
-    = fmap (`smash` sub) (f (upcast sub))
+  super  :: LensVL sub sub sup sup
+  super
+    = lensVL upcast (uncurry smash . swap)
 
   -- |Cast the more specific subtype to the more general supertype
   --
@@ -103,7 +103,7 @@ class Subtype sup sub where
   -- >>> smash (Animal "dog" 10) human
   -- Human {name = "dog", age = 10, address = "London"}
   smash  :: sup -> sub -> sub
-  smash = set (super @sup)
+  smash = setVL (super @sup)
 
   {-# MINIMAL super | smash, upcast #-}
 

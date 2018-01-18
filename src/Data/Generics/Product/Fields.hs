@@ -108,21 +108,21 @@ class HasField (field :: Symbol) s t a b | s field -> a, t field -> b, s field b
   --  ... The offending constructors are:
   --  ... HumanNoAddress
   --  ...
-  field :: Lens s t a b
+  field :: LensVL s t a b
 
 type HasField' field s a = HasField field s s a a
 
 -- |
 -- >>> getField @"age" human
 -- 50
-getField :: forall f s a. HasField' f s a => s -> a
-getField s = s ^. field @f
+getField :: forall f s t a b .  HasField' f s a => s -> a
+getField = viewVL' (field @f)
 
 -- |
 -- >>> setField @"age" 60 human
 -- Human {name = "Tunyasz", age = 60, address = "London", other = False}
 setField :: forall f s a. HasField' f s a => a -> s -> s
-setField = set (field @f)
+setField = setVL (field @f)
 
 instance  -- see Note [Changing type parameters]
   ( Generic s

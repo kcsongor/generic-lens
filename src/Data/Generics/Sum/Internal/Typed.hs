@@ -36,7 +36,7 @@ import Data.Generics.Internal.Lens
 
 -- |As 'AsType' but over generic representations as defined by "GHC.Generics".
 class GAsType (f :: Type -> Type) (as :: [((), Type)]) where
-  _GTyped :: Prism' (f x) (List as)
+  _GTyped :: Prism (f x) (f x) (List as) (List as)
 
 instance
   ( GIsList () f f as as
@@ -50,7 +50,7 @@ instance GAsType f a => GAsType (M1 D meta f) a where
   _GTyped = mIso . _GTyped
 
 class GSumAsType (contains :: Bool) l r (a :: [((), Type)]) where
-  _GSumTyped :: Prism' ((l :+: r) x) (List a)
+  _GSumTyped :: Prism ((l :+: r) x) ((l :+: r) x) (List a) (List a)
 
 instance GAsType l a => GSumAsType 'True l r a where
   _GSumTyped = left . _GTyped

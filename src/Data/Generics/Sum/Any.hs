@@ -86,7 +86,7 @@ class AsAny (sel :: k) a s | s sel k -> a where
   --
   --  >>> duck ^? _As @Age
   --  Just 2
-  _As :: Prism s s a a
+  _As :: PrismVL s s a a
 
 instance AsConstructor ctor s s a a => AsAny ctor a s where
   _As = _Ctor @ctor
