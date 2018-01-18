@@ -2,14 +2,18 @@
 {-# LANGUAGE DataKinds              #-}
 {-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE GADTs                  #-}
 {-# LANGUAGE PolyKinds              #-}
 {-# LANGUAGE TypeFamilies           #-}
 {-# LANGUAGE TypeOperators          #-}
 {-# LANGUAGE UndecidableInstances   #-}
 
-module Data.Generics.Internal.Families.Changing where
+module Data.Generics.Internal.Families.Changing
+  ( Proxied
+  , Infer
+  ) where
 
-import GHC.TypeLits (Nat, type (+))
+import GHC.TypeLits (TypeError, ErrorMessage (..))
 
 {-
   Note [Changing type parameters]
@@ -35,53 +39,90 @@ import GHC.TypeLits (Nat, type (+))
   If after doing the conversion on @s@, @field@'s type is @(P _ a), then @t@ is
   @s[b/a]@, otherwise @t ~ s@ and @b ~ a@.
 -}
-data P (i :: Nat) a
 
-type Proxied t = Proxied' t 0
+-- `P` can be used in place of any type parameter, which means that it can have
+-- any kind, not just *, so a data type won't work.
+-- (this caused https://github.com/kcsongor/generic-lens/issues/23)
+-- Instead, we use a matchable type family to wrap any `k` - however, we can no longer directly
+-- pattern match on `P`, as it's not a type constructor. But we can still take it apart as a polymorphic
+-- application form. In order to distinguish between applications of P and other type constructors, we use a tag, `PTag`
+-- to fake a type constructor.
+data PTag = PTag
+type family P :: Peano -> k -> PTag -> k
 
-type family Proxied' (t :: k) (next :: Nat) :: k where
-  Proxied' (t a :: k) next = (Proxied' t (next + 1)) (P next a)
+type Proxied t = Proxied' t 'Z
+
+type family Proxied' (t :: k) (next :: Peano) :: k where
+  Proxied' (t (a :: j) :: k) next = (Proxied' t ('S next)) (P next a 'PTag)
   Proxied' t _ = t
 
-type family UnProxied (t :: k) :: k where
-  UnProxied (P _ a) = a
-  UnProxied (t (P _ a) :: k) = UnProxied t a
-  UnProxied t = t
+data Sub where
+  Sub :: Peano -> k -> Sub
 
-type family Change (t :: k) (target :: Nat) (to :: j) :: k where
-  Change (P target _) target to = (P target to)
-  Change (t (P target _) :: k) target to = t (P target to)
-  Change (t a :: k) target to = Change t target to a
-  Change t _ _ = t
+type family Unify (a :: k) (b :: k) :: [Sub] where
+  Unify (a n _ 'PTag) a' = '[ 'Sub n a']
+  Unify (a x) (b y) = Unify x y ++ Unify a b
+  Unify a a = '[]
+  Unify a b = TypeError
+                ( 'Text "Couldn't match type "
+                  ':<>: 'ShowType a
+                  ':<>: 'Text " with "
+                  ':<>: 'ShowType b
+                )
 
-type family UnApply (a :: k) :: [*] where
-  UnApply (f x) = x ': UnApply f
-  UnApply x     = '[]
+type family (xs :: [k]) ++ (ys :: [k]) :: [k] where
+  '[] ++ ys = ys
+  (x ': xs) ++ ys = x ': (xs ++ ys)
 
-type family Unify a b :: [(*, *)] where
-  Unify (P n a') a = '[ '(P n a', a)]
-  Unify a b = Zip (UnApply a) (UnApply b)
+type family Infer (s :: *) (a' :: *) (b :: *) :: * where
+  Infer (s a) a' b
+    = ReplaceArgs (s a) (Unify a' b)
+  Infer s _ _ = s
 
-type family PSub (subs :: [(*, *)]) :: [(Nat, *)] where
-  PSub '[] = '[]
-  PSub ('(P n _, b) ': xs) = '(n, b) ': PSub xs
-  PSub (_ ': xs) = PSub xs
+--------------------------------------------------------------------------------
 
-type family Zip (xs :: [k]) (ys :: [l]) :: [(k, l)] where
-  Zip '[] '[] = '[]
-  Zip (x ': xs) (y ': ys) = '(x, y) ': Zip xs ys
+data Peano = Z | S Peano
 
-type family Infer (s :: *) (a' :: *) (a :: *) (w :: *) :: (*, *) where
-  Infer s' a' a w
-    = Infer' s' a' (PSub (Unify a' a)) w
+-- [TODO]: work this out
+--
+--type family ArgKind (t :: k) (pos :: Peano) :: * where
+--  ArgKind (t (a :: k)) 'Z = k
+--  ArgKind (t _) ('S pos) = ArgKind t pos
+--
+--type family ReplaceArg (t :: k) (pos :: Peano) (to :: ArgKind t pos) :: k where
+--  ReplaceArg (t a) 'Z to = t to
+--  ReplaceArg (t a) ('S pos) to = ReplaceArg t pos to a
+--  ReplaceArg t _ _ = t
 
-type family Infer' (s :: *) (a' :: *) (subs :: [(Nat, k)]) w :: (*, *) where
-  Infer' s' a' '[ '(p, _)] w
-    = '(UnProxied (Change s' p w), UnProxied (Change a' p w))
-  Infer' s' a' _ _
-    = '(UnProxied s', UnProxied a')
+type family ReplaceArg (t :: k) (pos :: Peano) (to :: j) :: k where
+  ReplaceArg (t a) 'Z to = t to
+  ReplaceArg (t a) ('S pos) to = ReplaceArg t pos to a
+  ReplaceArg t _ _ = t
 
-type family PickTv (a :: k) (b :: k) :: * where
-  PickTv (P _ _) b = b
-  PickTv (f (P _ _)) (g b) = b
-  PickTv (f a) (g b) = PickTv f g
+type family ReplaceArgs (t :: k) (subs :: [Sub]) :: k where
+  ReplaceArgs t '[] = t
+  ReplaceArgs t ('Sub n arg ': ss) = ReplaceArgs (ReplaceArg t n arg) ss
+
+-- Note [CPP in instance constraints]
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+--
+-- In GHC 8.0.2, the calculated size of the expressions is too large for the
+-- inliner to consider them under the default -funfolding-use-threshold value
+-- (60).
+--
+-- To reduce the size, the constraints
+--
+-- ```
+-- s' ~ Proxied s
+-- t' ~ Proxied t
+-- ```
+--
+-- are written as the following single equality:
+--
+-- ```
+-- '(s', t') ~ '(Proxied s, Proxied t)
+-- ```
+--
+-- However, for some reason, this violates the functional dependencies on 8.2.2.
+-- Therefore, when using a newer version of the compiler, the original constraints
+-- are used, as the expression size is smaller under 8.2.2.

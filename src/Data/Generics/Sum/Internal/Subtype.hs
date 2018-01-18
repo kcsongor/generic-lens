@@ -1,3 +1,5 @@
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE KindSignatures        #-}
@@ -25,7 +27,8 @@ module Data.Generics.Sum.Internal.Subtype
   ( GAsSubtype (..)
   ) where
 
-import Data.Generics.Internal.HList
+import Data.Generics.Internal.Lens
+import Data.Generics.Product.Internal.List
 import Data.Generics.Sum.Internal.Typed
 
 import Data.Kind
@@ -34,41 +37,22 @@ import GHC.Generics
 -- |As 'AsSubtype' but over generic representations as defined by
 --  "GHC.Generics".
 class GAsSubtype (subf :: Type -> Type) (supf :: Type -> Type) where
-  ginjectSub  :: subf x -> supf x
-  gprojectSub :: supf x -> Either (supf x) (subf x)
+  _GSub :: Prism' (supf x) (subf x)
 
 instance
   ( GAsSubtype l supf
   , GAsSubtype r supf
   ) => GAsSubtype (l :+: r) supf where
-
-  ginjectSub x = case x of
-    L1 l -> ginjectSub l
-    R1 r -> ginjectSub r
-  gprojectSub x
-    = case gprojectSub x of
-        Right y -> Right (L1 y)
-        _ -> fmap R1 (gprojectSub x)
+  _GSub = without' _GSub _GSub . fromIso sumIso
 
 instance
-  ( GAsType supf a
-  , GCollectible subf as
-  , ListTuple a as
+  ( GIsList () subf subf as as
+  , GAsType supf as
   ) => GAsSubtype (C1 meta subf) supf where
+  _GSub = _GTyped . fromIso (glist @()) . fromIso mIso
 
-  ginjectSub
-    = ginjectTyped . listToTuple . gtoCollection . unM1
-  gprojectSub
-    = fmap (M1 . gfromCollection . tupleToList) . gprojectTyped
-
-instance GAsType supf a => GAsSubtype (S1 meta (Rec0 a)) supf where
-  ginjectSub
-    = ginjectTyped @supf . unK1 . unM1
-  gprojectSub
-    = fmap (M1 . K1) . gprojectTyped @supf
+-- instance GAsType supf a => GAsSubtype (S1 meta (Rec0 a)) supf where
+--   _GSub = _GTyped . fromIso (mIso . kIso)
 
 instance GAsSubtype subf supf => GAsSubtype (D1 meta subf) supf where
-  ginjectSub
-    = ginjectSub . unM1
-  gprojectSub
-    = fmap M1 . gprojectSub
+  _GSub = _GSub . fromIso mIso

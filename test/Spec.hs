@@ -1,4 +1,5 @@
 {-# OPTIONS_GHC -O -fplugin Test.Inspection.Plugin #-}
+{-# OPTIONS_GHC -dsuppress-all                     #-}
 
 {-# LANGUAGE AllowAmbiguousTypes             #-}
 {-# LANGUAGE DataKinds                       #-}
@@ -159,8 +160,8 @@ typeChangingGenericCompose = field @"fieldA" . field @"fieldA"
 sum1PrismB :: Prism Sum1 Sum1 Int Int
 sum1PrismB = _Ctor @"B"
 
-sum1PrismBP :: PrismP Sum1 Sum1 Int Int
-sum1PrismBP = prismPRavel (_CtorRaw @"B")
+--sum1PrismBP :: PrismP Sum1 Sum1 Int Int
+--sum1PrismBP = prismPRavel (_CtorRaw @"B")
 
 subtypePrismGeneric :: Prism Sum1 Sum1 Sum2 Sum2
 subtypePrismGeneric = _Sub
@@ -178,6 +179,6 @@ tests = TestList $ map mkHUnitTest
   , $(inspectTest $ 'typeChangingManualCompose === 'typeChangingGenericCompose)
   , $(inspectTest $ 'intTraversalManual === 'intTraversalDerived)
   , $(inspectTest $ 'sum1PrismManual === 'sum1PrismB)
-  , $(inspectTest $ 'sum1PrismPManual === 'sum1PrismBP)
+  -- , $(inspectTest $ 'sum1PrismPManual === 'sum1PrismBP)
   , $(inspectTest $ 'subtypePrismManual === 'subtypePrismGeneric)
   , $(inspectTest $ 'sum1PrismManual === 'sum1TypePrism) ]

@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE AllowAmbiguousTypes    #-}
 {-# LANGUAGE DataKinds              #-}
 {-# LANGUAGE FlexibleContexts       #-}
@@ -37,6 +38,7 @@ import Data.Generics.Sum.Internal.Typed
 import Data.Generics.Internal.Families
 import Data.Generics.Internal.Lens
 import Data.Generics.Internal.Void
+import Data.Generics.Product.Internal.List
 
 -- $setup
 -- >>> :set -XTypeApplications
@@ -87,23 +89,30 @@ class AsType a s where
 
   -- |Inject by type.
   injectTyped :: a -> s
+  injectTyped
+    = (_Typed #)
 
   -- |Project by type.
   projectTyped :: s -> Maybe a
+  projectTyped
+    = either (const Nothing) Just . (withPrism _Typed (\_ b -> b))
 
 instance
   ( Generic s
-  , ErrorUnlessOne a s (CollectPartialType a (Rep s))
-  , GAsType (Rep s) a
+  , ErrorUnlessOne a s (CollectPartialType as (Rep s))
+  , as ~ TupleToList a
+  , ListTuple a as
+  , GAsType (Rep s) as
   ) => AsType a s where
 
-  _Typed
-    = prism injectTyped (either (Left . to) Right . gprojectTyped . from)
-  {-# INLINE _Typed #-}
-  injectTyped
-    = to . ginjectTyped
-  projectTyped
-    = either (const Nothing) Just . gprojectTyped . from
+--  _Typed
+--    = prism injectTyped (either (Left . to) Right . gprojectTyped . from)
+--  {-# INLINE _Typed #-}
+--  injectTyped
+--    = to . ginjectTyped
+--  projectTyped
+--    = either (const Nothing) Just . gprojectTyped . from
+  _Typed = repIso . _GTyped @_ @as . tupled
 
 -- See Note [Uncluttering type signatures]
 instance {-# OVERLAPPING #-} AsType a Void where

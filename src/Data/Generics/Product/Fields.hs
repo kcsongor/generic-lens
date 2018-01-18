@@ -1,4 +1,5 @@
 {-# LANGUAGE AllowAmbiguousTypes     #-}
+{-# LANGUAGE CPP                     #-}
 {-# LANGUAGE ConstraintKinds         #-}
 {-# LANGUAGE DataKinds               #-}
 {-# LANGUAGE FlexibleInstances       #-}
@@ -39,7 +40,7 @@ module Data.Generics.Product.Fields
 import Data.Generics.Internal.Families
 import Data.Generics.Internal.Lens
 import Data.Generics.Internal.Void
-import Data.Generics.Product.Internal.Fields
+import Data.Generics.Product.Internal.Keyed
 
 import Data.Kind    (Constraint, Type)
 import GHC.Generics
@@ -75,7 +76,7 @@ import GHC.TypeLits (Symbol, ErrorMessage(..), TypeError)
 -- :}
 
 -- |Records that have a field with a given name.
-class HasField (field :: Symbol) s t a b | s field -> a, s field b -> t where
+class HasField (field :: Symbol) s t a b | s field -> a, t field -> b, s field b -> t, t field a -> s where
   -- |A lens that focuses on a field with a given name. Compatible with the
   --  lens package's 'Control.Lens.Lens' type.
   --
@@ -127,20 +128,26 @@ instance  -- see Note [Changing type parameters]
   ( Generic s
   , ErrorUnless field s (CollectField field (Rep s))
   , Generic t
+  -- see Note [CPP in instance constraints]
+#if __GLASGOW_HASKELL__ < 802
+  , '(s', t') ~ '(Proxied s, Proxied t)
+#else
   , s' ~ Proxied s
+  , t' ~ Proxied t
+#endif
   , Generic s'
-  , GHasField' field (Rep s) a
-  , GHasField' field (Rep s') a'
-  , GHasField field (Rep s) (Rep t) a b
-  , '(t, b) ~ Infer s' a' a (PickTv a' b)
+  , Generic t'
+  , GHasKey' field (Rep s) a
+  , GHasKey' field (Rep s') a'
+  , GHasKey' field (Rep t') b'
+  , GHasKey  field (Rep s) (Rep t) a b
+  , t ~ Infer s a' b
+  , s ~ Infer t b' a
   ) => HasField field s t a b where
 
-  field f s = ravel (repLens . gfield @field) f s
+  field f s = ravel (repLens . gkey @field) f s
 
--- See Note [Uncluttering type signatures]
-instance {-# OVERLAPPING #-} HasField f (Void2 t a) t a b where
-  field = undefined
-
+-- -- See Note [Uncluttering type signatures]
 instance {-# OVERLAPPING #-} HasField f (Void1 a) (Void1 b) a b where
   field = undefined
 

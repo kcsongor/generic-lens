@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -30,7 +31,7 @@ import Data.Generics.Internal.Lens
 import Data.Generics.Internal.Void
 import Data.Generics.Sum.Internal.Subtype
 
-import GHC.Generics (Generic (Rep, to, from))
+import GHC.Generics (Generic (Rep))
 
 -- $setup
 -- == /Running example:/
@@ -91,11 +92,13 @@ class AsSubtype sub sup where
 
   -- |Injects a subtype into a supertype (upcast).
   injectSub  :: sub -> sup
+  injectSub = (_Sub @sub @sup #)
 
   -- |Projects a subtype from a supertype (downcast).
   projectSub :: sup -> Either sup sub
+  projectSub = withPrism (_Sub @sub @sup) (\_ b -> b)
 
-  {-# MINIMAL injectSub, projectSub #-}
+  {-# MINIMAL (injectSub, projectSub) | _Sub #-}
 
 instance
   ( Generic sub
@@ -103,8 +106,7 @@ instance
   , GAsSubtype (Rep sub) (Rep sup)
   ) => AsSubtype sub sup where
 
-  injectSub  = to . ginjectSub . from
-  projectSub = either (Left . to) (Right . to) . gprojectSub . from
+  _Sub = repIso . _GSub . fromIso repIso
 
 -- See Note [Uncluttering type signatures]
 instance {-# OVERLAPPING #-} AsSubtype a Void where

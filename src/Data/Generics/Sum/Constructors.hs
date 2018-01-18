@@ -1,4 +1,5 @@
 {-# LANGUAGE AllowAmbiguousTypes    #-}
+{-# LANGUAGE CPP                    #-}
 {-# LANGUAGE DataKinds              #-}
 {-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE FunctionalDependencies #-}
@@ -29,7 +30,6 @@ module Data.Generics.Sum.Constructors
 
     -- $setup
     AsConstructor (..)
-    , _CtorRaw
   ) where
 
 import Data.Generics.Internal.Families
@@ -104,29 +104,25 @@ instance
   ( Generic s
   , ErrorUnless ctor s (HasCtorP ctor (Rep s))
   , Generic t
+  -- see Note [CPP in instance constraints]
+#if __GLASGOW_HASKELL__ < 802
+  , '(s', t') ~ '(Proxied s, Proxied t)
+#else
   , s' ~ Proxied s
+  , t' ~ Proxied t
+#endif
   , Generic s'
+  , Generic t'
   , GAsConstructor' ctor (Rep s) a
   , GAsConstructor' ctor (Rep s') a'
   , GAsConstructor ctor (Rep s) (Rep t) a b
-  , '(t, b) ~ Infer s' a' a (PickTv a' b)
+  , t ~ Infer s a' b
+  , GAsConstructor' ctor (Rep t') b'
+  , s ~ Infer t b' a
   ) => AsConstructor ctor s t a b where
 
   _Ctor eta = prismRavel (repIsoP . _GCtor @ctor) eta
   {-# INLINE _Ctor #-}
-
--- Used for testing the optimisation passes
-_CtorRaw :: forall ctor s t s' a' a b . ( Generic s
-  , ErrorUnless ctor s (HasCtorP ctor (Rep s))
-  , Generic t
-  , s' ~ Proxied s
-  , Generic s'
-  , GAsConstructor' ctor (Rep s) a
-  , GAsConstructor' ctor (Rep s') a'
-  , GAsConstructor ctor (Rep s) (Rep t) a b
-  , '(t, b) ~ Infer s' a' a (PickTv a' b)
-  ) => PrismP s t a b
-_CtorRaw = repIsoP . _GCtor @ctor
 
 -- See Note [Uncluttering type signatures]
 instance {-# OVERLAPPING #-} AsConstructor ctor (Void1 a) (Void1 b) a b where

@@ -30,11 +30,12 @@ module Data.Generics.Sum.Internal.Constructors
   ) where
 
 import Data.Generics.Internal.Families
-import Data.Generics.Internal.HList
+import Data.Generics.Product.Internal.List
 import Data.Generics.Internal.Lens
 
 import GHC.Generics
 import GHC.TypeLits (Symbol)
+import Data.Kind
 
 -- |As 'AsConstructor' but over generic representations as defined by
 --  "GHC.Generics".
@@ -44,14 +45,16 @@ class GAsConstructor (ctor :: Symbol) s t a b | ctor s -> a, ctor t -> b where
 type GAsConstructor' ctor s a = GAsConstructor ctor s s a a
 
 instance
-  ( GCollectible f as
-  , GCollectible g bs
+  ( GIsList Type f f as as
+  , GIsList Type g g bs bs
   , ListTuple a as
   , ListTuple b bs
   ) => GAsConstructor ctor (M1 C ('MetaCons ctor fixity fields) f) (M1 C ('MetaCons ctor fixity fields) g) a b where
 
-  _GCtor = prismP (M1 . gfromCollection . tupleToList) (Right . listToTuple . gtoCollection . unM1)
-  {-# INLINE _GCtor #-}
+--  _GCtor = prismP (M1 . gfromCollection . tupleToList) (Right . listToTuple . gtoCollection . unM1)
+--  {-# INLINE _GCtor #-}
+  _GCtor = prismP (M1 . (^. fromIso (glist @Type)) . tupleToList) (Right . listToTuple . (^. glist @Type) . unM1)
+
 
 instance GSumAsConstructor ctor (HasCtorP ctor l) l r l' r' a b => GAsConstructor ctor (l :+: r) (l' :+: r') a b where
   _GCtor = _GSumCtor @ctor @(HasCtorP ctor l)

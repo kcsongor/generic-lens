@@ -17,8 +17,9 @@
 module Data.Generics.Internal.Families.Has
   ( HasTotalFieldP
   , HasTotalTypeP
-  , HasPartialTypeTupleP
+  , HasPartialTypeP
   , HasCtorP
+  , GTypes
   ) where
 
 import Data.Type.Bool     (type (||), type (&&))
@@ -26,7 +27,7 @@ import Data.Type.Equality (type (==))
 import GHC.Generics
 import GHC.TypeLits       (Symbol, TypeError, ErrorMessage (..))
 
-import Data.Generics.Internal.HList
+import Data.Generics.Product.Internal.List
 
 type family HasTotalFieldP (field :: Symbol) f :: Bool where
   HasTotalFieldP field (S1 ('MetaSel ('Just field) _ _ _) _)
@@ -78,12 +79,12 @@ type family HasTotalTypeP a f :: Bool where
         ':<>: 'Text " is not a valid GHC.Generics representation type"
         )
 
-type family HasPartialTypeTupleP a f :: Bool where
-  HasPartialTypeTupleP t (l :+: r)
-    = HasPartialTypeTupleP t l || HasPartialTypeTupleP t r
-  HasPartialTypeTupleP t (C1 m f)
-    = t == ListToTuple (GCollect f)
-  HasPartialTypeTupleP t _
+type family HasPartialTypeP a f :: Bool where
+  HasPartialTypeP t (l :+: r)
+    = HasPartialTypeP t l || HasPartialTypeP t r
+  HasPartialTypeP t (C1 m f)
+    = t == GTypes f
+  HasPartialTypeP t _
     = 'False
 
 type family HasCtorP (ctor :: Symbol) f :: Bool where
@@ -95,3 +96,13 @@ type family HasCtorP (ctor :: Symbol) f :: Bool where
     = HasCtorP ctor f
   HasCtorP ctor _
     = 'False
+
+type family GTypes (rep :: * -> *) :: [((), *)] where
+  GTypes (l :*: r)
+    = GTypes l ++ GTypes r
+  GTypes (Rec0 a)
+    = '[ '( '(), a)]
+  GTypes (M1 _ m a)
+    = GTypes a
+  GTypes U1 = '[]
+

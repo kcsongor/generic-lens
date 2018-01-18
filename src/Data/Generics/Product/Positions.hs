@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE AllowAmbiguousTypes    #-}
 {-# LANGUAGE ConstraintKinds        #-}
 {-# LANGUAGE DataKinds              #-}
@@ -70,7 +71,7 @@ import GHC.TypeLits   (type (<=?),  Nat, TypeError, ErrorMessage(..))
 -- :}
 
 -- |Records that have a field at a given position.
-class HasPosition (i :: Nat) s t a b | s i -> a, s i b -> t where
+class HasPosition (i :: Nat) s t a b | s i -> a, t i -> b, s i b -> t, t i a -> s where
   -- |A lens that focuses on a field at a given position. Compatible with the
   --  lens package's 'Control.Lens.Lens' type.
   --
@@ -99,17 +100,27 @@ instance  -- see Note [Changing type parameters]
   ( Generic s
   , ErrorUnless i s (0 <? i && i <=? Size (Rep s))
   , Generic t
+  -- see Note [CPP in instance constraints]
+#if __GLASGOW_HASKELL__ < 802
+  , '(s', t') ~ '(Proxied s, Proxied t)
+#else
   , s' ~ Proxied s
+  , t' ~ Proxied t
+#endif
+  , Generic s'
+  , Generic t'
   , GHasPosition' i (Rep s) a
   , GHasPosition' i (Rep s') a'
-  , GHasPosition 1 i (Rep s) (Rep t) a b
-  , '(t, b) ~ Infer s' a' a (PickTv a' b)
+  , GHasPosition i (Rep s) (Rep t) a b
+  , t ~ Infer s a' b
+  , GHasPosition' i (Rep t') b'
+  , s ~ Infer t b' a
   ) => HasPosition i s t a b where
 
-  position f s = ravel (repLens . gposition @1 @i) f s
+  position f s = ravel (repLens . gposition @i) f s
 
 -- See Note [Uncluttering type signatures]
-instance {-# OVERLAPPING #-} HasPosition f (Void2 a t) t a b where
+instance {-# OVERLAPPING #-} HasPosition f (Void1 a) (Void1 b) a b where
   position = undefined
 
 type family ErrorUnless (i :: Nat) (s :: Type) (hasP :: Bool) :: Constraint where
