@@ -86,17 +86,17 @@ class AsSubtype sub sup where
   --
   --  >>> duck ^? _Sub :: Maybe FourLeggedAnimal
   --  Nothing
-  _Sub :: Prism' sup sub
-  _Sub eta = prism injectSub projectSub eta
+  _Sub :: PrismVL' sup sub
+  _Sub eta = prismVL injectSub projectSub eta
   {-# INLINE _Sub #-}
 
   -- |Injects a subtype into a supertype (upcast).
   injectSub  :: sub -> sup
-  injectSub = build (_Sub @sub @sup)
+  injectSub = buildVL (_Sub @sub @sup)
 
   -- |Projects a subtype from a supertype (downcast).
   projectSub :: sup -> Either sup sub
-  projectSub = withPrism (_Sub @sub @sup) (\_ b -> b)
+  projectSub = matchVL (_Sub @sub @sup)
 
   {-# MINIMAL (injectSub, projectSub) | _Sub #-}
 
@@ -106,7 +106,7 @@ instance
   , GAsSubtype (Rep sub) (Rep sup)
   ) => AsSubtype sub sup where
 
-  _Sub = repIso . _GSub . fromIso repIso
+  _Sub = prismVLRavel (repIso . _GSub . fromIso repIso)
 
 -- See Note [Uncluttering type signatures]
 instance {-# OVERLAPPING #-} AsSubtype a Void where
