@@ -29,7 +29,7 @@ module Data.Generics.Product.Any
     HasAny (..)
   ) where
 
-import Data.Generics.Internal.Lens
+import Data.Generics.Internal.VL.Lens
 import Data.Generics.Product.Fields
 import Data.Generics.Product.Positions
 import Data.Generics.Product.Typed
@@ -67,7 +67,7 @@ class HasAny (sel :: k) s t a b | s sel k -> a where
   --
   --  >>> human ^. the @3
   --  "London"
-  the :: LensVL s t a b
+  the :: Lens s t a b
 
 instance HasPosition i s t a b => HasAny i s t a b where
   the = position @i

@@ -33,13 +33,13 @@ module Data.Generics.Product.Internal.Positions
   , Size
   ) where
 
-import Data.Generics.Internal.Lens
-
 import Data.Generics.Product.Internal.List
 import Data.Kind      (Type)
 import Data.Type.Bool (If, Not)
 import GHC.Generics
 import GHC.TypeLits   (type (<=?), type (+), type (-), Nat)
+import Data.Generics.Internal.Profunctor.Lens
+import Data.Generics.Internal.Profunctor.Iso
 
 -- |As 'HasPosition' but over generic representations as defined by
 --  "GHC.Generics".

@@ -36,9 +36,10 @@ import GHC.TypeLits (TypeError, ErrorMessage (..), Symbol)
 import Data.Generics.Sum.Internal.Typed
 
 import Data.Generics.Internal.Families
-import Data.Generics.Internal.Lens
 import Data.Generics.Internal.Void
 import Data.Generics.Product.Internal.List
+import Data.Generics.Internal.VL.Prism
+import Data.Generics.Internal.Profunctor.Iso
 
 -- $setup
 -- >>> :set -XTypeApplications
@@ -85,17 +86,17 @@ class AsType a s where
   --  ... Duck
   --  ... Turtle
   --  ...
-  _Typed :: PrismVL' s a
+  _Typed :: Prism' s a
 
   -- |Inject by type.
   injectTyped :: a -> s
   injectTyped
-    = buildVL _Typed
+    = build _Typed
 
   -- |Project by type.
   projectTyped :: s -> Maybe a
   projectTyped
-    = either (const Nothing) Just . (matchVL _Typed)
+    = either (const Nothing) Just . (match _Typed)
 
 instance
   ( Generic s
@@ -105,14 +106,7 @@ instance
   , GAsType (Rep s) as
   ) => AsType a s where
 
---  _Typed
---    = prism injectTyped (either (Left . to) Right . gprojectTyped . from)
---  {-# INLINE _Typed #-}
---  injectTyped
---    = to . ginjectTyped
---  projectTyped
---    = either (const Nothing) Just . gprojectTyped . from
-  _Typed = prismVLRavel (repIso . _GTyped @_ @as . tupled)
+  _Typed = prismRavel (repIso . _GTyped @_ @as . tupled)
   {-# INLINE _Typed #-}
 
 -- See Note [Uncluttering type signatures]

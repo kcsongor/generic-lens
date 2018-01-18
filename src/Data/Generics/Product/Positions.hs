@@ -38,7 +38,7 @@ module Data.Generics.Product.Positions
   , setPosition
   ) where
 
-import Data.Generics.Internal.Lens
+import Data.Generics.Internal.VL.Lens as VL
 import Data.Generics.Internal.Void
 import Data.Generics.Internal.Families
 import Data.Generics.Product.Internal.Positions
@@ -47,6 +47,7 @@ import Data.Kind      (Constraint, Type)
 import Data.Type.Bool (type (&&))
 import GHC.Generics
 import GHC.TypeLits   (type (<=?),  Nat, TypeError, ErrorMessage(..))
+import Data.Generics.Internal.Profunctor.Lens
 
 -- $setup
 -- == /Running example:/
@@ -86,7 +87,7 @@ class HasPosition (i :: Nat) s t a b | s i -> a, t i -> b, s i b -> t, t i a -> 
   --  ...
   --  ... The type Human does not contain a field at position 4
   --  ...
-  position :: LensVL s t a b
+  position :: VL.Lens s t a b
 
 type HasPosition' i s a = HasPosition i s s a a
 
@@ -94,7 +95,7 @@ getPosition :: forall i s a. HasPosition' i s a => s -> a
 getPosition s = s ^. position @i
 
 setPosition :: forall i s a. HasPosition' i s a => a -> s -> s
-setPosition = setVL (position @i)
+setPosition = VL.set (position @i)
 
 instance  -- see Note [Changing type parameters]
   ( Generic s

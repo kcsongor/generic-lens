@@ -43,11 +43,12 @@ module Data.Generics.Product.Internal.List
   ) where
 
 import GHC.TypeLits
-import Data.Generics.Internal.Lens
 
 import Data.Kind    (Type)
 import GHC.Generics
 import Data.Profunctor
+import Data.Generics.Internal.Profunctor.Lens
+import Data.Generics.Internal.Profunctor.Iso
 
 data List (as :: [(m, Type)]) where
   Nil :: List '[]
@@ -169,7 +170,7 @@ instance {-# OVERLAPPING #-}
   ( as ~ ('(f, a) ': as')
   , bs ~ ('(f, b) ': as')
   ) => IndexList 0 as bs a b where
-  point = lens (\(x :> xs) -> x) (\((x :> xs), x') -> x' :> xs)
+  point = lens (\(x :> _) -> x) (\((_ :> xs), x') -> x' :> xs)
   {-# INLINE point #-}
 
 instance

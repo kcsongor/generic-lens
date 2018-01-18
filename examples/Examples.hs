@@ -17,11 +17,16 @@
 module Examples where
 
 import Data.Function ((&))
-import Data.Generics.Internal.Lens
+import Data.Generics.Internal.VL.Lens
 import Data.Generics.Product
 import Data.Generics.Sum
 import GHC.Generics
 import Data.Generics.Labels
+import Data.Generics.Internal.VL.Iso
+import Data.Generics.Internal.VL.Prism
+import Data.Generics.Internal.Profunctor.Lens
+import Data.Generics.Internal.Profunctor.Iso
+import Data.Generics.Internal.Profunctor.Prism
 
 data Animal = Animal
   { name :: String

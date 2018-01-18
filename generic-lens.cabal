@@ -37,7 +37,13 @@ library
                     , Data.Generics.Sum.Constructors
                     , Data.Generics.Sum.Typed
                     , Data.Generics.Sum.Subtype
-                    , Data.Generics.Internal.Lens
+                    , Data.Generics.Internal.Profunctor.Lens
+                    , Data.Generics.Internal.Profunctor.Prism
+                    , Data.Generics.Internal.Profunctor.Iso
+                    , Data.Generics.Internal.VL.Lens
+                    , Data.Generics.Internal.VL.Traversal
+                    , Data.Generics.Internal.VL.Prism
+                    , Data.Generics.Internal.VL.Iso
 
   other-modules:      Data.Generics.Internal.Families
                     , Data.Generics.Internal.Families.Changing

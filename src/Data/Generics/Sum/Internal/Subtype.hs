@@ -27,12 +27,13 @@ module Data.Generics.Sum.Internal.Subtype
   ( GAsSubtype (..)
   ) where
 
-import Data.Generics.Internal.Lens
 import Data.Generics.Product.Internal.List
 import Data.Generics.Sum.Internal.Typed
 
 import Data.Kind
 import GHC.Generics
+import Data.Generics.Internal.Profunctor.Iso
+import Data.Generics.Internal.Profunctor.Prism
 
 -- |As 'AsSubtype' but over generic representations as defined by
 --  "GHC.Generics".

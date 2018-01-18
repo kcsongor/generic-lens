@@ -31,11 +31,13 @@ module Data.Generics.Sum.Internal.Constructors
 
 import Data.Generics.Internal.Families
 import Data.Generics.Product.Internal.List
-import Data.Generics.Internal.Lens
 
 import GHC.Generics
 import GHC.TypeLits (Symbol)
 import Data.Kind
+import Data.Generics.Internal.Profunctor.Lens
+import Data.Generics.Internal.Profunctor.Iso
+import Data.Generics.Internal.Profunctor.Prism
 
 -- |As 'AsConstructor' but over generic representations as defined by
 --  "GHC.Generics".

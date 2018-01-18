@@ -32,7 +32,8 @@ import GHC.Generics
 
 import Data.Generics.Internal.Families
 import Data.Generics.Product.Internal.List
-import Data.Generics.Internal.Lens
+import Data.Generics.Internal.Profunctor.Iso
+import Data.Generics.Internal.Profunctor.Prism
 
 -- |As 'AsType' but over generic representations as defined by "GHC.Generics".
 class GAsType (f :: Type -> Type) (as :: [((), Type)]) where

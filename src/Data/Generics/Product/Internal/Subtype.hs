@@ -31,11 +31,11 @@ module Data.Generics.Product.Internal.Subtype
   ) where
 
 import Data.Generics.Internal.Families
-import Data.Generics.Internal.Lens
 import Data.Generics.Product.Internal.Keyed
 
 import Data.Kind (Type)
 import GHC.Generics
+import Data.Generics.Internal.Profunctor.Lens
 
 --------------------------------------------------------------------------------
 -- * Generic upcasting

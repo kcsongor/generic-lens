@@ -27,10 +27,11 @@ module Data.Generics.Product.Internal.Keyed
   , GHasKey'
   ) where
 
-import Data.Generics.Internal.Lens
 import Data.Generics.Product.Internal.List
 import Data.Kind
 import GHC.Generics
+import Data.Generics.Internal.Profunctor.Lens
+import Data.Generics.Internal.Profunctor.Iso
 
 class GHasKey (key :: k) (s :: Type -> Type) (t :: Type -> Type) a b | s key -> a, t key -> b where
   gkey :: Lens (s x) (t x) a b

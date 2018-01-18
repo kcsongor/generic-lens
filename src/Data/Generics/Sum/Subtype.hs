@@ -27,11 +27,12 @@ module Data.Generics.Sum.Subtype
     AsSubtype (..)
   ) where
 
-import Data.Generics.Internal.Lens
 import Data.Generics.Internal.Void
 import Data.Generics.Sum.Internal.Subtype
 
 import GHC.Generics (Generic (Rep))
+import Data.Generics.Internal.VL.Prism
+import Data.Generics.Internal.Profunctor.Iso
 
 -- $setup
 -- == /Running example:/
@@ -86,17 +87,17 @@ class AsSubtype sub sup where
   --
   --  >>> duck ^? _Sub :: Maybe FourLeggedAnimal
   --  Nothing
-  _Sub :: PrismVL' sup sub
-  _Sub eta = prismVL injectSub projectSub eta
+  _Sub :: Prism' sup sub
+  _Sub eta = prism injectSub projectSub eta
   {-# INLINE _Sub #-}
 
   -- |Injects a subtype into a supertype (upcast).
   injectSub  :: sub -> sup
-  injectSub = buildVL (_Sub @sub @sup)
+  injectSub = build (_Sub @sub @sup)
 
   -- |Projects a subtype from a supertype (downcast).
   projectSub :: sup -> Either sup sub
-  projectSub = matchVL (_Sub @sub @sup)
+  projectSub = match (_Sub @sub @sup)
 
   {-# MINIMAL (injectSub, projectSub) | _Sub #-}
 
@@ -106,7 +107,7 @@ instance
   , GAsSubtype (Rep sub) (Rep sup)
   ) => AsSubtype sub sup where
 
-  _Sub = prismVLRavel (repIso . _GSub . fromIso repIso)
+  _Sub = prismRavel (repIso . _GSub . fromIso repIso)
 
 -- See Note [Uncluttering type signatures]
 instance {-# OVERLAPPING #-} AsSubtype a Void where

@@ -27,11 +27,11 @@ module Data.Generics.Product.List
   , IsRecord'
   ) where
 
-import Data.Generics.Internal.Lens
 import Data.Generics.Product.Internal.List
 import Data.Kind
 import GHC.Generics
 import GHC.TypeLits
+import Data.Generics.Internal.Profunctor.Iso
 
 class IsList
   (m :: Type)

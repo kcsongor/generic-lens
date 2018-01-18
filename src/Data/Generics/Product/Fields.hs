@@ -38,13 +38,14 @@ module Data.Generics.Product.Fields
   ) where
 
 import Data.Generics.Internal.Families
-import Data.Generics.Internal.Lens
+import Data.Generics.Internal.VL.Lens as VL
 import Data.Generics.Internal.Void
 import Data.Generics.Product.Internal.Keyed
 
 import Data.Kind    (Constraint, Type)
 import GHC.Generics
 import GHC.TypeLits (Symbol, ErrorMessage(..), TypeError)
+import Data.Generics.Internal.Profunctor.Lens
 
 -- $setup
 -- == /Running example:/
@@ -108,21 +109,21 @@ class HasField (field :: Symbol) s t a b | s field -> a, t field -> b, s field b
   --  ... The offending constructors are:
   --  ... HumanNoAddress
   --  ...
-  field :: LensVL s t a b
+  field :: VL.Lens s t a b
 
 type HasField' field s a = HasField field s s a a
 
 -- |
 -- >>> getField @"age" human
 -- 50
-getField :: forall f s t a b .  HasField' f s a => s -> a
-getField = viewVL' (field @f)
+getField :: forall f a s.  HasField' f s a => s -> a
+getField = VL.view (field @f)
 
 -- |
 -- >>> setField @"age" 60 human
 -- Human {name = "Tunyasz", age = 60, address = "London", other = False}
 setField :: forall f s a. HasField' f s a => a -> s -> s
-setField = setVL (field @f)
+setField = VL.set (field @f)
 
 instance  -- see Note [Changing type parameters]
   ( Generic s

@@ -28,9 +28,9 @@ module Data.Generics.Sum.Any
     AsAny (..)
   ) where
 
-import Data.Generics.Internal.Lens
 import Data.Generics.Sum.Constructors
 import Data.Generics.Sum.Typed
+import Data.Generics.Internal.VL.Prism
 
 -- $setup
 -- == /Running example:/
@@ -86,7 +86,7 @@ class AsAny (sel :: k) a s | s sel k -> a where
   --
   --  >>> duck ^? _As @Age
   --  Just 2
-  _As :: PrismVL s s a a
+  _As :: Prism s s a a
 
 instance AsConstructor ctor s s a a => AsAny ctor a s where
   _As = _Ctor @ctor

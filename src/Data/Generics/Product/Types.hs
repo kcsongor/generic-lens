@@ -30,10 +30,10 @@ module Data.Generics.Product.Types
     HasTypes (..)
   ) where
 
-import Data.Generics.Internal.Lens
 import Data.Generics.Product.Internal.Types
 
 import GHC.Generics (Generic (Rep), from, to)
+import Data.Generics.Internal.VL.Traversal
 
 class HasTypes a s where
   types :: Traversal' s a

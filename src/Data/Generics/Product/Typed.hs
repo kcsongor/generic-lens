@@ -31,13 +31,14 @@ module Data.Generics.Product.Typed
   ) where
 
 import Data.Generics.Internal.Families
-import Data.Generics.Internal.Lens
+import Data.Generics.Internal.VL.Lens as VL
 import Data.Generics.Internal.Void
 import Data.Generics.Product.Internal.Keyed
 
 import Data.Kind    (Constraint, Type)
 import GHC.Generics (Generic (Rep))
 import GHC.TypeLits (TypeError, ErrorMessage (..))
+import Data.Generics.Internal.Profunctor.Lens
 
 -- $setup
 -- == /Running example:/
@@ -91,9 +92,9 @@ class HasType a s where
   --  ... The offending constructors are:
   --  ... HumanNoTall
   --  ...
-  typed :: LensVL s s a a
+  typed :: VL.Lens s s a a
   typed
-    = lensVL (getTyped @a) (uncurry (setTyped @a) . swap)
+    = VL.lens (getTyped @a) (uncurry (setTyped @a) . swap)
 
   -- |Get field at type.
   getTyped :: s -> a
@@ -101,7 +102,7 @@ class HasType a s where
 
   -- |Set field at type.
   setTyped :: a -> s -> s
-  setTyped = setVL (typed @a)
+  setTyped = VL.set (typed @a)
 
   {-# MINIMAL typed | setTyped, getTyped #-}
 
