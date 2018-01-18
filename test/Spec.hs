@@ -22,9 +22,14 @@ import Data.Generics.Sum
 import Test.Inspection
 import Test.HUnit
 import Util
+import System.Exit
 
 main :: IO ()
-main = () <$ runTestTT tests
+main = do
+  res <- runTestTT tests
+  case errors res + failures res of
+    0 -> exitSuccess
+    _ -> exitFailure
 
 data Record = MkRecord
   { fieldA :: Int
@@ -169,6 +174,7 @@ subtypePrismGeneric = _Sub
 sum1TypePrism :: Prism Sum1 Sum1 Int Int
 sum1TypePrism = _Typed @Int
 
+tests :: Test
 tests = TestList $ map mkHUnitTest
   [ $(inspectTest $ 'fieldALensManual === 'fieldALensName)
   , $(inspectTest $ 'fieldALensManual === 'fieldALensType)
