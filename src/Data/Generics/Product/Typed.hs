@@ -112,7 +112,7 @@ instance
   , GHasKey a (Rep s) (Rep s) a a
   ) => HasType a s where
 
-  typed = ravel (repLens . gkey @a)
+  typed f s = VL.ravel (repLens . gkey @a) f s
 
 -- See Note [Uncluttering type signatures]
 instance {-# OVERLAPPING #-} HasType a Void where

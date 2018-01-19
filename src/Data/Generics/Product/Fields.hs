@@ -45,7 +45,7 @@ import Data.Generics.Product.Internal.Keyed
 import Data.Kind    (Constraint, Type)
 import GHC.Generics
 import GHC.TypeLits (Symbol, ErrorMessage(..), TypeError)
-import Data.Generics.Internal.Profunctor.Lens
+import Data.Generics.Internal.Profunctor.Lens as P
 
 -- $setup
 -- == /Running example:/
@@ -146,7 +146,7 @@ instance  -- see Note [Changing type parameters]
   , s ~ Infer t b' a
   ) => HasField field s t a b where
 
-  field f s = ravel (repLens . gkey @field) f s
+  field f s = VL.ravel (repLens . gkey @field) f s
 
 -- -- See Note [Uncluttering type signatures]
 instance {-# OVERLAPPING #-} HasField f (Void1 a) (Void1 b) a b where

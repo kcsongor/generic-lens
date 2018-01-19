@@ -41,6 +41,12 @@ type LensLike p s t a b
 s ^. l = getConst (l Const s)
 infixl 8 ^.
 
+ravel :: (ALens a b a b -> ALens a b s t) -> Lens s t a b
+ravel l pab = conv (l idLens) pab
+  where
+    conv :: ALens a b s t -> Lens s t a b
+    conv (ALens _get _set) = lens _get _set
+
 -- | Setting
 set :: ((a -> b) -> s -> t) -> (s, b) -> t
 set f (s, b)

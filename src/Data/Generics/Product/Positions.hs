@@ -118,7 +118,7 @@ instance  -- see Note [Changing type parameters]
   , s ~ Infer t b' a
   ) => HasPosition i s t a b where
 
-  position f s = ravel (repLens . gposition @i) f s
+  position f s = VL.ravel (repLens . gposition @i) f s
 
 -- See Note [Uncluttering type signatures]
 instance {-# OVERLAPPING #-} HasPosition f (Void1 a) (Void1 b) a b where

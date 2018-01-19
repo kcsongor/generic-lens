@@ -121,7 +121,7 @@ class Appending f (as :: [k]) bs cs (as' :: [k]) bs' cs' | as bs cs cs' -> as' b
   appending :: Iso (f as, f bs) (f as', f bs') (f cs) (f cs')
 
 instance Appending List '[] bs bs '[] bs' bs' where
-  appending = iso snd (Nil,)
+  appending = iso (\(_, b) -> b) (Nil,)
 
 instance Appending List as bs cs as' bs' cs'
   => Appending List ('(f, a) ': as) bs ('(f, a) ': cs) ('(f, a') ': as') bs' ('(f, a') ': cs') where

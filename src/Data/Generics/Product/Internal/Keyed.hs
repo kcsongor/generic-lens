@@ -39,9 +39,11 @@ type GHasKey' key s a = GHasKey key s s a a
 
 instance (GHasKey key l l' a b, GHasKey key r r' a b) =>  GHasKey key (l :+: r) (l' :+: r') a b where
   gkey = sumIso . choosing (gkey @key) (gkey @key)
+  {-# INLINE gkey #-}
 
 instance (GHasKey key f g a b) => GHasKey key (M1 D meta f) (M1 D meta g) a b where
-  gkey = mLens . gkey @key
+  gkey = ravel (mLens . gkey @key)
+  {-# INLINE gkey #-}
 
 instance
   ( Elem as key i a
@@ -49,5 +51,5 @@ instance
   , IndexList i as bs a b
   , GIsList k f g as bs
   ) => GHasKey (key :: k) (M1 C meta f) (M1 C meta g) a b where
-  gkey = mIso . glist @k . point @i
-
+  gkey = mLens . glist @k . point @i
+  {-# INLINE gkey #-}

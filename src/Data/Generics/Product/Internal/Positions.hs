@@ -58,7 +58,7 @@ instance
   ( IndexList (i - 1) as bs a b
   , GIsList () f g as bs
   ) => GHasPosition i (M1 C meta f) (M1 C meta g) a b where
-  gposition = mIso . glist @() . point @(i - 1)
+  gposition = ravel (mIso . glist @() . point @(i - 1))
 
 type family Size f :: Nat where
   Size (l :*: r)
