@@ -89,7 +89,7 @@ class AsSubtype sub sup where
   --  >>> duck ^? _Sub :: Maybe FourLeggedAnimal
   --  Nothing
   _Sub :: Prism' sup sub
-  _Sub eta = prism injectSub projectSub eta
+  _Sub = prism injectSub projectSub
   {-# INLINE _Sub #-}
 
   -- |Injects a subtype into a supertype (upcast).
@@ -108,7 +108,8 @@ instance
   , GAsSubtype (Rep sub) (Rep sup)
   ) => AsSubtype sub sup where
 
-  _Sub f = prismRavel (prismPRavel (repIso . _GSub . fromIso repIso)) f
+  _Sub f = prismRavel (repIso . _GSub . fromIso repIso) f
+  {-# INLINE _Sub #-}
 
 -- See Note [Uncluttering type signatures]
 instance {-# OVERLAPPING #-} AsSubtype a Void where

@@ -1,5 +1,5 @@
 {-# OPTIONS_GHC -O -fplugin Test.Inspection.Plugin #-}
-{-# OPTIONS_GHC -dsuppress-all                     #-}
+{-# OPTIONS_GHC -dsuppress-unfoldings  #-}
 
 {-# LANGUAGE AllowAmbiguousTypes             #-}
 {-# LANGUAGE DataKinds                       #-}
@@ -102,8 +102,7 @@ subtypePrismManual eta = prism g f eta
     f s1 = case s1 of
              A c -> Right (A2 c)
              B i -> Right (B2 i)
-             C _   -> Left s1
-             D _   -> Left s1
+             _   -> Left s1
     g (A2 c) = A c
     g (B2 i) = B i
 
