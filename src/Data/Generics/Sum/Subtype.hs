@@ -33,6 +33,7 @@ import Data.Generics.Sum.Internal.Subtype
 import GHC.Generics (Generic (Rep))
 import Data.Generics.Internal.VL.Prism
 import Data.Generics.Internal.Profunctor.Iso
+import Data.Generics.Internal.Profunctor.Prism (prismPRavel)
 
 -- $setup
 -- == /Running example:/
@@ -107,7 +108,7 @@ instance
   , GAsSubtype (Rep sub) (Rep sup)
   ) => AsSubtype sub sup where
 
-  _Sub = prismRavel (repIso . _GSub . fromIso repIso)
+  _Sub f = prismRavel (prismPRavel (repIso . _GSub . fromIso repIso)) f
 
 -- See Note [Uncluttering type signatures]
 instance {-# OVERLAPPING #-} AsSubtype a Void where

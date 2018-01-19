@@ -40,6 +40,7 @@ import Data.Generics.Internal.Void
 import Data.Generics.Product.Internal.List
 import Data.Generics.Internal.VL.Prism
 import Data.Generics.Internal.Profunctor.Iso
+import Data.Generics.Internal.Profunctor.Prism (prismPRavel)
 
 -- $setup
 -- >>> :set -XTypeApplications
@@ -106,7 +107,7 @@ instance
   , GAsType (Rep s) as
   ) => AsType a s where
 
-  _Typed = prismRavel (repIso . _GTyped @_ @as . tupled)
+  _Typed eta = prismRavel (prismPRavel (repIso . _GTyped @_ @as . tupled)) eta
   {-# INLINE _Typed #-}
 
 -- See Note [Uncluttering type signatures]

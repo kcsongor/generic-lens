@@ -45,15 +45,18 @@ instance
   , GAsSubtype r supf
   ) => GAsSubtype (l :+: r) supf where
   _GSub = without' _GSub _GSub . fromIso sumIso
+  {-# INLINE _GSub #-}
 
 instance
   ( GIsList () subf subf as as
   , GAsType supf as
   ) => GAsSubtype (C1 meta subf) supf where
   _GSub = _GTyped . fromIso (glist @()) . fromIso mIso
+  {-# INLINE _GSub #-}
 
 -- instance GAsType supf a => GAsSubtype (S1 meta (Rec0 a)) supf where
 --   _GSub = _GTyped . fromIso (mIso . kIso)
 
 instance GAsSubtype subf supf => GAsSubtype (D1 meta subf) supf where
   _GSub = _GSub . fromIso mIso
+  {-# INLINE _GSub #-}

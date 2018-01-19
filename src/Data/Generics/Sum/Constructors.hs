@@ -41,6 +41,7 @@ import GHC.Generics (Generic (Rep))
 import GHC.TypeLits (Symbol, TypeError, ErrorMessage (..))
 import Data.Generics.Internal.VL.Prism
 import Data.Generics.Internal.Profunctor.Iso
+import Data.Generics.Internal.Profunctor.Prism (prismPRavel)
 
 -- $setup
 -- == /Running example:/
@@ -122,7 +123,7 @@ instance
   , s ~ Infer t b' a
   ) => AsConstructor ctor s t a b where
 
-  _Ctor eta = prismRavel (repIso . _GCtor @ctor) eta
+  _Ctor eta = prismRavel (prismPRavel (repIso . _GCtor @ctor)) eta
   {-# INLINE _Ctor #-}
 
 -- See Note [Uncluttering type signatures]

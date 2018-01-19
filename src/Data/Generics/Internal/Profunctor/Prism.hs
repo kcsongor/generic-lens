@@ -48,9 +48,7 @@ _Left = prism Left $ either Right (Left . Right)
 _Right :: Prism (Either c a) (Either c b) a b
 _Right = prism Right $ either (Left . Left) Right
 
-prismPRavel ::
-                 (Market a b a b -> Market a b s t)
-                 -> Prism s t a b
+prismPRavel :: (Market a b a b -> Market a b s t) -> Prism s t a b
 prismPRavel l pab = (prism2prismp $ l idPrism) pab
 
 --------------------------------------------------------------------------------

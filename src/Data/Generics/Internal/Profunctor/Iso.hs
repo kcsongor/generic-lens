@@ -50,6 +50,7 @@ sumIso = iso back forth
         forth (Right r) = R1 r
         back (L1 l) = Left l
         back (R1 r) = Right r
+{-# INLINE sumIso #-}
 
 prodIso :: Iso ((a :*: b) x) ((a' :*: b') x) (a x, b x) (a' x, b' x)
 prodIso = iso (\(a :*: b) -> (a, b)) (\(a, b) -> (a :*: b))

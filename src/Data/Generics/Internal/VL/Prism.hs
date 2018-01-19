@@ -23,7 +23,7 @@ module Data.Generics.Internal.VL.Prism where
 import Data.Functor.Identity  (Identity(..))
 import Data.Profunctor        (Choice(..), Profunctor(..))
 import Data.Coerce
-import Data.Generics.Internal.Profunctor.Prism (Market (..), plus, idPrism)
+import Data.Generics.Internal.Profunctor.Prism (Market (..), plus, idPrism, prismPRavel)
 import Data.Tagged
 import Data.Profunctor.Unsafe ((#.), (.#))
 
