@@ -88,7 +88,7 @@ class AsSubtype sub sup where
   --  >>> duck ^? _Sub :: Maybe FourLeggedAnimal
   --  Nothing
   _Sub :: Prism' sup sub
-  _Sub eta = prism injectSub projectSub eta
+  _Sub = prism injectSub projectSub
   {-# INLINE _Sub #-}
 
   -- |Injects a subtype into a supertype (upcast).

@@ -95,6 +95,7 @@ class HasType a s where
   typed :: VL.Lens s s a a
   typed
     = VL.lens (getTyped @a) (uncurry (setTyped @a) . swap)
+  {-# INLINE typed #-}
 
   -- |Get field at type.
   getTyped :: s -> a

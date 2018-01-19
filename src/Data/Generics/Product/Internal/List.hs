@@ -80,10 +80,10 @@ class GIsList
   glist :: Iso (f x) (g x) (List as) (List bs)
 
   glistL :: Lens (f x) (g x) (List as) (List bs)
-  glistL f = glist @m f
+  glistL = glist @m
 
   glistR :: Lens (List bs) (List as) (g x) (f x)
-  glistR f = fromIso (glist @m) f
+  glistR = fromIso (glist @m)
 
 instance
   ( GIsList m l l' as as'
@@ -94,9 +94,11 @@ instance
   ) => GIsList m (l :*: r) (l' :*: r') cs cs' where
 
   glist = prodIso . pairing (glist @m) (glist @m) . appending
+  {-# INLINE glist #-}
 
 instance GIsList m f g as bs => GIsList m (M1 t meta f) (M1 t meta g) as bs where
   glist = mIso . glist @m
+  {-# INLINE glist #-}
 
 instance {-# OVERLAPS #-}
   GIsList Symbol
@@ -104,15 +106,19 @@ instance {-# OVERLAPS #-}
           (S1 ('MetaSel ('Just field) u s i) (Rec0 b))
           '[ '(field, a)] '[ '(field, b)] where
   glist = mIso . kIso . singleton
+  {-# INLINE glist #-}
 
 instance GIsList Type (Rec0 a) (Rec0 a) '[ '(a, a)] '[ '(a, a)] where
   glist = kIso . singleton
+  {-# INLINE glist #-}
 
 instance GIsList () (Rec0 a) (Rec0 b) '[ '( '(), a)] '[ '( '(), b)] where
   glist = kIso . singleton
+  {-# INLINE glist #-}
 
 instance GIsList m U1 U1 '[] '[] where
   glist = iso (const Nil) (const U1)
+  {-# INLINE glist #-}
 
 --------------------------------------------------------------------------------
 -- as ++ bs == cs
@@ -168,7 +174,7 @@ instance {-# OVERLAPPING #-}
   ( as ~ ('(f, a) ': as')
   , bs ~ ('(f, b) ': as')
   ) => IndexList 0 as bs a b where
-  point = lens (\(x :> _) -> x) (\(_ :> xs, x') -> x' :> xs)
+  point = lens (\(x :> xs) -> (xs, x)) (\(xs, x') -> x' :> xs)
   {-# INLINE point #-}
 
 instance
