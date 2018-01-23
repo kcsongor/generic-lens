@@ -96,6 +96,34 @@ sum1PrismManual eta = prism g f eta
             s   -> Left s
    g = B
 
+sum1PrismManualChar :: Prism Sum1 Sum1 Char Char
+sum1PrismManualChar eta = prism g f eta
+ where
+   f s1 = case s1 of
+            A i -> Right i
+            B _ -> Left s1
+            C _ -> Left s1
+            D _ -> Left s1
+   g = A
+
+sum2PrismManual :: Prism Sum2 Sum2 Int Int
+sum2PrismManual eta = prism g f eta
+ where
+   f s1 = case s1 of
+            B2 i -> Right i
+            s   -> Left s
+   g = B2
+
+
+sum2PrismManualChar :: Prism Sum2 Sum2 Char Char
+sum2PrismManualChar eta = prism g f eta
+ where
+   f s1 = case s1 of
+            A2 i -> Right i
+            s   -> Left s
+   g = A2
+
+
 subtypePrismManual :: Prism Sum1 Sum1 Sum2 Sum2
 subtypePrismManual eta = prism g f eta
   where
@@ -144,6 +172,15 @@ subtypePrismGeneric = _Sub
 sum1TypePrism :: Prism Sum1 Sum1 Int Int
 sum1TypePrism = _Typed @Int
 
+sum1TypePrismChar :: Prism Sum1 Sum1 Char Char
+sum1TypePrismChar = _Typed @Char
+
+sum2TypePrism :: Prism Sum2 Sum2 Int Int
+sum2TypePrism = _Typed @Int
+
+sum2TypePrismChar :: Prism Sum2 Sum2 Char Char
+sum2TypePrismChar = _Typed @Char
+
 tests :: Test
 tests = TestList $ map mkHUnitTest
   [ $(inspectTest $ 'fieldALensManual === 'fieldALensName)
@@ -156,4 +193,8 @@ tests = TestList $ map mkHUnitTest
   , $(inspectTest $ 'intTraversalManual === 'intTraversalDerived)
   , $(inspectTest $ 'sum1PrismManual === 'sum1PrismB)
   , $(inspectTest $ 'subtypePrismManual === 'subtypePrismGeneric)
+  , $(inspectTest $ 'sum2PrismManualChar === 'sum2TypePrismChar)
+  , $(inspectTest $ 'sum2PrismManual === 'sum2TypePrism)
+  , $(inspectTest $ 'sum1PrismManualChar === 'sum1TypePrismChar)
+  , $(inspectTest $ 'sum2PrismManualChar === 'sum2TypePrismChar)
   , $(inspectTest $ 'sum1PrismManual === 'sum1TypePrism) ]

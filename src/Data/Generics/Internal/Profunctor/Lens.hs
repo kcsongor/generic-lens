@@ -23,7 +23,6 @@ module Data.Generics.Internal.Profunctor.Lens where
 
 import Data.Profunctor        (Profunctor(..), Strong(..))
 import Data.Bifunctor
-import Data.Tagged
 import GHC.Generics
 import Data.Generics.Internal.Profunctor.Iso
 
