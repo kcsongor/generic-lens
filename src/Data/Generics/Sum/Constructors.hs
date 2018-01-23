@@ -52,7 +52,7 @@ import Data.Generics.Internal.Profunctor.Prism (prismPRavel)
 -- >>> :set -XFlexibleContexts
 -- >>> :set -XTypeFamilies
 -- >>> import GHC.Generics
--- >>> :m +Data.Generics.Internal.Lens
+-- >>> :m +Data.Generics.Internal.VL.Prism
 -- >>> :m +Data.Generics.Product.Fields
 -- >>> :m +Data.Function
 -- >>> :{

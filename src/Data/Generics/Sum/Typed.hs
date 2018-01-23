@@ -47,7 +47,7 @@ import Data.Generics.Internal.Profunctor.Prism (prismPRavel)
 -- >>> :set -XDataKinds
 -- >>> :set -XDeriveGeneric
 -- >>> import GHC.Generics
--- >>> :m +Data.Generics.Internal.Lens
+-- >>> :m +Data.Generics.Internal.VL.Prism
 -- >>> :{
 -- data Animal
 --   = Dog Dog

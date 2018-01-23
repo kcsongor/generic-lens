@@ -21,8 +21,6 @@
 -----------------------------------------------------------------------------
 module Data.Generics.Internal.Profunctor.Lens where
 
-import Control.Applicative    (Const(..))
-import Data.Monoid            (First (..))
 import Data.Profunctor        (Profunctor(..), Strong(..))
 import Data.Bifunctor
 import Data.Profunctor.Unsafe ((#.))
@@ -36,10 +34,6 @@ type Lens s t a b
 type LensLike p s t a b
   = p a b -> p s t
 
--- | Getting
-(^.) :: s -> ((a -> Const a a) -> s -> Const a s) -> a
-s ^. l = getConst (l Const s)
-infixl 8 ^.
 
 ravel :: (ALens a b a b -> ALens a b s t) -> Lens s t a b
 ravel l pab = conv (l idLens) pab
@@ -69,14 +63,7 @@ idLens :: ALens a b a b
 idLens = ALens (fork (const ()) id) snd
 {-# INLINE idLens #-}
 
-infixr 4 .~
-(.~) :: ((a -> b) -> s -> t) -> b -> s -> t
-(.~) f b s = set f (s, b)
 
-infixl 8 ^?
-(^?) :: s -> ((a -> Const (First a) a) -> s -> Const (First a) s) -> Maybe a
-s ^? l = getFirst (fmof l (First #. Just) s)
-  where fmof l' f = getConst #. l' (Const #. f)
 
 build :: (Tagged b b -> Tagged t t) -> b -> t
 build p = unTagged . p . Tagged

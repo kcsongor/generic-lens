@@ -50,7 +50,7 @@ import Data.Generics.Internal.Profunctor.Lens
 -- >>> :set -XDeriveGeneric
 -- >>> :set -XDuplicateRecordFields
 -- >>> import GHC.Generics
--- >>> :m +Data.Generics.Internal.Lens
+-- >>> :m +Data.Generics.Internal.VL.Lens
 -- >>> :{
 -- data Human = Human
 --   { name    :: String

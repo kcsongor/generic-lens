@@ -56,7 +56,7 @@ import Data.Generics.Internal.Profunctor.Lens as P
 -- >>> :set -XGADTs
 -- >>> :set -XFlexibleContexts
 -- >>> import GHC.Generics
--- >>> :m +Data.Generics.Internal.Lens
+-- >>> :m +Data.Generics.Internal.VL.Lens
 -- >>> :m +Data.Function
 -- >>> :{
 -- data Human a

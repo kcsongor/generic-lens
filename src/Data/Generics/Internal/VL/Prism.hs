@@ -26,6 +26,8 @@ import Data.Coerce
 import Data.Generics.Internal.Profunctor.Prism (Market (..), plus, idPrism, prismPRavel)
 import Data.Tagged
 import Data.Profunctor.Unsafe ((#.), (.#))
+import Data.Monoid            (First (..))
+import Control.Applicative    (Const(..))
 
 -- | Type alias for prism
 type Prism s t a b
@@ -33,6 +35,12 @@ type Prism s t a b
 
 type Prism' s a
   = Prism s s a a
+
+infixl 8 ^?
+(^?) :: s -> ((a -> Const (First a) a) -> s -> Const (First a) s) -> Maybe a
+s ^? l = getFirst (fmof l (First #. Just) s)
+  where fmof l' f = getConst #. l' (Const #. f)
+
 
 match :: Prism s t a b -> s -> Either t a
 match k = withPrism k $ \_ _match -> _match
