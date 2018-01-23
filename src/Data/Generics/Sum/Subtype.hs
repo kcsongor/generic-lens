@@ -33,7 +33,6 @@ import Data.Generics.Sum.Internal.Subtype
 import GHC.Generics (Generic (Rep))
 import Data.Generics.Internal.VL.Prism
 import Data.Generics.Internal.Profunctor.Iso
-import Data.Generics.Internal.Profunctor.Prism (prismPRavel)
 
 -- $setup
 -- == /Running example:/
@@ -42,7 +41,7 @@ import Data.Generics.Internal.Profunctor.Prism (prismPRavel)
 -- >>> :set -XDataKinds
 -- >>> :set -XDeriveGeneric
 -- >>> import GHC.Generics
--- >>> :m +Data.Generics.Internal.Lens
+-- >>> :m +Data.Generics.Internal.VL.Prism
 -- >>> :{
 -- data Animal
 --   = Dog Dog

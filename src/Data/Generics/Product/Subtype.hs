@@ -40,7 +40,7 @@ import Data.Generics.Product.Internal.Subtype
 import GHC.Generics (Generic (Rep, to, from) )
 import GHC.TypeLits (Symbol, TypeError, ErrorMessage (..))
 import Data.Kind (Type, Constraint)
-import Data.Generics.Internal.Profunctor.Lens
+import Data.Generics.Internal.Profunctor.Lens hiding (set)
 
 -- $setup
 -- == /Running example:/

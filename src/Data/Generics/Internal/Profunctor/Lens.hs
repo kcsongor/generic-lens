@@ -23,7 +23,6 @@ module Data.Generics.Internal.Profunctor.Lens where
 
 import Data.Profunctor        (Profunctor(..), Strong(..))
 import Data.Bifunctor
-import Data.Profunctor.Unsafe ((#.))
 import Data.Tagged
 import GHC.Generics
 import Data.Generics.Internal.Profunctor.Iso
@@ -62,12 +61,6 @@ withLensPrim l k =
 idLens :: ALens a b a b
 idLens = ALens (fork (const ()) id) snd
 {-# INLINE idLens #-}
-
-
-
-build :: (Tagged b b -> Tagged t t) -> b -> t
-build p = unTagged . p . Tagged
-
 
 -- | Lens focusing on the first element of a product
 first :: Lens ((a :*: b) x) ((a' :*: b) x) (a x) (a' x)

@@ -23,7 +23,7 @@ module Data.Generics.Internal.VL.Prism where
 import Data.Functor.Identity  (Identity(..))
 import Data.Profunctor        (Choice(..), Profunctor(..))
 import Data.Coerce
-import Data.Generics.Internal.Profunctor.Prism (Market (..), plus, idPrism, prismPRavel)
+import Data.Generics.Internal.Profunctor.Prism (Market (..), plus, idPrism)
 import Data.Tagged
 import Data.Profunctor.Unsafe ((#.), (.#))
 import Data.Monoid            (First (..))
@@ -44,6 +44,9 @@ s ^? l = getFirst (fmof l (First #. Just) s)
 
 match :: Prism s t a b -> s -> Either t a
 match k = withPrism k $ \_ _match -> _match
+
+(#) :: (Tagged b (Identity b) -> Tagged t (Identity t)) -> b -> t
+(#) = build
 
 prism :: (b -> t) -> (s -> Either t a) -> Prism s t a b
 prism bt seta eta = dimap (\x -> plus pure id (seta x)) (either id (\x -> fmap bt x)) (right' eta)
