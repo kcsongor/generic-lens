@@ -42,8 +42,8 @@ set l x = runIdentity . l (Identity . const x)
 lens2lensvl :: ALens a b s t -> Lens s t a b
 lens2lensvl (ALens _get _set) =
   \f x ->
-    let (c, a) =  oneShot _get (inline x)
-    in oneShot (_set . (c, )) <$> f (inline a)
+    case _get x of
+      (c, a) -> (_set . (c, )) <$> f a
 {-# INLINE lens2lensvl #-}
 
 ravel :: (ALens a b a b -> ALens a b s t)

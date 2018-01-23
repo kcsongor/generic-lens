@@ -49,18 +49,18 @@ class GHasPosition (i :: Nat) (s :: Type -> Type) (t :: Type -> Type) a b | s i 
 type GHasPosition' i s a = GHasPosition i s s a a
 
 instance (GHasPosition i l l' a b, GHasPosition i r r' a b) =>  GHasPosition i (l :+: r) (l' :+: r') a b where
-  gposition = \x -> sumIso (choosing (gposition @i) (gposition @i) x)
+  gposition = sumIso  . choosing (gposition @i) (gposition @i)
   {-# INLINE gposition #-}
 
 instance GHasPosition i s t a b => GHasPosition i (M1 D meta s) (M1 D meta t) a b where
-  gposition x = mLens (gposition @i x)
+  gposition = mLens . gposition @i
   {-# INLINE gposition #-}
 
 instance
   ( IndexList (i - 1) as bs a b
   , GIsList () f g as bs
   ) => GHasPosition i (M1 C meta f) (M1 C meta g) a b where
-  gposition x = mIso (glist @() (point @(i - 1) x))
+  gposition = mIso . glist @() . point @(i - 1)
   {-# INLINE gposition #-}
 
 type family Size f :: Nat where
