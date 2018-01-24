@@ -1,4 +1,5 @@
 {-# LANGUAGE AllowAmbiguousTypes    #-}
+{-# LANGUAGE CPP                    #-}
 {-# LANGUAGE ConstraintKinds        #-}
 {-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE FunctionalDependencies #-}
@@ -9,6 +10,10 @@
 {-# LANGUAGE TypeInType             #-}
 {-# LANGUAGE TypeOperators          #-}
 {-# LANGUAGE UndecidableInstances   #-}
+
+#if __GLASGOW_HASKELL__ == 802
+{-# OPTIONS_GHC -fno-solve-constant-dicts #-}
+#endif
 
 --------------------------------------------------------------------------------
 -- |
