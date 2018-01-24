@@ -84,6 +84,8 @@ type family HasPartialTypeP a f :: Bool where
     = HasPartialTypeP t l || HasPartialTypeP t r
   HasPartialTypeP t (C1 m f)
     = t == GTypes f
+  HasPartialTypeP t (M1 _ _ f)
+    = HasPartialTypeP t f
   HasPartialTypeP t _
     = 'False
 

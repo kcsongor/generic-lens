@@ -22,6 +22,7 @@
 module Data.Generics.Internal.Profunctor.Prism where
 
 import Data.Profunctor        (Choice(..), Profunctor(..))
+import Data.Tagged
 import Data.Profunctor.Unsafe ((#.), (.#))
 import GHC.Generics
 import Data.Coerce
@@ -50,6 +51,12 @@ _Right = prism Right $ either (Left . Left) Right
 
 prismPRavel :: (Market a b a b -> Market a b s t) -> Prism s t a b
 prismPRavel l pab = (prism2prismp $ l idPrism) pab
+
+build :: (Tagged b b -> Tagged t t) -> b -> t
+build p = unTagged #. p .# Tagged
+
+match :: Prism s t a b -> s -> Either t a
+match k = withPrism k $ \_ _match -> _match
 
 --------------------------------------------------------------------------------
 -- Prism stuff

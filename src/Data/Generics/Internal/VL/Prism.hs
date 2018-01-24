@@ -44,9 +44,11 @@ s ^? l = getFirst (fmof l (First #. Just) s)
 
 match :: Prism s t a b -> s -> Either t a
 match k = withPrism k $ \_ _match -> _match
+{-# INLINE match #-}
 
 (#) :: (Tagged b (Identity b) -> Tagged t (Identity t)) -> b -> t
 (#) = build
+{-# INLINE (#) #-}
 
 prism :: (b -> t) -> (s -> Either t a) -> Prism s t a b
 prism bt seta eta = dimap (\x -> plus pure id (seta x)) (either id (\x -> fmap bt x)) (right' eta)
@@ -68,4 +70,4 @@ prism2prismvl  (Market bt seta) = prism bt seta
 
 build :: (Tagged b (Identity b) -> Tagged t (Identity t)) -> b -> t
 build p = runIdentity #. unTagged #. p .# Tagged .# Identity
-
+{-# INLINE build #-}
