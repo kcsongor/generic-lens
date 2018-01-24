@@ -118,7 +118,7 @@ instance  -- see Note [Changing type parameters]
   , s ~ Infer t b' a
   ) => HasPosition i s t a b where
 
-  position f s = VL.ravel (repLens . gposition @i) f s
+  position = VL.ravel (repLens . gposition @i)
   {-# INLINE position #-}
 
 -- See Note [Uncluttering type signatures]
