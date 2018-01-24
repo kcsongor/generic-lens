@@ -1,6 +1,6 @@
 {-# LANGUAGE DataKinds, DeriveGeneric, TypeApplications #-}
 
-module Main where
+module Test24 where
 
 -- Test case from #24, comments preserved
 import Control.Lens

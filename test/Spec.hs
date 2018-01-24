@@ -24,6 +24,10 @@ import Data.Generics.Internal.VL.Lens
 import Data.Generics.Internal.VL.Prism
 import Data.Generics.Internal.VL.Traversal
 
+-- This is sufficient at we only want to test that they typecheck
+import Test24 ()
+import Test25 ()
+
 main :: IO ()
 main = do
   res <- runTestTT tests

@@ -81,10 +81,11 @@ test-suite generic-lens-test
   type:               exitcode-stdio-1.0
   hs-source-dirs:     test
   main-is:            Spec.hs
-  other-modules:      Util
+  other-modules:      Util Test24 Test25
 
   build-depends:      base          >= 4.9 && <= 5.0
                     , generic-lens
+                    , lens
                     , profunctors
                     , inspection-testing >= 0.2
                     , HUnit
@@ -94,30 +95,6 @@ test-suite generic-lens-test
   if flag(dump-core)
     build-depends: dump-core
     ghc-options: -fplugin=DumpCore -fplugin-opt DumpCore:core-html
-
-test-suite generic-lens-test-25
-  type:               exitcode-stdio-1.0
-  hs-source-dirs:     test
-  main-is:            25.hs
-
-  build-depends:      base          >= 4.9 && <= 5.0
-                    , generic-lens
-                    , lens
-
-  default-language:   Haskell2010
-  ghc-options:        -Wall
-
-test-suite generic-lens-test-24
-  type:               exitcode-stdio-1.0
-  hs-source-dirs:     test
-  main-is:            24.hs
-
-  build-depends:      base          >= 4.9 && <= 5.0
-                    , generic-lens
-                    , lens
-
-  default-language:   Haskell2010
-  ghc-options:        -Wall
 
 test-suite doctests
   default-language:   Haskell2010
