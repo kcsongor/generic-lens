@@ -68,10 +68,9 @@ script:
   # test that source-distributions can be generated
   - (cd "."; cabal sdist)
   - mv "."/dist/generic-lens-*.tar.gz ${DISTDIR}/
-  - mv "."/inspection-testing ${DISTDIR}/inspection-testing
   - cd ${DISTDIR}
   - find . -maxdepth 1 -name '*.tar.gz' -exec tar -xvf '{}' \;
-  - "printf 'packages: generic-lens-*/*.cabal\noptional-packages: inspection-testing/*.cabal\n' > cabal.project"
+  - "printf 'packages: generic-lens-*/*.cabal' > cabal.project"
   # this builds all libraries and executables (without tests/benchmarks)
   - cabal new-build -w ${HC} --disable-tests --disable-benchmarks all
 
