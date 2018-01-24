@@ -53,9 +53,8 @@ instance
   , ListTuple b bs
   ) => GAsConstructor ctor (M1 C ('MetaCons ctor fixity fields) f) (M1 C ('MetaCons ctor fixity fields) g) a b where
 
---  _GCtor = prismP (M1 . gfromCollection . tupleToList) (Right . listToTuple . gtoCollection . unM1)
---  {-# INLINE _GCtor #-}
   _GCtor = prism (M1 . view (fromIso (glist @Type)) . tupleToList) (Right . listToTuple . view (glist @Type) . unM1)
+  {-# INLINE _GCtor #-}
 
 
 instance GSumAsConstructor ctor (HasCtorP ctor l) l r l' r' a b => GAsConstructor ctor (l :+: r) (l' :+: r') a b where
