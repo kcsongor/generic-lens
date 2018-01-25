@@ -41,6 +41,7 @@ module Data.Generics.Product.Internal.List
   ) where
 
 import GHC.TypeLits
+import Data.Semigroup
 
 import Data.Kind    (Type)
 import GHC.Generics
@@ -58,9 +59,15 @@ type family ((as :: [k]) ++ (bs :: [k])) :: [k] where
   '[]       ++ bs = bs
   (a ': as) ++ bs = a ': as ++ bs
 
+instance Semigroup (List '[]) where
+  _ <> _ = Nil
+
 instance Monoid (List '[]) where
   mempty  = Nil
   mappend _ _ = Nil
+
+instance (Semigroup a, Semigroup (List as)) => Semigroup (List ('(k, a) ': as)) where
+  (x :> xs) <> (y :> ys) = (x <> y) :> (xs <> ys)
 
 instance (Monoid a, Monoid (List as)) => Monoid (List ('(k, a) ': as)) where
   mempty = mempty :> mempty
