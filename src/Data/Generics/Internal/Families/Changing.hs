@@ -1,6 +1,7 @@
 {-# LANGUAGE AllowAmbiguousTypes    #-}
 {-# LANGUAGE DataKinds              #-}
 {-# LANGUAGE FlexibleInstances      #-}
+{-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE GADTs                  #-}
 {-# LANGUAGE PolyKinds              #-}
 {-# LANGUAGE TypeFamilies           #-}
@@ -13,6 +14,7 @@ module Data.Generics.Internal.Families.Changing
   ) where
 
 import GHC.TypeLits (TypeError, ErrorMessage (..))
+import Data.Type.Bool (If)
 
 {-
   Note [Changing type parameters]
@@ -59,8 +61,7 @@ data Sub where
   Sub :: Peano -> k -> Sub
 
 type family Unify (a :: k) (b :: k) :: [Sub] where
-  Unify (a n _ 'PTag) a' = '[ 'Sub n a']
-  Unify (a x) (b y) = Unify x y ++ Unify a b
+  Unify (a b) a' = If (IsPTag b) '[HandleP (a b) a'] (HandleOther (a b) a')
   Unify a a = '[]
   Unify a b = TypeError
                 ( 'Text "Couldn't match type "
@@ -68,6 +69,23 @@ type family Unify (a :: k) (b :: k) :: [Sub] where
                   ':<>: 'Text " with "
                   ':<>: 'ShowType b
                 )
+
+type family HandleP a b where
+  HandleP (p n _ 'PTag) a' = 'Sub n a'
+
+type family HandleOther a b where
+  HandleOther (a x) (b y) = Unify x y ++ Unify a b
+  HandleOther a a = '[]
+  HandleOther a b = TypeError
+                     ( 'Text "Couldn't match type "
+                       ':<>: 'ShowType a
+                       ':<>: 'Text " with "
+                       ':<>: 'ShowType b
+                     )
+
+type family IsPTag (a :: k) :: Bool where
+  IsPTag 'PTag = 'True
+  IsPTag _ = 'False
 
 type family (xs :: [k]) ++ (ys :: [k]) :: [k] where
   '[] ++ ys = ys
