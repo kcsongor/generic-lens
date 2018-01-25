@@ -33,13 +33,14 @@ module Data.Generics.Product.Subtype
   ) where
 
 import Data.Generics.Internal.Families
-import Data.Generics.Internal.Lens
+import Data.Generics.Internal.VL.Lens as VL
 import Data.Generics.Internal.Void
 import Data.Generics.Product.Internal.Subtype
 
 import GHC.Generics (Generic (Rep, to, from) )
 import GHC.TypeLits (Symbol, TypeError, ErrorMessage (..))
 import Data.Kind (Type, Constraint)
+import Data.Generics.Internal.Profunctor.Lens hiding (set)
 
 -- $setup
 -- == /Running example:/
@@ -49,7 +50,7 @@ import Data.Kind (Type, Constraint)
 -- >>> :set -XDeriveGeneric
 -- >>> :set -XDuplicateRecordFields
 -- >>> import GHC.Generics
--- >>> :m +Data.Generics.Internal.Lens
+-- >>> :m +Data.Generics.Internal.VL.Lens
 -- >>> :{
 -- data Human = Human
 --   { name    :: String
@@ -80,9 +81,9 @@ class Subtype sup sub where
   --
   -- >>> set (super @Animal) (Animal "dog" 10) human
   -- Human {name = "dog", age = 10, address = "London"}
-  super  :: Lens' sub sup
-  super f sub
-    = fmap (`smash` sub) (f (upcast sub))
+  super  :: VL.Lens sub sub sup sup
+  super
+    = VL.lens upcast (uncurry smash . swap)
 
   -- |Cast the more specific subtype to the more general supertype
   --
@@ -103,7 +104,7 @@ class Subtype sup sub where
   -- >>> smash (Animal "dog" 10) human
   -- Human {name = "dog", age = 10, address = "London"}
   smash  :: sup -> sub -> sub
-  smash = set (super @sup)
+  smash = VL.set (super @sup)
 
   {-# MINIMAL super | smash, upcast #-}
 

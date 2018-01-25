@@ -38,7 +38,7 @@ module Data.Generics.Product.Positions
   , setPosition
   ) where
 
-import Data.Generics.Internal.Lens
+import Data.Generics.Internal.VL.Lens as VL
 import Data.Generics.Internal.Void
 import Data.Generics.Internal.Families
 import Data.Generics.Product.Internal.Positions
@@ -47,6 +47,7 @@ import Data.Kind      (Constraint, Type)
 import Data.Type.Bool (type (&&))
 import GHC.Generics
 import GHC.TypeLits   (type (<=?),  Nat, TypeError, ErrorMessage(..))
+import Data.Generics.Internal.Profunctor.Lens
 
 -- $setup
 -- == /Running example:/
@@ -57,7 +58,7 @@ import GHC.TypeLits   (type (<=?),  Nat, TypeError, ErrorMessage(..))
 -- >>> :set -XGADTs
 -- >>> :set -XFlexibleContexts
 -- >>> import GHC.Generics
--- >>> :m +Data.Generics.Internal.Lens
+-- >>> :m +Data.Generics.Internal.VL.Lens
 -- >>> :m +Data.Function
 -- >>> :{
 -- data Human = Human
@@ -71,7 +72,7 @@ import GHC.TypeLits   (type (<=?),  Nat, TypeError, ErrorMessage(..))
 -- :}
 
 -- |Records that have a field at a given position.
-class HasPosition (i :: Nat) s t a b | s i -> a, s i b -> t, t i a -> s where
+class HasPosition (i :: Nat) s t a b | s i -> a, t i -> b, s i b -> t, t i a -> s where
   -- |A lens that focuses on a field at a given position. Compatible with the
   --  lens package's 'Control.Lens.Lens' type.
   --
@@ -86,7 +87,7 @@ class HasPosition (i :: Nat) s t a b | s i -> a, s i b -> t, t i a -> s where
   --  ...
   --  ... The type Human does not contain a field at position 4
   --  ...
-  position :: Lens s t a b
+  position :: VL.Lens s t a b
 
 type HasPosition' i s a = HasPosition i s s a a
 
@@ -94,7 +95,7 @@ getPosition :: forall i s a. HasPosition' i s a => s -> a
 getPosition s = s ^. position @i
 
 setPosition :: forall i s a. HasPosition' i s a => a -> s -> s
-setPosition = set (position @i)
+setPosition = VL.set (position @i)
 
 instance  -- see Note [Changing type parameters]
   ( Generic s
@@ -111,13 +112,14 @@ instance  -- see Note [Changing type parameters]
   , Generic t'
   , GHasPosition' i (Rep s) a
   , GHasPosition' i (Rep s') a'
-  , GHasPosition 1 i (Rep s) (Rep t) a b
+  , GHasPosition i (Rep s) (Rep t) a b
   , t ~ Infer s a' b
   , GHasPosition' i (Rep t') b'
   , s ~ Infer t b' a
   ) => HasPosition i s t a b where
 
-  position f s = ravel (repLens . gposition @1 @i) f s
+  position = VL.ravel (repLens . gposition @i)
+  {-# INLINE position #-}
 
 -- See Note [Uncluttering type signatures]
 instance {-# OVERLAPPING #-} HasPosition f (Void1 a) (Void1 b) a b where

@@ -10,6 +10,7 @@
 {-# LANGUAGE TypeFamilies           #-}
 {-# LANGUAGE TypeOperators          #-}
 {-# LANGUAGE UndecidableInstances   #-}
+{-# LANGUAGE FlexibleContexts       #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -32,13 +33,15 @@ module Data.Generics.Sum.Constructors
   ) where
 
 import Data.Generics.Internal.Families
-import Data.Generics.Internal.Lens
 import Data.Generics.Internal.Void
 import Data.Generics.Sum.Internal.Constructors
 
 import Data.Kind    (Constraint, Type)
 import GHC.Generics (Generic (Rep))
 import GHC.TypeLits (Symbol, TypeError, ErrorMessage (..))
+import Data.Generics.Internal.VL.Prism
+import Data.Generics.Internal.Profunctor.Iso
+import Data.Generics.Internal.Profunctor.Prism (prismPRavel)
 
 -- $setup
 -- == /Running example:/
@@ -49,7 +52,7 @@ import GHC.TypeLits (Symbol, TypeError, ErrorMessage (..))
 -- >>> :set -XFlexibleContexts
 -- >>> :set -XTypeFamilies
 -- >>> import GHC.Generics
--- >>> :m +Data.Generics.Internal.Lens
+-- >>> :m +Data.Generics.Internal.VL.Prism
 -- >>> :m +Data.Generics.Product.Fields
 -- >>> :m +Data.Function
 -- >>> :{
@@ -120,7 +123,8 @@ instance
   , s ~ Infer t b' a
   ) => AsConstructor ctor s t a b where
 
-  _Ctor = repIso . _GCtor @ctor
+  _Ctor eta = prismRavel (prismPRavel (repIso . _GCtor @ctor)) eta
+  {-# INLINE _Ctor #-}
 
 -- See Note [Uncluttering type signatures]
 instance {-# OVERLAPPING #-} AsConstructor ctor (Void1 a) (Void1 b) a b where

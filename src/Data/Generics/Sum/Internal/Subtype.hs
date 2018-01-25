@@ -1,7 +1,10 @@
+{-# LANGUAGE AllowAmbiguousTypes   #-}
+{-# LANGUAGE DataKinds             #-}
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE KindSignatures        #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE PolyKinds             #-}
 {-# LANGUAGE ScopedTypeVariables   #-}
 {-# LANGUAGE TypeApplications      #-}
 {-# LANGUAGE TypeOperators         #-}
@@ -25,50 +28,81 @@ module Data.Generics.Sum.Internal.Subtype
   ( GAsSubtype (..)
   ) where
 
-import Data.Generics.Internal.HList
+import Data.Generics.Product.Internal.List
 import Data.Generics.Sum.Internal.Typed
 
 import Data.Kind
 import GHC.Generics
+import Data.Generics.Internal.Profunctor.Iso
+import Data.Generics.Internal.Profunctor.Prism
+import Data.Generics.Internal.Families.Has
 
 -- |As 'AsSubtype' but over generic representations as defined by
 --  "GHC.Generics".
 class GAsSubtype (subf :: Type -> Type) (supf :: Type -> Type) where
-  ginjectSub  :: subf x -> supf x
-  gprojectSub :: supf x -> Either (supf x) (subf x)
+  _GSub :: Prism' (supf x) (subf x)
 
 instance
-  ( GAsSubtype l supf
-  , GAsSubtype r supf
-  ) => GAsSubtype (l :+: r) supf where
+  ( GSplash sub sup
+  , GDowncast sub sup
+  ) => GAsSubtype sub sup where
+  _GSub f = (prism _GSplash _GDowncast) f
+  {-# INLINE[0] _GSub #-}
 
-  ginjectSub x = case x of
-    L1 l -> ginjectSub l
-    R1 r -> ginjectSub r
-  gprojectSub x
-    = case gprojectSub x of
-        Left  _ -> fmap R1 (gprojectSub x)
-        Right y -> Right (L1 y)
+--------------------------------------------------------------------------------
+
+class GSplash (sub :: Type -> Type) (sup :: Type -> Type) where
+  _GSplash :: sub x -> sup x
+
+instance (GSplash a sup, GSplash b sup) => GSplash (a :+: b) sup where
+  _GSplash (L1 rep) = _GSplash rep
+  _GSplash (R1 rep) = _GSplash rep
 
 instance
-  ( GAsType supf a
-  , GCollectible subf as
-  , ListTuple a as
-  ) => GAsSubtype (C1 meta subf) supf where
+  ( GIsList () subf subf as as
+  , GAsType supf as
+  ) => GSplash (C1 meta subf) supf where
+  _GSplash p = build ((_GTyped . fromIso (glist @()) . fromIso mIso)) p
 
-  ginjectSub
-    = ginjectTyped . listToTuple . gtoCollection . unM1
-  gprojectSub
-    = fmap (M1 . gfromCollection . tupleToList) . gprojectTyped
+instance GSplash sub sup => GSplash (D1 c sub) sup where
+  _GSplash (M1 m) = _GSplash m
 
-instance GAsType supf a => GAsSubtype (S1 meta (Rec0 a)) supf where
-  ginjectSub
-    = ginjectTyped @supf . unK1 . unM1
-  gprojectSub
-    = fmap (M1 . K1) . gprojectTyped @supf
+--------------------------------------------------------------------------------
 
-instance GAsSubtype subf supf => GAsSubtype (D1 meta subf) supf where
-  ginjectSub
-    = ginjectSub . unM1
-  gprojectSub
-    = fmap M1 . gprojectSub
+class GDowncast sub sup where
+  _GDowncast :: sup x -> Either (sup x) (sub x)
+
+instance
+  ( GIsList () sup sup as as
+  , GDowncastC (HasPartialTypeP as sub) sub sup
+  ) => GDowncast sub (C1 m sup) where
+  _GDowncast (M1 m) = case _GDowncastC @(HasPartialTypeP as sub) m of
+    Left _ -> Left (M1 m)
+    Right r -> Right r
+
+instance (GDowncast sub l, GDowncast sub r) => GDowncast sub (l :+: r) where
+  _GDowncast (L1 x) = case _GDowncast x of
+    Left _ -> Left (L1 x)
+    Right r -> Right r
+  _GDowncast (R1 x) = case _GDowncast x of
+    Left _ -> Left (R1 x)
+    Right r -> Right r
+
+instance GDowncast sub sup => GDowncast sub (D1 m sup) where
+  _GDowncast (M1 m) = case _GDowncast m of
+    Left _ -> Left (M1 m)
+    Right r -> Right r
+
+class GDowncastC (contains :: Bool) sub sup where
+  _GDowncastC :: sup x -> Either (sup x) (sub x)
+
+instance GDowncastC 'False sub sup where
+  _GDowncastC sup = Left sup
+
+instance
+  ( GAsType sub subl
+  , GIsList () sup sup subl subl
+  ) => GDowncastC 'True sub sup where
+  _GDowncastC sup = Right (build (_GTyped . fromIso (glist @())) sup)
+  {-# INLINE _GDowncastC #-}
+

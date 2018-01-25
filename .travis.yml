@@ -25,6 +25,8 @@ before_cache:
   - rm -fv $HOME/.cabal/packages/hackage.haskell.org/01-index.tar.idx
 
 matrix:
+  allow_failures:
+    - compiler: "ghc-8.4.1"
   include:
     - compiler: "ghc-8.0.2"
     # env: TEST=--disable-tests BENCH=--disable-benchmarks
@@ -32,6 +34,12 @@ matrix:
     - compiler: "ghc-8.2.1"
     # env: TEST=--disable-tests BENCH=--disable-benchmarks
       addons: {apt: {packages: [ghc-ppa-tools,cabal-install-head,ghc-8.2.1], sources: [hvr-ghc]}}
+    - compiler: "ghc-8.2.2"
+    # env: TEST=--disable-tests BENCH=--disable-benchmarks
+      addons: {apt: {packages: [ghc-ppa-tools,cabal-install-head,ghc-8.2.2], sources: [hvr-ghc]}}
+    - compiler: "ghc-8.4.1"
+    # env: TEST=--disable-tests BENCH=--disable-benchmarks
+      addons: {apt: {packages: [ghc-ppa-tools,cabal-install-head,ghc-8.4.1], sources: [hvr-ghc]}}
 
 before_install:
   - HC=${CC}
@@ -67,7 +75,7 @@ script:
   - mv "."/dist/generic-lens-*.tar.gz ${DISTDIR}/
   - cd ${DISTDIR}
   - find . -maxdepth 1 -name '*.tar.gz' -exec tar -xvf '{}' \;
-  - "printf 'packages: generic-lens-*/*.cabal\n' > cabal.project"
+  - "printf 'packages: generic-lens-*/*.cabal' > cabal.project"
   # this builds all libraries and executables (without tests/benchmarks)
   - cabal new-build -w ${HC} --disable-tests --disable-benchmarks all
 

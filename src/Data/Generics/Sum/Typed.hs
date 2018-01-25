@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE AllowAmbiguousTypes    #-}
 {-# LANGUAGE DataKinds              #-}
 {-# LANGUAGE FlexibleContexts       #-}
@@ -35,15 +36,18 @@ import GHC.TypeLits (TypeError, ErrorMessage (..), Symbol)
 import Data.Generics.Sum.Internal.Typed
 
 import Data.Generics.Internal.Families
-import Data.Generics.Internal.Lens
 import Data.Generics.Internal.Void
+import Data.Generics.Product.Internal.List
+import Data.Generics.Internal.VL.Prism
+import Data.Generics.Internal.Profunctor.Iso
+import Data.Generics.Internal.Profunctor.Prism (prismPRavel)
 
 -- $setup
 -- >>> :set -XTypeApplications
 -- >>> :set -XDataKinds
 -- >>> :set -XDeriveGeneric
 -- >>> import GHC.Generics
--- >>> :m +Data.Generics.Internal.Lens
+-- >>> :m +Data.Generics.Internal.VL.Prism
 -- >>> :{
 -- data Animal
 --   = Dog Dog
@@ -87,22 +91,24 @@ class AsType a s where
 
   -- |Inject by type.
   injectTyped :: a -> s
+  injectTyped
+    = build _Typed
 
   -- |Project by type.
   projectTyped :: s -> Maybe a
+  projectTyped
+    = either (const Nothing) Just . match _Typed
 
 instance
   ( Generic s
-  , ErrorUnlessOne a s (CollectPartialType a (Rep s))
-  , GAsType (Rep s) a
+  , ErrorUnlessOne a s (CollectPartialType as (Rep s))
+  , as ~ TupleToList a
+  , ListTuple a as
+  , GAsType (Rep s) as
   ) => AsType a s where
 
-  _Typed
-    = repIso . _GTyped
-  injectTyped
-    = to . ginjectTyped
-  projectTyped
-    = either (const Nothing) Just . gprojectTyped . from
+  _Typed eta = prismRavel (prismPRavel (repIso . _GTyped @_ @as . tupled)) eta
+  {-# INLINE _Typed #-}
 
 -- See Note [Uncluttering type signatures]
 instance {-# OVERLAPPING #-} AsType a Void where

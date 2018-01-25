@@ -4,7 +4,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# OPTIONS_GHC -Wall #-}
 
-module Main where
+module Test25 where
 
 import Control.Lens
 import Data.Generics.Product

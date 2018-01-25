@@ -19,7 +19,7 @@
 -- Stability   :  experimental
 -- Portability :  non-portable
 --
--- Derive record field getters and setters generically.
+-- Derive lenses of a given type in a product.
 --
 -----------------------------------------------------------------------------
 
@@ -31,13 +31,14 @@ module Data.Generics.Product.Typed
   ) where
 
 import Data.Generics.Internal.Families
-import Data.Generics.Internal.Lens
+import Data.Generics.Internal.VL.Lens as VL
 import Data.Generics.Internal.Void
-import Data.Generics.Product.Internal.Typed
+import Data.Generics.Product.Internal.Keyed
 
 import Data.Kind    (Constraint, Type)
 import GHC.Generics (Generic (Rep))
 import GHC.TypeLits (TypeError, ErrorMessage (..))
+import Data.Generics.Internal.Profunctor.Lens
 
 -- $setup
 -- == /Running example:/
@@ -46,7 +47,7 @@ import GHC.TypeLits (TypeError, ErrorMessage (..))
 -- >>> :set -XDataKinds
 -- >>> :set -XDeriveGeneric
 -- >>> import GHC.Generics
--- >>> :m +Data.Generics.Internal.Lens
+-- >>> :m +Data.Generics.Internal.VL.Lens
 -- >>> :{
 -- data Human
 --   = Human
@@ -91,9 +92,10 @@ class HasType a s where
   --  ... The offending constructors are:
   --  ... HumanNoTall
   --  ...
-  typed :: Lens' s a
-  typed f t
-    = fmap (flip (setTyped @a) t) (f (getTyped @a t))
+  typed :: VL.Lens s s a a
+  typed
+    = VL.lens (getTyped @a) (uncurry (setTyped @a) . swap)
+  {-# INLINE typed #-}
 
   -- |Get field at type.
   getTyped :: s -> a
@@ -101,17 +103,17 @@ class HasType a s where
 
   -- |Set field at type.
   setTyped :: a -> s -> s
-  setTyped = set (typed @a)
+  setTyped = VL.set (typed @a)
 
   {-# MINIMAL typed | setTyped, getTyped #-}
 
 instance
   ( Generic s
   , ErrorUnlessOne a s (CollectTotalType a (Rep s))
-  , GHasType (Rep s) a
+  , GHasKey a (Rep s) (Rep s) a a
   ) => HasType a s where
 
-  typed = ravel (repLens . gtyped)
+  typed f s = VL.ravel (repLens . gkey @a) f s
 
 -- See Note [Uncluttering type signatures]
 instance {-# OVERLAPPING #-} HasType a Void where

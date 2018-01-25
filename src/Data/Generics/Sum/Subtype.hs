@@ -1,7 +1,9 @@
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FlexibleInstances     #-}
+{-# LANGUAGE MonoLocalBinds        #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE ScopedTypeVariables   #-}
+{-# LANGUAGE TypeApplications      #-}
 {-# LANGUAGE TypeOperators         #-}
 {-# LANGUAGE TypeSynonymInstances  #-}
 {-# LANGUAGE UndecidableInstances  #-}
@@ -26,11 +28,12 @@ module Data.Generics.Sum.Subtype
     AsSubtype (..)
   ) where
 
-import Data.Generics.Internal.Lens
 import Data.Generics.Internal.Void
 import Data.Generics.Sum.Internal.Subtype
 
-import GHC.Generics (Generic (Rep, to, from))
+import GHC.Generics (Generic (Rep))
+import Data.Generics.Internal.VL.Prism
+import Data.Generics.Internal.Profunctor.Iso
 
 -- $setup
 -- == /Running example:/
@@ -39,7 +42,7 @@ import GHC.Generics (Generic (Rep, to, from))
 -- >>> :set -XDataKinds
 -- >>> :set -XDeriveGeneric
 -- >>> import GHC.Generics
--- >>> :m +Data.Generics.Internal.Lens
+-- >>> :m +Data.Generics.Internal.VL.Prism
 -- >>> :{
 -- data Animal
 --   = Dog Dog
@@ -90,11 +93,13 @@ class AsSubtype sub sup where
 
   -- |Injects a subtype into a supertype (upcast).
   injectSub  :: sub -> sup
+  injectSub = build (_Sub @sub @sup)
 
   -- |Projects a subtype from a supertype (downcast).
   projectSub :: sup -> Either sup sub
+  projectSub = match (_Sub @sub @sup)
 
-  {-# MINIMAL injectSub, projectSub #-}
+  {-# MINIMAL (injectSub, projectSub) | _Sub #-}
 
 instance
   ( Generic sub
@@ -102,8 +107,8 @@ instance
   , GAsSubtype (Rep sub) (Rep sup)
   ) => AsSubtype sub sup where
 
-  injectSub  = to . ginjectSub . from
-  projectSub = either (Left . to) (Right . to) . gprojectSub . from
+  _Sub f = prismRavel (repIso . _GSub . fromIso repIso) f
+  {-# INLINE[2] _Sub #-}
 
 -- See Note [Uncluttering type signatures]
 instance {-# OVERLAPPING #-} AsSubtype a Void where

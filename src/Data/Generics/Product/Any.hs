@@ -29,7 +29,7 @@ module Data.Generics.Product.Any
     HasAny (..)
   ) where
 
-import Data.Generics.Internal.Lens
+import Data.Generics.Internal.VL.Lens
 import Data.Generics.Product.Fields
 import Data.Generics.Product.Positions
 import Data.Generics.Product.Typed
@@ -41,7 +41,7 @@ import Data.Generics.Product.Typed
 -- >>> :set -XDataKinds
 -- >>> :set -XDeriveGeneric
 -- >>> import GHC.Generics
--- >>> :m +Data.Generics.Internal.Lens
+-- >>> :m +Data.Generics.Internal.VL.Lens
 -- >>> :{
 -- data Human = Human
 --   { name    :: String
