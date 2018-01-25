@@ -32,24 +32,28 @@ import GHC.Generics
 -- |As 'HasTypes' but over generic representations as defined by
 --  "GHC.Generics".
 class GHasTypes (f :: Type -> Type) a where
-  gtypes :: forall g . Applicative g => (a -> g a) -> f a -> g (f a)
+  gtypes :: forall g x. Applicative g => (a -> g a) -> f x -> g (f x)
 
 instance (GHasTypes l a, GHasTypes r a) => GHasTypes (l :*: r) a where
   gtypes f (l :*: r) = (:*:) <$> gtypes f l <*> gtypes f r
   {-# INLINE gtypes #-}
 
--- TODO:
--- instance (GHasTypes l a, GHasTypes r a) => GHasTypes (l :+: r) a where
+instance (GHasTypes l a, GHasTypes r a) => GHasTypes (l :+: r) a where
+  gtypes f (L1 l) = L1 <$> gtypes f l
+  gtypes f (R1 r) = R1 <$> gtypes f r
 
 instance GHasTypes (K1 R a) a where
   gtypes f (K1 x) = fmap K1 (f x)
   {-# INLINE gtypes #-}
 
-
-instance {-# OVERLAPS #-} GHasTypes (K1 R a) b where
+instance {-# OVERLAPPING #-} GHasTypes (K1 R a) b where
   gtypes _ k = pure k
   {-# INLINE gtypes #-}
 
 instance GHasTypes f a => GHasTypes (M1 m meta f) a where
-  gtypes f (M1 x) = M1 <$>  gtypes f x
+  gtypes f (M1 x) = M1 <$> gtypes f x
+  {-# INLINE gtypes #-}
+
+instance GHasTypes U1 a where
+  gtypes _ U1 = pure U1
   {-# INLINE gtypes #-}
