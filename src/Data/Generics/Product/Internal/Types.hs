@@ -46,7 +46,7 @@ instance GHasTypes (K1 R a) a where
   gtypes f (K1 x) = fmap K1 (f x)
   {-# INLINE gtypes #-}
 
-instance {-# OVERLAPPING #-} GHasTypes (K1 R a) b where
+instance {-# OVERLAPPABLE #-} GHasTypes (K1 R a) b where
   gtypes _ k = pure k
   {-# INLINE gtypes #-}
 
