@@ -29,6 +29,7 @@ module Data.Generics.Sum.Internal.Typed
 
 import Data.Kind
 import GHC.Generics
+import Data.Tagged
 
 import Data.Generics.Internal.Families
 import Data.Generics.Product.Internal.List
@@ -38,6 +39,12 @@ import Data.Generics.Internal.Profunctor.Prism
 -- |As 'AsType' but over generic representations as defined by "GHC.Generics".
 class GAsType (f :: Type -> Type) (as :: [((), Type)]) where
   _GTyped :: Prism (f x) (f x) (List as) (List as)
+-- We create this specialised version as we use it in the subtype prism
+-- If we don't create it, the opportunity for specialisation is only
+-- created after specialisation happens, I think a late specialisation pass
+-- would pick up this case.
+{-# SPECIALISE _GTyped  :: (Tagged b b -> Tagged t t) #-}
+
 
 instance
   ( GIsList () f f as as

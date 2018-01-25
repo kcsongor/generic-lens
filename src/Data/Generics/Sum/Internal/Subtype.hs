@@ -46,8 +46,8 @@ instance
   ( GSplash sub sup
   , GDowncast sub sup
   ) => GAsSubtype sub sup where
-  _GSub f = prismPRavel (prism _GSplash _GDowncast) f
-  {-# INLINE _GSub #-}
+  _GSub f = (prism _GSplash _GDowncast) f
+  {-# INLINE[0] _GSub #-}
 
 --------------------------------------------------------------------------------
 
@@ -57,18 +57,15 @@ class GSplash (sub :: Type -> Type) (sup :: Type -> Type) where
 instance (GSplash a sup, GSplash b sup) => GSplash (a :+: b) sup where
   _GSplash (L1 rep) = _GSplash rep
   _GSplash (R1 rep) = _GSplash rep
-  {-# INLINE _GSplash #-}
 
 instance
   ( GIsList () subf subf as as
   , GAsType supf as
   ) => GSplash (C1 meta subf) supf where
-  _GSplash p = build (prismPRavel (_GTyped . fromIso (glist @()) . fromIso mIso)) p
-  {-# INLINE _GSplash #-}
+  _GSplash p = build ((_GTyped . fromIso (glist @()) . fromIso mIso)) p
 
 instance GSplash sub sup => GSplash (D1 c sub) sup where
   _GSplash (M1 m) = _GSplash m
-  {-# INLINE _GSplash #-}
 
 --------------------------------------------------------------------------------
 
@@ -82,7 +79,6 @@ instance
   _GDowncast (M1 m) = case _GDowncastC @(HasPartialTypeP as sub) m of
     Left _ -> Left (M1 m)
     Right r -> Right r
-  {-# INLINE _GDowncast #-}
 
 instance (GDowncast sub l, GDowncast sub r) => GDowncast sub (l :+: r) where
   _GDowncast (L1 x) = case _GDowncast x of
@@ -91,24 +87,22 @@ instance (GDowncast sub l, GDowncast sub r) => GDowncast sub (l :+: r) where
   _GDowncast (R1 x) = case _GDowncast x of
     Left _ -> Left (R1 x)
     Right r -> Right r
-  {-# INLINE _GDowncast #-}
 
 instance GDowncast sub sup => GDowncast sub (D1 m sup) where
   _GDowncast (M1 m) = case _GDowncast m of
     Left _ -> Left (M1 m)
     Right r -> Right r
-  {-# INLINE _GDowncast #-}
 
 class GDowncastC (contains :: Bool) sub sup where
   _GDowncastC :: sup x -> Either (sup x) (sub x)
 
 instance GDowncastC 'False sub sup where
   _GDowncastC sup = Left sup
-  {-# INLINE _GDowncastC #-}
 
 instance
   ( GAsType sub subl
   , GIsList () sup sup subl subl
   ) => GDowncastC 'True sub sup where
-  _GDowncastC sup = Right (build (prismPRavel (_GTyped . fromIso (glist @()))) sup)
+  _GDowncastC sup = Right (build (_GTyped . fromIso (glist @())) sup)
   {-# INLINE _GDowncastC #-}
+

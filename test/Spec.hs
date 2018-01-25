@@ -1,5 +1,5 @@
 {-# OPTIONS_GHC -O -fplugin Test.Inspection.Plugin #-}
-{-# OPTIONS_GHC -dsuppress-unfoldings  #-}
+{-# OPTIONS_GHC -dsuppress-all #-}
 
 {-# LANGUAGE AllowAmbiguousTypes             #-}
 {-# LANGUAGE DataKinds                       #-}
@@ -127,14 +127,15 @@ sum2PrismManualChar eta = prism g f eta
             s   -> Left s
    g = A2
 
-
+-- Note we don't have a catch-all case because of #14684
 subtypePrismManual :: Prism Sum1 Sum1 Sum2 Sum2
 subtypePrismManual eta = prism g f eta
   where
     f s1 = case s1 of
              A c -> Right (A2 c)
              B i -> Right (B2 i)
-             _   -> Left s1
+             C _   -> Left s1
+             D _   -> Left s1
     g (A2 c) = A c
     g (B2 i) = B i
 

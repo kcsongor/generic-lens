@@ -90,7 +90,6 @@ class AsSubtype sub sup where
   --  Nothing
   _Sub :: Prism' sup sub
   _Sub = prism injectSub projectSub
-  {-# INLINE _Sub #-}
 
   -- |Injects a subtype into a supertype (upcast).
   injectSub  :: sub -> sup
@@ -109,7 +108,7 @@ instance
   ) => AsSubtype sub sup where
 
   _Sub f = prismRavel (repIso . _GSub . fromIso repIso) f
-  {-# INLINE _Sub #-}
+  {-# INLINE[2] _Sub #-}
 
 -- See Note [Uncluttering type signatures]
 instance {-# OVERLAPPING #-} AsSubtype a Void where
