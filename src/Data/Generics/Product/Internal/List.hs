@@ -86,10 +86,10 @@ class GIsList
 
   glist :: Iso (f x) (g x) (List as) (List bs)
 
-  glistL :: Lens (f x) (g x) (List as) (List bs)
-  glistL = glist @m
-
-  glistR :: Lens (List bs) (List as) (g x) (f x)
+  -- We define this reversed version, otherwise uses of `fromIso glist` are not
+  -- properly inlined by GHC 8.0.2.
+  -- This is not actually used.
+  glistR :: Iso (List bs) (List as) (g x) (f x)
   glistR = fromIso (glist @m)
 
 instance
@@ -128,50 +128,29 @@ instance GIsList m U1 U1 '[] '[] where
   {-# INLINE glist #-}
 
 --------------------------------------------------------------------------------
--- as ++ bs == cs
--- as' + == cs'
+-- | as ++ bs === cs
 class Appending f (as :: [k]) bs cs (as' :: [k]) bs' cs' | as bs cs cs' -> as' bs', as' bs' cs cs' -> as bs, as bs -> cs, as' bs' -> cs' where
   appending :: Iso (f as, f bs) (f as', f bs') (f cs) (f cs')
 
+-- | [] ++ bs === bs
 instance Appending List '[] bs bs '[] bs' bs' where
   appending = iso (\(_, b) -> b) (Nil,)
 
-instance Appending List as bs cs as' bs' cs'
+-- | (a : as) ++ bs === (a : cs)
+instance
+  Appending List as bs cs as' bs' cs' -- as ++ bs == cs
   => Appending List ('(f, a) ': as) bs ('(f, a) ': cs) ('(f, a') ': as') bs' ('(f, a') ': cs') where
-  appending = pairing (fromIso consing) id . assoc3 . pairing id appending . consing
+  appending
+    = pairing (fromIso consing) id -- ((a, as), bs)
+    . assoc3                       -- (a, (as, bs))
+    . pairing id appending         -- (a, cs)
+    . consing                      -- (a : cs)
 
 singleton :: Iso a b (List '[ '(field, a)]) (List '[ '(field, b)])
 singleton = iso (:> Nil) (\(x :> _) -> x)
 
 consing :: Iso (a, List as) (b, List bs) (List ('(f, a) ': as)) (List ('(f, b) ': bs))
 consing = iso (\(x, xs) -> x :> xs) (\(x :> xs) -> (x, xs))
-
---------------------------------------------------------------------------------
-
--- This ended up not being used now... still cool to have
-flipping :: Iso' (List (a1 ': a2 ': as)) (List (a2 ': a1 ': as))
-flipping = iso
-  (\(a1 :> a2 :> as) -> a2 :> a1 :> as)
-  (\(a2 :> a1 :> as) -> a1 :> a2 :> as)
-
-class Inserting f a as bs | bs a -> as where
-  inserting :: Iso' (f (a ': as)) (f bs)
-
-instance Inserting f a as (a ': as) where
-  inserting = id
-
-instance Inserting List a as bs => Inserting List a ('(fb, b) ': as) ('(fb, b) ': bs) where
-  inserting = flipping . fromIso consing . pairing id (inserting @_ @a) . consing
-
-class Permuting f as bs where
-  permuting :: Iso' (f as) (f bs)
-
-instance Permuting List '[] '[] where
-  permuting = id
-
-instance (Permuting List as as', Inserting List '(fa, a) as' bs')
-  => Permuting List ('(fa, a) ': as) bs' where
-  permuting = fromIso consing . pairing id permuting . consing . inserting @_ @'(fa, _)
 
 --------------------------------------------------------------------------------
 class IndexList (i :: Nat) as bs a b | i as -> a, i bs -> b, i as b -> bs, i bs a -> as where
