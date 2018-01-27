@@ -254,5 +254,6 @@ Duck 6
 
 ## Contributors
 
++ [Matthew Pickering](https://github.com/mpickering)
 + [Toby Shaw](https://github.com/TobyShaw)
 + [Will Jones](https://github.com/lunaris)
