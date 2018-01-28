@@ -6,3 +6,4 @@ cabal.sandbox.config
 .ghc*
 *.hi
 *.o
+core-html
