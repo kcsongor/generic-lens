@@ -1,13 +1,20 @@
-{-# LANGUAGE AllowAmbiguousTypes   #-}
-{-# LANGUAGE DataKinds             #-}
-{-# LANGUAGE FlexibleContexts      #-}
-{-# LANGUAGE FlexibleInstances     #-}
-{-# LANGUAGE KindSignatures        #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE ScopedTypeVariables   #-}
-{-# LANGUAGE TypeFamilies          #-}
-{-# LANGUAGE TypeOperators         #-}
-{-# LANGUAGE UndecidableInstances  #-}
+{-# LANGUAGE AllowAmbiguousTypes    #-}
+{-# LANGUAGE ConstraintKinds        #-}
+{-# LANGUAGE DataKinds              #-}
+{-# LANGUAGE FlexibleContexts       #-}
+{-# LANGUAGE FlexibleInstances      #-}
+{-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE GADTs                  #-}
+{-# LANGUAGE KindSignatures         #-}
+{-# LANGUAGE MultiParamTypeClasses  #-}
+{-# LANGUAGE PolyKinds              #-}
+{-# LANGUAGE Rank2Types             #-}
+{-# LANGUAGE ScopedTypeVariables    #-}
+{-# LANGUAGE TypeApplications       #-}
+{-# LANGUAGE TypeFamilies           #-}
+{-# LANGUAGE TypeFamilyDependencies #-}
+{-# LANGUAGE TypeOperators          #-}
+{-# LANGUAGE UndecidableInstances   #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -23,37 +30,71 @@
 -----------------------------------------------------------------------------
 
 module Data.Generics.Product.Internal.Types
-  ( GHasTypes (..)
+  ( GHasTypes
+  , GHasConstraints (..)
+  , gtypes
+  , HList (..)
   ) where
 
-import Data.Kind    (Type)
+import Data.Kind (Type, Constraint)
 import GHC.Generics
+import Data.Generics.Internal.VL.Iso
 
--- |As 'HasTypes' but over generic representations as defined by
---  "GHC.Generics".
-class GHasTypes (f :: Type -> Type) a where
-  gtypes :: forall g x. Applicative g => (a -> g a) -> f x -> g (f x)
+-- | Constrained traversal.
+class GHasConstraints (c :: * -> Constraint) (f :: * -> *) where
+  cgtypes :: forall g x.
+    Applicative g => (forall a. c a => a -> g a) -> f x -> g (f x)
 
-instance (GHasTypes l a, GHasTypes r a) => GHasTypes (l :*: r) a where
-  gtypes f (l :*: r) = (:*:) <$> gtypes f l <*> gtypes f r
-  {-# INLINE gtypes #-}
+instance (GHasConstraints c l, GHasConstraints c r) => GHasConstraints c (l :*: r) where
+  cgtypes f (l :*: r) = (:*:) <$> cgtypes @c f l <*> cgtypes @c f r
 
-instance (GHasTypes l a, GHasTypes r a) => GHasTypes (l :+: r) a where
-  gtypes f (L1 l) = L1 <$> gtypes f l
-  gtypes f (R1 r) = R1 <$> gtypes f r
+instance (GHasConstraints c l, GHasConstraints c r) => GHasConstraints c (l :+: r) where
+  cgtypes f (L1 l) = L1 <$> cgtypes @c f l
+  cgtypes f (R1 r) = R1 <$> cgtypes @c f r
 
-instance GHasTypes (K1 R a) a where
-  gtypes f (K1 x) = fmap K1 (f x)
-  {-# INLINE gtypes #-}
+instance c a => GHasConstraints c (K1 R a) where
+  cgtypes = kIso
 
-instance {-# OVERLAPPABLE #-} GHasTypes (K1 R a) b where
-  gtypes _ k = pure k
-  {-# INLINE gtypes #-}
+instance GHasConstraints c f => GHasConstraints c (M1 m meta f) where
+  cgtypes f (M1 x) = M1 <$> cgtypes @c f x
 
-instance GHasTypes f a => GHasTypes (M1 m meta f) a where
-  gtypes f (M1 x) = M1 <$> gtypes f x
-  {-# INLINE gtypes #-}
+instance GHasConstraints c U1 where
+  cgtypes _ _ = pure U1
 
-instance GHasTypes U1 a where
-  gtypes _ U1 = pure U1
-  {-# INLINE gtypes #-}
+--------------------------------------------------------------------------------
+
+-- | Multi-traversal
+type GHasTypes rep as = GHasConstraints (Contains as) rep
+
+-- Try to use a function from the list, or default to 'pure' if not present
+gtypes
+  :: forall as x f g.
+  ( GHasTypes f as
+  , Applicative g
+  ) => HList (Functions as g) -> f x -> g (f x)
+gtypes hl s = cgtypes @(Contains as) (pick hl) s
+
+--------------------------------------------------------------------------------
+
+data HList (ts :: [Type]) where
+  HNil :: HList '[]
+  (:>) :: a -> HList as -> HList (a ': as)
+infixr 5 :>
+
+-- >>> :kind! Functions '[Int, Char, Bool] Maybe
+-- '[Int -> Maybe Int, Char -> Maybe Char, Bool -> Maybe Bool]
+type family Functions (ts :: [Type]) (g :: Type -> Type) = r | r -> ts where
+  Functions '[] _ = '[]
+  Functions (t ': ts) g = ((t -> g t) ': Functions ts g)
+
+class Contains as a where
+  pick :: Applicative g => HList (Functions as g) -> a -> g a
+
+instance {-# OVERLAPPING #-} Contains (a ': as) a where
+  pick (h :> _) = h
+
+instance Contains as a => Contains (b ': as) a where
+  pick (_ :> hs) = pick hs
+
+instance Contains '[] a where
+  pick _ = pure

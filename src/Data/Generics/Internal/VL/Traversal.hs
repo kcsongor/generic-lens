@@ -1,3 +1,5 @@
+{-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE ConstraintKinds           #-}
 {-# LANGUAGE GADTs                     #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
 {-# LANGUAGE Rank2Types                #-}
@@ -24,19 +26,31 @@ module Data.Generics.Internal.VL.Traversal where
 type Traversal' s a
   = forall f. Applicative f => (a -> f a) -> s -> f s
 
+type TraversalC' s c
+  = forall f. Applicative f => LensLikeC f s c
+
+type LensLikeC f s c
+  = (forall a. c a => a -> f a) -> s -> f s
+
 type Traversal s t a b
   = forall f. Applicative f => (a -> f b) -> s -> f t
 
 confusing :: Applicative f => Traversal s t a b -> (a -> f b) -> s -> f t
 confusing t = \f -> lowerYoneda . lowerCurried . t (liftCurriedYoneda . f)
-  where
-  liftCurriedYoneda :: Applicative f => f a -> Curried (Yoneda f) a
-  liftCurriedYoneda fa = Curried (`yap` fa)
-  {-# INLINE liftCurriedYoneda #-}
-  yap :: Applicative f => Yoneda f (a -> b) -> f a -> Yoneda f b
-  yap (Yoneda k) fa = Yoneda (\ab_r -> k (ab_r .) <*> fa)
-  {-# INLINE yap #-}
 {-# INLINE confusing #-}
+
+-- fuse constrained traversals
+confusingC :: forall c f s. Applicative f => TraversalC' s c -> LensLikeC f s c
+confusingC t = \f -> lowerYoneda . lowerCurried . t (liftCurriedYoneda . f)
+{-# INLINE confusingC #-}
+
+liftCurriedYoneda :: Applicative f => f a -> Curried (Yoneda f) a
+liftCurriedYoneda fa = Curried (`yap` fa)
+{-# INLINE liftCurriedYoneda #-}
+
+yap :: Applicative f => Yoneda f (a -> b) -> f a -> Yoneda f b
+yap (Yoneda k) fa = Yoneda (\ab_r -> k (ab_r .) <*> fa)
+{-# INLINE yap #-}
 
 newtype Curried f a =
   Curried { runCurried :: forall r. f (a -> r) -> f r }

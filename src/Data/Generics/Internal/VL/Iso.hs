@@ -37,6 +37,9 @@ repIso = iso from to
 mIso :: Iso (M1 i c f p) (M1 i c g p) (f p) (g p)
 mIso = iso unM1 M1
 
+kIso :: Iso (K1 r a p) (K1 r b p) a b
+kIso = iso unK1 K1
+
 prodIso :: Iso ((a :*: b) x) ((a' :*: b') x) (a x, b x) (a' x, b' x)
 prodIso = iso (\(a :*: b) -> (a, b)) (\(a, b) -> (a :*: b))
 

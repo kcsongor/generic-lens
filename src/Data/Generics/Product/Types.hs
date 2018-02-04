@@ -1,11 +1,6 @@
-{-# LANGUAGE AllowAmbiguousTypes   #-}
 {-# LANGUAGE DataKinds             #-}
-{-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE ScopedTypeVariables   #-}
-{-# LANGUAGE TypeFamilies          #-}
-{-# LANGUAGE TypeOperators         #-}
 {-# LANGUAGE UndecidableInstances  #-}
 
 -----------------------------------------------------------------------------
@@ -30,17 +25,16 @@ module Data.Generics.Product.Types
 
 import Data.Generics.Product.Internal.Types
 
-import GHC.Generics (Generic (Rep), from, to)
+import GHC.Generics (Generic (Rep))
 import Data.Generics.Internal.VL.Traversal
+import Data.Generics.Internal.VL.Iso
 
 class HasTypes a s where
   types :: Traversal' s a
 
 instance
   ( Generic s
-  , GHasTypes (Rep s) a
+  , GHasTypes (Rep s) '[a]
   ) => HasTypes a s where
-
-  types = confusing (\f s -> to <$> gtypes f (from s))
+  types = confusing (\f -> (repIso . gtypes) (f :> HNil))
   {-# INLINE types #-}
-

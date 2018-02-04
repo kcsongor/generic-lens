@@ -202,4 +202,8 @@ tests = TestList $ map mkHUnitTest
   , $(inspectTest $ 'sum2PrismManual === 'sum2TypePrism)
   , $(inspectTest $ 'sum1PrismManualChar === 'sum1TypePrismChar)
   , $(inspectTest $ 'sum2PrismManualChar === 'sum2TypePrismChar)
-  , $(inspectTest $ 'sum1PrismManual === 'sum1TypePrism) ]
+  , $(inspectTest $ 'sum1PrismManual === 'sum1TypePrism)
+  , $(inspectTest $ 'intTraversalManual === 'intTraversalDerived)
+  ]
+
+-- TODO: add test for traversals over multiple types

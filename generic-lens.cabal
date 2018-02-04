@@ -30,6 +30,7 @@ library
                     , Data.Generics.Product.Subtype
                     , Data.Generics.Product.Typed
                     , Data.Generics.Product.Types
+                    , Data.Generics.Product.Constraints
                     , Data.Generics.Product.List
 
                     , Data.Generics.Sum
