@@ -40,13 +40,11 @@ class HasParam (p :: Nat) s t a b | p t a b -> s, p s a b -> t where
   param :: Applicative g => (a -> g b) -> s -> g t
 
 instance
-  ( p ~ NatToPeano n
-  , GenericN s
+  ( GenericN s
   , GenericN t
   -- TODO: merge the old 'Changing' code with 'GenericN'
-  , '(a', b') ~ '(P p a 'PTag, P p b 'PTag)
-  , s ~ Infer t b' a
-  , t ~ Infer s a' b
+  , s ~ Infer t (P n b 'PTag) a
+  , t ~ Infer s (P n a 'PTag) b
   , GHasParam n (RepN s) (RepN t) a b
   ) => HasParam n s t a b where
 

@@ -22,9 +22,10 @@ module Data.Generics.Product
   , module Data.Generics.Product.Positions
   , module Data.Generics.Product.Subtype
   , module Data.Generics.Product.Typed
+  , module Data.Generics.Product.List
+  -- *Traversals
   , module Data.Generics.Product.Types
   , module Data.Generics.Product.Param
-  , module Data.Generics.Product.List
   ) where
 
 import Data.Generics.Product.Any

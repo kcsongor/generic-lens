@@ -12,12 +12,10 @@ module Data.Generics.Internal.Families.Changing
   ( Proxied
   , Infer
   , PTag (..)
-  , Peano (..)
-  , NatToPeano
   , P
   ) where
 
-import GHC.TypeLits (Nat, type (-), TypeError, ErrorMessage (..))
+import GHC.TypeLits (Nat, type (-), type (+), TypeError, ErrorMessage (..))
 
 {-
   Note [Changing type parameters]
@@ -52,16 +50,16 @@ import GHC.TypeLits (Nat, type (-), TypeError, ErrorMessage (..))
 -- application form. In order to distinguish between applications of P and other type constructors, we use a tag, `PTag`
 -- to fake a type constructor.
 data PTag = PTag
-type family P :: Peano -> k -> PTag -> k
+type family P :: Nat -> k -> PTag -> k
 
-type Proxied t = Proxied' t 'Z
+type Proxied t = Proxied' t 0
 
-type family Proxied' (t :: k) (next :: Peano) :: k where
-  Proxied' (t (a :: j) :: k) next = (Proxied' t ('S next)) (P next a 'PTag)
+type family Proxied' (t :: k) (next :: Nat) :: k where
+  Proxied' (t (a :: j) :: k) next = (Proxied' t (next + 1)) (P next a 'PTag)
   Proxied' t _ = t
 
 data Sub where
-  Sub :: Peano -> k -> Sub
+  Sub :: Nat -> k -> Sub
 
 type family Unify (a :: k) (b :: k) :: [Sub] where
   Unify (p n _ 'PTag) a' = '[ 'Sub n a']
@@ -85,26 +83,20 @@ type family Infer (s :: *) (a' :: *) (b :: *) :: * where
 
 --------------------------------------------------------------------------------
 
-data Peano = Z | S Peano
-
-type family NatToPeano (n :: Nat) :: Peano where
-  NatToPeano 0 = 'Z
-  NatToPeano n = 'S (NatToPeano (n - 1))
-
 -- [TODO]: work this out
 --
---type family ArgKind (t :: k) (pos :: Peano) :: * where
+--type family ArgKind (t :: k) (pos :: Nat) :: * where
 --  ArgKind (t (a :: k)) 'Z = k
 --  ArgKind (t _) ('S pos) = ArgKind t pos
 --
---type family ReplaceArg (t :: k) (pos :: Peano) (to :: ArgKind t pos) :: k where
+--type family ReplaceArg (t :: k) (pos :: Nat) (to :: ArgKind t pos) :: k where
 --  ReplaceArg (t a) 'Z to = t to
 --  ReplaceArg (t a) ('S pos) to = ReplaceArg t pos to a
 --  ReplaceArg t _ _ = t
 
-type family ReplaceArg (t :: k) (pos :: Peano) (to :: j) :: k where
-  ReplaceArg (t a) 'Z to = t to
-  ReplaceArg (t a) ('S pos) to = ReplaceArg t pos to a
+type family ReplaceArg (t :: k) (pos :: Nat) (to :: j) :: k where
+  ReplaceArg (t a) 0 to = t to
+  ReplaceArg (t a) pos to = ReplaceArg t (pos - 1) to a
   ReplaceArg t _ _ = t
 
 type family ReplaceArgs (t :: k) (subs :: [Sub]) :: k where
