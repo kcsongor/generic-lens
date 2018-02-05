@@ -55,8 +55,7 @@ instance GHasParam p (Rec (param p) a) (Rec (param p) b) a b where
 
 -- other parameter
 instance {-# OVERLAPPABLE #-}
-  ( a  ~ b
-  , p1 ~ p2
+  ( '(a, p1) ~ '(b, p2)
   ) => GHasParam p (Rec p1 a) (Rec p2 b) c d where
   gparam _ = pure
 

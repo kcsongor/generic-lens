@@ -65,6 +65,8 @@ instance
   ) => GenericN a where
   toN :: forall x. RepN a x -> a
   toN   = coerce (to :: Rep a x -> a)
+  {-# INLINE toN #-}
 
   fromN :: forall x. a -> RepN a x
   fromN = coerce (from :: a -> Rep a x)
+  {-# INLINE fromN #-}

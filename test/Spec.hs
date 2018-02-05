@@ -96,18 +96,37 @@ data Sum3 a b c
   | C3 c a Int
   deriving Generic
 
--- TODO: these compile, but aren't wired in to inspection-testing yet
-sum3Param0 :: Traversal (Sum3 a b xxx) (Sum3 a b yyy) xxx yyy
-sum3Param0 = param @0
+sum3Param0Derived :: Traversal (Sum3 a b xxx) (Sum3 a b yyy) xxx yyy
+sum3Param0Derived = param @0
 
-sum3Param1 :: Traversal (Sum3 a xxx c) (Sum3 a yyy c) xxx yyy
-sum3Param1 = param @1
+sum3Param0Manual :: Traversal (Sum3 a b xxx) (Sum3 a b yyy) xxx yyy
+sum3Param0Manual _ (A3 a1 a2)         = pure (A3 a1 a2)
+sum3Param0Manual _ (B3 s b1 a1 a2 b2) = pure (B3 s b1 a1 a2 b2)
+sum3Param0Manual f (C3 c a i)         = pure (\c' -> C3 c' a i) <*> f c
 
-sum3Param2 :: Traversal (Sum3 xxx b c) (Sum3 yyy b c) xxx yyy
-sum3Param2 = param @2
+sum3Param1Derived :: Traversal (Sum3 a xxx c) (Sum3 a yyy c) xxx yyy
+sum3Param1Derived = param @1
 
-sum3Param3 :: Traversal (Sum3 a b c) (Sum3 a b c) xxx yyy
-sum3Param3 = param @3
+sum3Param1Manual :: Traversal (Sum3 a xxx c) (Sum3 a yyy c) xxx yyy
+sum3Param1Manual _ (A3 a1 a2)         = pure (A3 a1 a2)
+sum3Param1Manual f (B3 s b1 a1 a2 b2) = pure (\b1' b2' -> B3 s b1' a1 a2 b2') <*> f b1 <*> f b2
+sum3Param1Manual _ (C3 c a i)         = pure (C3 c a i)
+
+sum3Param2Derived :: Traversal (Sum3 xxx b c) (Sum3 yyy b c) xxx yyy
+sum3Param2Derived = param @2
+
+sum3Param2Manual :: Traversal (Sum3 xxx b c) (Sum3 yyy b c) xxx yyy
+sum3Param2Manual f (A3 a1 a2)         = pure (\a1' a2' -> A3 a1' a2') <*> f a1 <*> f a2
+sum3Param2Manual f (B3 s b1 a1 a2 b2) = pure (\a1' a2' -> B3 s b1 a1' a2' b2) <*> f a1 <*> f a2
+sum3Param2Manual f (C3 c a i)         = pure (\a' -> C3 c a' i) <*> f a
+
+sum3Param3Derived :: Traversal (Sum3 a b c) (Sum3 a b c) xxx yyy
+sum3Param3Derived = param @3
+
+sum3Param3Manual :: Traversal (Sum3 a b c) (Sum3 a b c) xxx yyy
+sum3Param3Manual _ (A3 a1 a2)         = pure (A3 a1 a2)
+sum3Param3Manual _ (B3 s b1 a1 a2 b2) = pure (B3 s b1 a1 a2 b2)
+sum3Param3Manual _ (C3 c a i)         = pure (C3 c a i)
 
 sum1PrismManual :: Prism Sum1 Sum1 Int Int
 sum1PrismManual eta = prism g f eta
@@ -132,7 +151,7 @@ sum2PrismManual eta = prism g f eta
  where
    f s1 = case s1 of
             B2 i -> Right i
-            s   -> Left s
+            s    -> Left s
    g = B2
 
 
@@ -141,7 +160,7 @@ sum2PrismManualChar eta = prism g f eta
  where
    f s1 = case s1 of
             A2 i -> Right i
-            s   -> Left s
+            s    -> Left s
    g = A2
 
 -- Note we don't have a catch-all case because of #14684
@@ -151,8 +170,8 @@ subtypePrismManual eta = prism g f eta
     f s1 = case s1 of
              A c -> Right (A2 c)
              B i -> Right (B2 i)
-             C _   -> Left s1
-             D _   -> Left s1
+             C _ -> Left s1
+             D _ -> Left s1
     g (A2 c) = A c
     g (B2 i) = B i
 
@@ -221,6 +240,10 @@ tests = TestList $ map mkHUnitTest
   , $(inspectTest $ 'sum2PrismManualChar       === 'sum2TypePrismChar)
   , $(inspectTest $ 'sum1PrismManual           === 'sum1TypePrism)
   , $(inspectTest $ 'intTraversalManual        === 'intTraversalDerived)
+  , $(inspectTest $ 'sum3Param0Manual          === 'sum3Param0Derived)
+  , $(inspectTest $ 'sum3Param1Manual          === 'sum3Param1Derived)
+  , $(inspectTest $ 'sum3Param2Manual          === 'sum3Param2Derived)
+  , $(inspectTest $ 'sum3Param3Manual          === 'sum3Param3Derived)
   ]
 
 -- TODO: add test for traversals over multiple types

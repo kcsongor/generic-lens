@@ -51,6 +51,7 @@ instance
   ) => HasParam n s t a b where
 
   param = confusing (\f s -> toN <$> gparam @n f (fromN s))
+  {-# INLINE param #-}
 
 instance {-# OVERLAPPING #-} HasParam p (Void1 a) (Void1 b) a b where
   param = undefined
