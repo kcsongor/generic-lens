@@ -49,13 +49,19 @@ instance (GHasParam p l l' a b, GHasParam p r r' a b) => GHasParam p (l :+: r) (
   gparam f (L1 l) = L1 <$> gparam @p f l
   gparam f (R1 r) = R1 <$> gparam @p f r
 
+-- the parameter we're looking for
 instance GHasParam p (Rec (param p) a) (Rec (param p) b) a b where
   gparam = recIso
 
+-- other parameter
 instance {-# OVERLAPPABLE #-}
   ( a  ~ b
   , p1 ~ p2
   ) => GHasParam p (Rec p1 a) (Rec p2 b) c d where
+  gparam _ = pure
+
+-- not a parameter
+instance GHasParam p (K1 r a) (K1 r a) c d where
   gparam _ = pure
 
 instance GHasParam p s t a b => GHasParam p (M1 m meta s) (M1 m meta t) a b where

@@ -92,8 +92,8 @@ data Sum2 = A2 Char | B2 Int deriving (Generic, Show)
 
 data Sum3 a b c
   = A3 a a
-  | B3 b a a b
-  | C3 c a
+  | B3 String b a a b
+  | C3 c a Int
   deriving Generic
 
 -- TODO: these compile, but aren't wired in to inspection-testing yet
