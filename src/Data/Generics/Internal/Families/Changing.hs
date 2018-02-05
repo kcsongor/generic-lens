@@ -11,10 +11,13 @@
 module Data.Generics.Internal.Families.Changing
   ( Proxied
   , Infer
+  , PTag (..)
+  , Peano (..)
+  , NatToPeano
+  , P
   ) where
 
-import GHC.TypeLits (TypeError, ErrorMessage (..))
-import Data.Type.Bool (If)
+import GHC.TypeLits (Nat, type (-), TypeError, ErrorMessage (..))
 
 {-
   Note [Changing type parameters]
@@ -61,7 +64,8 @@ data Sub where
   Sub :: Peano -> k -> Sub
 
 type family Unify (a :: k) (b :: k) :: [Sub] where
-  Unify (a b) a' = If (IsPTag b) '[HandleP (a b) a'] (HandleOther (a b) a')
+  Unify (p n _ 'PTag) a' = '[ 'Sub n a']
+  Unify (a x) (b y) = Unify x y ++ Unify a b
   Unify a a = '[]
   Unify a b = TypeError
                 ( 'Text "Couldn't match type "
@@ -69,23 +73,6 @@ type family Unify (a :: k) (b :: k) :: [Sub] where
                   ':<>: 'Text " with "
                   ':<>: 'ShowType b
                 )
-
-type family HandleP a b where
-  HandleP (p n _ 'PTag) a' = 'Sub n a'
-
-type family HandleOther a b where
-  HandleOther (a x) (b y) = Unify x y ++ Unify a b
-  HandleOther a a = '[]
-  HandleOther a b = TypeError
-                     ( 'Text "Couldn't match type "
-                       ':<>: 'ShowType a
-                       ':<>: 'Text " with "
-                       ':<>: 'ShowType b
-                     )
-
-type family IsPTag (a :: k) :: Bool where
-  IsPTag 'PTag = 'True
-  IsPTag _ = 'False
 
 type family (xs :: [k]) ++ (ys :: [k]) :: [k] where
   '[] ++ ys = ys
@@ -99,6 +86,10 @@ type family Infer (s :: *) (a' :: *) (b :: *) :: * where
 --------------------------------------------------------------------------------
 
 data Peano = Z | S Peano
+
+type family NatToPeano (n :: Nat) :: Peano where
+  NatToPeano 0 = 'Z
+  NatToPeano n = 'S (NatToPeano (n - 1))
 
 -- [TODO]: work this out
 --

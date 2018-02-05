@@ -26,6 +26,7 @@ library
   exposed-modules:    Data.Generics.Product
                     , Data.Generics.Product.Any
                     , Data.Generics.Product.Fields
+                    , Data.Generics.Product.Param
                     , Data.Generics.Product.Positions
                     , Data.Generics.Product.Subtype
                     , Data.Generics.Product.Typed
@@ -60,6 +61,7 @@ library
                     , Data.Generics.Product.Internal.Subtype
 
                     , Data.Generics.Product.Internal.Types
+                    , Data.Generics.Product.Internal.Param
                     , Data.Generics.Product.Internal.List
                     , Data.Generics.Product.Internal.Keyed
 

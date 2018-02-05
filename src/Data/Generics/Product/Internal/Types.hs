@@ -1,20 +1,16 @@
-{-# LANGUAGE AllowAmbiguousTypes    #-}
-{-# LANGUAGE ConstraintKinds        #-}
-{-# LANGUAGE DataKinds              #-}
-{-# LANGUAGE FlexibleContexts       #-}
-{-# LANGUAGE FlexibleInstances      #-}
-{-# LANGUAGE FunctionalDependencies #-}
-{-# LANGUAGE GADTs                  #-}
-{-# LANGUAGE KindSignatures         #-}
-{-# LANGUAGE MultiParamTypeClasses  #-}
-{-# LANGUAGE PolyKinds              #-}
-{-# LANGUAGE Rank2Types             #-}
-{-# LANGUAGE ScopedTypeVariables    #-}
-{-# LANGUAGE TypeApplications       #-}
-{-# LANGUAGE TypeFamilies           #-}
-{-# LANGUAGE TypeFamilyDependencies #-}
-{-# LANGUAGE TypeOperators          #-}
-{-# LANGUAGE UndecidableInstances   #-}
+{-# LANGUAGE AllowAmbiguousTypes       #-}
+{-# LANGUAGE ConstraintKinds           #-}
+{-# LANGUAGE DataKinds                 #-}
+{-# LANGUAGE FlexibleContexts          #-}
+{-# LANGUAGE FlexibleInstances         #-}
+{-# LANGUAGE FunctionalDependencies    #-}
+{-# LANGUAGE GADTs                     #-}
+{-# LANGUAGE Rank2Types                #-}
+{-# LANGUAGE ScopedTypeVariables       #-}
+{-# LANGUAGE TypeApplications          #-}
+{-# LANGUAGE TypeFamilyDependencies    #-}
+{-# LANGUAGE TypeOperators             #-}
+{-# LANGUAGE UndecidableInstances      #-}
 
 -----------------------------------------------------------------------------
 -- |

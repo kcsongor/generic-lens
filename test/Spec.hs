@@ -63,8 +63,6 @@ data Record5 = MkRecord5
   , fieldF :: Int
   } deriving Generic
 
-
-
 typeChangingManual :: Lens (Record3 a) (Record3 b) a b
 typeChangingManual f (MkRecord3 a b) = (\a' -> MkRecord3 a' b) <$> f a
 
@@ -91,6 +89,22 @@ subtypeLensManual f record
 
 data Sum1 = A Char | B Int | C () | D () deriving (Generic, Show)
 data Sum2 = A2 Char | B2 Int deriving (Generic, Show)
+
+data Sum3 a b c
+  = A3 a a
+  | B3 b a a b
+  | C3 c a
+  deriving Generic
+
+-- TODO: these compile, but aren't wired in to inspection-testing yet
+sum3Param0 :: Traversal (Sum3 a b xxx) (Sum3 a b yyy) xxx yyy
+sum3Param0 = param @0
+
+sum3Param1 :: Traversal (Sum3 a xxx c) (Sum3 a yyy c) xxx yyy
+sum3Param1 = param @1
+
+sum3Param2 :: Traversal (Sum3 xxx b c) (Sum3 yyy b c) xxx yyy
+sum3Param2 = param @2
 
 sum1PrismManual :: Prism Sum1 Sum1 Int Int
 sum1PrismManual eta = prism g f eta
