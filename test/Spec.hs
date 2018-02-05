@@ -106,6 +106,9 @@ sum3Param1 = param @1
 sum3Param2 :: Traversal (Sum3 xxx b c) (Sum3 yyy b c) xxx yyy
 sum3Param2 = param @2
 
+sum3Param3 :: Traversal (Sum3 a b c) (Sum3 a b c) xxx yyy
+sum3Param3 = param @3
+
 sum1PrismManual :: Prism Sum1 Sum1 Int Int
 sum1PrismManual eta = prism g f eta
  where
@@ -202,22 +205,22 @@ sum2TypePrismChar = _Typed @Char
 
 tests :: Test
 tests = TestList $ map mkHUnitTest
-  [ $(inspectTest $ 'fieldALensManual === 'fieldALensName)
-  , $(inspectTest $ 'fieldALensManual === 'fieldALensType)
-  , $(inspectTest $ 'fieldALensManual === 'fieldALensPos)
-  , $(inspectTest $ 'subtypeLensManual === 'subtypeLensGeneric)
-  , $(inspectTest $ 'typeChangingManual === 'typeChangingGeneric)
-  , $(inspectTest $ 'typeChangingManual === 'typeChangingGenericPos)
+  [ $(inspectTest $ 'fieldALensManual          === 'fieldALensName)
+  , $(inspectTest $ 'fieldALensManual          === 'fieldALensType)
+  , $(inspectTest $ 'fieldALensManual          === 'fieldALensPos)
+  , $(inspectTest $ 'subtypeLensManual         === 'subtypeLensGeneric)
+  , $(inspectTest $ 'typeChangingManual        === 'typeChangingGeneric)
+  , $(inspectTest $ 'typeChangingManual        === 'typeChangingGenericPos)
   , $(inspectTest $ 'typeChangingManualCompose === 'typeChangingGenericCompose)
-  , $(inspectTest $ 'intTraversalManual === 'intTraversalDerived)
-  , $(inspectTest $ 'sum1PrismManual === 'sum1PrismB)
-  , $(inspectTest $ 'subtypePrismManual === 'subtypePrismGeneric)
-  , $(inspectTest $ 'sum2PrismManualChar === 'sum2TypePrismChar)
-  , $(inspectTest $ 'sum2PrismManual === 'sum2TypePrism)
-  , $(inspectTest $ 'sum1PrismManualChar === 'sum1TypePrismChar)
-  , $(inspectTest $ 'sum2PrismManualChar === 'sum2TypePrismChar)
-  , $(inspectTest $ 'sum1PrismManual === 'sum1TypePrism)
-  , $(inspectTest $ 'intTraversalManual === 'intTraversalDerived)
+  , $(inspectTest $ 'intTraversalManual        === 'intTraversalDerived)
+  , $(inspectTest $ 'sum1PrismManual           === 'sum1PrismB)
+  , $(inspectTest $ 'subtypePrismManual        === 'subtypePrismGeneric)
+  , $(inspectTest $ 'sum2PrismManualChar       === 'sum2TypePrismChar)
+  , $(inspectTest $ 'sum2PrismManual           === 'sum2TypePrism)
+  , $(inspectTest $ 'sum1PrismManualChar       === 'sum1TypePrismChar)
+  , $(inspectTest $ 'sum2PrismManualChar       === 'sum2TypePrismChar)
+  , $(inspectTest $ 'sum1PrismManual           === 'sum1TypePrism)
+  , $(inspectTest $ 'intTraversalManual        === 'intTraversalDerived)
   ]
 
 -- TODO: add test for traversals over multiple types

@@ -24,32 +24,34 @@
 --
 --------------------------------------------------------------------------------
 
-module Data.Generics.Product.Param where
+module Data.Generics.Product.Param
+  ( Rec (Rec) -- TODO: this has to be re-exported so the constructor is visible for Coercible... is there a better way?
+  , HasParam (..)
+  ) where
 
-import Unsafe.Coerce (unsafeCoerce)
 import GHC.TypeLits (Nat)
-import GHC.Generics
+import Data.Generics.Internal.Void
+import Data.Generics.Internal.GenericN
 import Data.Generics.Internal.Families.Changing
 import Data.Generics.Product.Internal.Param
+import Data.Generics.Internal.VL.Traversal
 
 class HasParam (p :: Nat) s t a b | p t a b -> s, p s a b -> t where
   param :: Applicative g => (a -> g b) -> s -> g t
 
 instance
   ( p ~ NatToPeano n
-  , Generic s
-  , Generic s'
-  , Generic t'
+  , GenericN s
+  , GenericN t
+  -- TODO: merge the old 'Changing' code with 'GenericN'
   , '(a', b') ~ '(P p a 'PTag, P p b 'PTag)
-  , '(s', t') ~ '(Proxied s, Proxied t)
   , s ~ Infer t b' a
   , t ~ Infer s a' b
-  , GHasParam p (Rep s') (Rep t') a' b'
+  , GHasParam n (RepN s) (RepN t) a b
   ) => HasParam n s t a b where
 
-  -- TODO: I think unsafeCoerce is not necessary
-  param f s
-    = (unsafeCoerce @t' @t . to) <$> gparam @p (lift f) (from (unsafeCoerce @s @s' s))
-    where lift :: (a -> g b) -> P p a 'PTag -> g (P p b 'PTag)
-          lift = unsafeCoerce
+  param = confusing (\f s -> toN <$> gparam @n f (fromN s))
+
+instance {-# OVERLAPPING #-} HasParam p (Void1 a) (Void1 b) a b where
+  param = undefined
 

@@ -24,6 +24,7 @@ import Data.Profunctor        (Profunctor(..))
 import Data.Profunctor.Unsafe ((#.), (.#))
 import GHC.Generics           ((:*:)(..), (:+:)(..), Generic(..), M1(..), K1(..), Rep)
 import Data.Coerce
+import Data.Generics.Internal.GenericN (Rec (..))
 
 type Iso s t a b
   = forall p. (Profunctor p) => p a b -> p s t
@@ -43,6 +44,10 @@ mIso = iso unM1 M1
 kIso :: Iso (K1 r a p) (K1 r b p) a b
 kIso = iso unK1 K1
 {-# INLINE kIso #-}
+
+recIso :: Iso (Rec r a p) (Rec r b p) a b
+recIso = iso (unK1 . unRec) (Rec . K1)
+{-# INLINE recIso #-}
 
 sumIso :: Iso ((a :+: b) x) ((a' :+: b') x) (Either (a x) (b x)) (Either (a' x) (b' x))
 sumIso = iso back forth

@@ -33,6 +33,7 @@ library
                     , Data.Generics.Product.Types
                     , Data.Generics.Product.Constraints
                     , Data.Generics.Product.List
+                    , Data.Generics.Internal.GenericN
 
                     , Data.Generics.Sum
                     , Data.Generics.Sum.Any

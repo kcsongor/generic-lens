@@ -34,10 +34,11 @@ module Data.Generics.Product.Internal.Param
   ) where
 
 import GHC.Generics
+import GHC.TypeLits (Nat)
 import Data.Generics.Internal.VL.Iso
-import Data.Generics.Internal.Families.Changing
+import Data.Generics.Internal.GenericN
 
-class GHasParam (p :: Peano) s t a b | p t a -> s, p s b -> t where
+class GHasParam (p :: Nat) s t a b | p t a -> s, p s b -> t where
   gparam :: forall g x.
     Applicative g => (a -> g b) -> s x -> g (t x)
 
@@ -48,10 +49,13 @@ instance (GHasParam p l l' a b, GHasParam p r r' a b) => GHasParam p (l :+: r) (
   gparam f (L1 l) = L1 <$> gparam @p f l
   gparam f (R1 r) = R1 <$> gparam @p f r
 
-instance GHasParam p (K1 R (param p a 'PTag)) (K1 R (param p b 'PTag)) (param p a 'PTag) (param p b 'PTag) where
-  gparam = kIso
+instance GHasParam p (Rec (param p) a) (Rec (param p) b) a b where
+  gparam = recIso
 
-instance {-# OVERLAPPABLE #-} (a ~ b) => GHasParam p (K1 R a) (K1 R b) c d where
+instance {-# OVERLAPPABLE #-}
+  ( a  ~ b
+  , p1 ~ p2
+  ) => GHasParam p (Rec p1 a) (Rec p2 b) c d where
   gparam _ = pure
 
 instance GHasParam p s t a b => GHasParam p (M1 m meta s) (M1 m meta t) a b where

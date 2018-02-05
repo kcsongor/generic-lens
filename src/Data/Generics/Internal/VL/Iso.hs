@@ -22,6 +22,7 @@ module Data.Generics.Internal.VL.Iso where
 
 import Data.Profunctor        (Profunctor(..))
 import GHC.Generics
+import Data.Generics.Internal.GenericN (Rec (..))
 
 type Iso' s a
   = forall p f. (Profunctor p, Functor f) => p a (f a) -> p s (f s)
@@ -39,6 +40,9 @@ mIso = iso unM1 M1
 
 kIso :: Iso (K1 r a p) (K1 r b p) a b
 kIso = iso unK1 K1
+
+recIso :: Iso (Rec r a p) (Rec r b p) a b
+recIso = iso (unK1 . unRec) (Rec . K1)
 
 prodIso :: Iso ((a :*: b) x) ((a' :*: b') x) (a x, b x) (a' x, b' x)
 prodIso = iso (\(a :*: b) -> (a, b)) (\(a, b) -> (a :*: b))
