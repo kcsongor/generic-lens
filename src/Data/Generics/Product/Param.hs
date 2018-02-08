@@ -7,9 +7,8 @@
 {-# LANGUAGE KindSignatures         #-}
 {-# LANGUAGE ScopedTypeVariables    #-}
 {-# LANGUAGE TypeApplications       #-}
+{-# LANGUAGE TypeOperators          #-}
 {-# LANGUAGE UndecidableInstances   #-}
-
-{-# LANGUAGE DeriveGeneric #-}
 
 --------------------------------------------------------------------------------
 -- |
@@ -31,10 +30,13 @@ module Data.Generics.Product.Param
 
 import GHC.TypeLits (Nat)
 import Data.Generics.Internal.Void
-import Data.Generics.Internal.GenericN
 import Data.Generics.Internal.Families.Changing
-import Data.Generics.Product.Internal.Param
 import Data.Generics.Internal.VL.Traversal
+
+import GHC.Generics
+import Data.Kind
+import Data.Generics.Internal.VL.Iso
+import Data.Generics.Internal.GenericN
 
 class HasParam (p :: Nat) s t a b | p t a b -> s, p s a b -> t where
   param :: Applicative g => (a -> g b) -> s -> g t
@@ -54,3 +56,38 @@ instance
 instance {-# OVERLAPPING #-} HasParam p (Void1 a) (Void1 b) a b where
   param = undefined
 
+class GHasParam (p :: Nat) s t a b where
+  gparam :: forall g (x :: Type).  Applicative g => (a -> g b) -> s x -> g (t x)
+
+instance (GHasParam p l l' a b, GHasParam p r r' a b) => GHasParam p (l :*: r) (l' :*: r') a b where
+  gparam f (l :*: r) = (:*:) <$> gparam @p f l <*> gparam @p f r
+
+instance (GHasParam p l l' a b, GHasParam p r r' a b) => GHasParam p (l :+: r) (l' :+: r') a b where
+  gparam f (L1 l) = L1 <$> gparam @p f l
+  gparam f (R1 r) = R1 <$> gparam @p f r
+
+instance GHasParam p U1 U1 a b where
+  gparam _ _ = pure U1
+
+instance GHasParam p s t a b => GHasParam p (M1 m meta s) (M1 m meta t) a b where
+  gparam f (M1 x) = M1 <$> gparam @p f x
+
+-- the parameter we're looking for
+instance GHasParam p (Rec (param p) a) (Rec (param p) b) a b where
+  gparam = recIso
+
+-- other recursion
+instance {-# OVERLAPPABLE #-}
+  ( GHasParamRec (LookupParam si p) s t a b
+  -- TODO: reindex `ti`
+  ) => GHasParam p (Rec si s) (Rec ti t) a b where
+  gparam f (Rec (K1 x)) = Rec . K1 <$> gparamRec @(LookupParam si p) f x
+
+class GHasParamRec (param :: Maybe Nat) s t a b | param t a b -> s, param s a b -> t where
+  gparamRec :: forall g.  Applicative g => (a -> g b) -> s -> g t
+
+instance GHasParamRec 'Nothing a a c d where
+  gparamRec _ = pure
+
+instance (HasParam n s t a b) => GHasParamRec ('Just n) s t a b where
+  gparamRec = param @n

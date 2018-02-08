@@ -38,24 +38,24 @@ import Data.Generics.Internal.VL.Iso
 
 -- | Constrained traversal.
 class GHasConstraints (c :: * -> Constraint) (f :: * -> *) where
-  cgtypes :: forall g x.
+  gconstraints :: forall g x.
     Applicative g => (forall a. c a => a -> g a) -> f x -> g (f x)
 
 instance (GHasConstraints c l, GHasConstraints c r) => GHasConstraints c (l :*: r) where
-  cgtypes f (l :*: r) = (:*:) <$> cgtypes @c f l <*> cgtypes @c f r
+  gconstraints f (l :*: r) = (:*:) <$> gconstraints @c f l <*> gconstraints @c f r
 
 instance (GHasConstraints c l, GHasConstraints c r) => GHasConstraints c (l :+: r) where
-  cgtypes f (L1 l) = L1 <$> cgtypes @c f l
-  cgtypes f (R1 r) = R1 <$> cgtypes @c f r
+  gconstraints f (L1 l) = L1 <$> gconstraints @c f l
+  gconstraints f (R1 r) = R1 <$> gconstraints @c f r
 
 instance c a => GHasConstraints c (K1 R a) where
-  cgtypes = kIso
+  gconstraints = kIso
 
 instance GHasConstraints c f => GHasConstraints c (M1 m meta f) where
-  cgtypes f (M1 x) = M1 <$> cgtypes @c f x
+  gconstraints f (M1 x) = M1 <$> gconstraints @c f x
 
 instance GHasConstraints c U1 where
-  cgtypes _ _ = pure U1
+  gconstraints _ _ = pure U1
 
 --------------------------------------------------------------------------------
 
@@ -68,7 +68,7 @@ gtypes
   ( GHasTypes f as
   , Applicative g
   ) => HList (Functions as g) -> f x -> g (f x)
-gtypes hl s = cgtypes @(Contains as) (pick hl) s
+gtypes hl s = gconstraints @(Contains as) (pick hl) s
 
 --------------------------------------------------------------------------------
 

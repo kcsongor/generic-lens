@@ -41,5 +41,5 @@ instance
   ( Generic s
   , GHasConstraints c (Rep s)
   ) => HasConstraints c s where
-  constraints = confusingC @c (\f s -> to <$> cgtypes @c f (from s))
+  constraints = confusingC @c (\f s -> to <$> gconstraints @c f (from s))
   {-# INLINE constraints #-}
