@@ -53,11 +53,20 @@ instance
 class HasTypesDeep a s where
   typesDeep :: Traversal' s a
 
+class Or a b where
+  foldOr :: Applicative g => (a -> g a) -> b -> g b
+
+instance Or a a where
+  foldOr f a = f a
+
+instance {-# OVERLAPPABLE #-} Or a b where
+  foldOr _ = pure
+
 instance
-  ( HasConstraints' ((~) a) s
+  ( HasConstraints' (Or a) s
   ) => HasTypesDeep a s where
 
-  typesDeep f s = constraints' @((~) a) f s
+  typesDeep f s = constraints' @(Or a) (foldOr f) s
 
 --------------------------------------------------------------------------------
 type family Primitive a :: Bool where
