@@ -73,6 +73,7 @@ type family Primitive a :: Bool where
   Primitive Int  = 'True
   Primitive Char = 'True
   Primitive Bool = 'True
+  Primitive Integer = 'True
   Primitive _    = 'False
   -- TODO: more primitives, or perhaps abstract from stop condition
 
