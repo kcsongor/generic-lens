@@ -24,7 +24,7 @@ data Tree a w = Leaf a
               | WithWeight (Tree a w) w
        deriving (Show, Eq, Generic)
 
-deriving instance Bifunctor (Tree a w)
+deriving instance Bifunctor Tree
 
 mytree :: Tree Int Int
 mytree = Fork (WithWeight (Leaf 42) 1)
