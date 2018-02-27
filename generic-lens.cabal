@@ -150,7 +150,7 @@ benchmark generic-lens-bench
 
                     , base        >= 4.9 && <= 5.0
                     , QuickCheck
-                    , criterion
+                    , criterion < 1.3.0.0 && >= 1.2.0.0
                     , deepseq
                     , lens
 

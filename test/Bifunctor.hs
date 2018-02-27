@@ -1,10 +1,11 @@
-{-# LANGUAGE DataKinds         #-}
-{-# LANGUAGE DefaultSignatures #-}
-{-# LANGUAGE DeriveAnyClass    #-}
-{-# LANGUAGE DeriveGeneric     #-}
-{-# LANGUAGE FlexibleContexts  #-}
-{-# LANGUAGE MonoLocalBinds    #-}
-{-# LANGUAGE TypeApplications  #-}
+{-# LANGUAGE DataKinds          #-}
+{-# LANGUAGE DefaultSignatures  #-}
+{-# LANGUAGE DeriveAnyClass     #-}
+{-# LANGUAGE DeriveGeneric      #-}
+{-# LANGUAGE FlexibleContexts   #-}
+{-# LANGUAGE MonoLocalBinds     #-}
+{-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE TypeApplications   #-}
 
 module Main (main) where
 
@@ -21,7 +22,9 @@ main = void $ runTestTT $
 data Tree a w = Leaf a
               | Fork (Tree a w) (Tree a w)
               | WithWeight (Tree a w) w
-       deriving (Show, Eq, Generic, Bifunctor)
+       deriving (Show, Eq, Generic)
+
+deriving instance Bifunctor (Tree a w)
 
 mytree :: Tree Int Int
 mytree = Fork (WithWeight (Leaf 42) 1)
