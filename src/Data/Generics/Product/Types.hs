@@ -1,7 +1,6 @@
 {-# LANGUAGE AllowAmbiguousTypes   #-}
 {-# LANGUAGE ConstraintKinds       #-}
 {-# LANGUAGE DataKinds             #-}
-{-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE KindSignatures        #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -12,8 +11,6 @@
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE TypeOperators         #-}
 {-# LANGUAGE UndecidableInstances  #-}
-
-{-# LANGUAGE UndecidableSuperClasses #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -37,7 +34,7 @@ module Data.Generics.Product.Types
   ) where
 
 import Data.Generics.Product.Internal.Types
-import Data.Generics.Product.Constraints
+import Data.Kind (Constraint)
 
 import GHC.Generics
 import Data.Generics.Internal.VL.Traversal
@@ -56,14 +53,65 @@ instance
 class HasTypesDeep a s where
   typesDeep :: Traversal' s a
 
-instance Deep (Equals a) s =>  HasTypesDeep a s where
-  typesDeep f = constraints @(Deep (Equals a)) (foldEquals f (typesDeep @a f))
+class Or a b where
+  foldOr :: Applicative g => (a -> g a) -> b -> g b
 
-class Equals a b where
-  foldEquals :: (a -> g a) -> (b -> g b) -> b -> g b
+instance Or a a where
+  foldOr f a = f a
 
-instance Equals a a where
-  foldEquals f _ = f
+instance {-# OVERLAPPABLE #-} Or a b where
+  foldOr _ = pure
 
-instance {-# OVERLAPPABLE #-} Equals a b where
-  foldEquals _ g = g
+instance
+  ( HasConstraints' (Or a) s
+  ) => HasTypesDeep a s where
+
+  typesDeep f s = constraints' @(Or a) (foldOr f) s
+
+--------------------------------------------------------------------------------
+type family Primitive a :: Bool where
+  Primitive Int  = 'True
+  Primitive Char = 'True
+  Primitive Bool = 'True
+  Primitive Integer = 'True
+  Primitive _    = 'False
+  -- TODO: more primitives, or perhaps abstract from stop condition
+
+-- TODO: refactor
+-- deep constrained traversals, stopping at primitive types
+class HasConstraints' (c :: * -> Constraint) s where
+  constraints' :: forall g.
+    Applicative g => (forall a. c a => a -> g a) -> s -> g s
+
+instance (Generic s, GHasConstraints' c (Rep s)) => HasConstraints' c s where
+  constraints' f s = to <$> gconstraints' @c f (from s)
+
+class GHasConstraints' (c :: * -> Constraint) (f :: * -> *) where
+  gconstraints' :: forall g x.
+    Applicative g => (forall a. c a => a -> g a) -> f x -> g (f x)
+
+instance (GHasConstraints' c l, GHasConstraints' c r) => GHasConstraints' c (l :*: r) where
+  gconstraints' f (l :*: r) = (:*:) <$> gconstraints' @c f l <*> gconstraints' @c f r
+
+instance (GHasConstraints' c l, GHasConstraints' c r) => GHasConstraints' c (l :+: r) where
+  gconstraints' f (L1 l) = L1 <$> gconstraints' @c f l
+  gconstraints' f (R1 r) = R1 <$> gconstraints' @c f r
+
+instance GRec c (Primitive a) (K1 R a) => GHasConstraints' c (K1 R a) where
+  gconstraints' = grec @c @(Primitive a)
+
+instance GHasConstraints' c f => GHasConstraints' c (M1 m meta f) where
+  gconstraints' f (M1 x) = M1 <$> gconstraints' @c f x
+
+instance GHasConstraints' c U1 where
+  gconstraints' _ _ = pure U1
+
+class GRec (c :: * -> Constraint) (s :: Bool) (f :: * -> *) where
+  grec :: forall g x.
+    Applicative g => (forall a. c a => a -> g a) -> f x -> g (f x)
+
+instance HasConstraints' c a => GRec c 'False (K1 R a) where
+  grec f (K1 s) = K1 <$> constraints' @c @a f s
+
+instance c a => GRec c 'True (K1 R a) where
+  grec f s = kIso f s
