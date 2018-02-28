@@ -1,3 +1,4 @@
+{-# LANGUAGE DefaultSignatures #-}
 {-# LANGUAGE AllowAmbiguousTypes   #-}
 {-# LANGUAGE ConstraintKinds       #-}
 {-# LANGUAGE DataKinds             #-}
@@ -34,7 +35,6 @@ module Data.Generics.Product.Types
   ) where
 
 import Data.Generics.Product.Internal.Types
-import Data.Kind (Constraint)
 
 import GHC.Generics
 import Data.Generics.Internal.VL.Traversal
@@ -53,65 +53,57 @@ instance
 class HasTypesDeep a s where
   typesDeep :: Traversal' s a
 
-class Or a b where
-  foldOr :: Applicative g => (a -> g a) -> b -> g b
-
-instance Or a a where
-  foldOr f a = f a
-
-instance {-# OVERLAPPABLE #-} Or a b where
-  foldOr _ = pure
+  default typesDeep :: Traversal' s a
+  typesDeep _ = pure
 
 instance
-  ( HasConstraints' (Or a) s
+  ( GHasTypesDeep a (Rep s)
+  , Generic s
   ) => HasTypesDeep a s where
+  typesDeep f s = to <$> gtypesDeep f (from s)
 
-  typesDeep f s = constraints' @(Or a) (foldOr f) s
+instance {-# OVERLAPPING #-} HasTypesDeep a Bool
+instance {-# OVERLAPPING #-} HasTypesDeep a Char
+instance {-# OVERLAPPING #-} HasTypesDeep a Double
+instance {-# OVERLAPPING #-} HasTypesDeep a Float
+instance {-# OVERLAPPING #-} HasTypesDeep a Int
+instance {-# OVERLAPPING #-} HasTypesDeep a Integer
+instance {-# OVERLAPPING #-} HasTypesDeep a Ordering
 
 --------------------------------------------------------------------------------
-type family Primitive a :: Bool where
-  Primitive Int  = 'True
-  Primitive Char = 'True
-  Primitive Bool = 'True
-  Primitive Integer = 'True
-  Primitive _    = 'False
-  -- TODO: more primitives, or perhaps abstract from stop condition
 
--- TODO: refactor
--- deep constrained traversals, stopping at primitive types
-class HasConstraints' (c :: * -> Constraint) s where
-  constraints' :: forall g.
-    Applicative g => (forall a. c a => a -> g a) -> s -> g s
+class GHasTypesDeep a s where
+  gtypesDeep :: Traversal' (s x) a
 
-instance (Generic s, GHasConstraints' c (Rep s)) => HasConstraints' c s where
-  constraints' f s = to <$> gconstraints' @c f (from s)
+instance
+  ( GHasTypesDeep a l
+  , GHasTypesDeep a r
+  ) => GHasTypesDeep a (l :*: r) where
+  gtypesDeep f (l :*: r) = (:*:) <$> gtypesDeep f l <*> gtypesDeep f r
+  {-# INLINE gtypesDeep #-}
 
-class GHasConstraints' (c :: * -> Constraint) (f :: * -> *) where
-  gconstraints' :: forall g x.
-    Applicative g => (forall a. c a => a -> g a) -> f x -> g (f x)
+instance
+  ( GHasTypesDeep a l
+  , GHasTypesDeep a r
+  ) => GHasTypesDeep a (l :+: r) where
+  gtypesDeep f (L1 l) = L1 <$> gtypesDeep f l
+  gtypesDeep f (R1 r) = R1 <$> gtypesDeep f r
+  {-# INLINE gtypesDeep #-}
 
-instance (GHasConstraints' c l, GHasConstraints' c r) => GHasConstraints' c (l :*: r) where
-  gconstraints' f (l :*: r) = (:*:) <$> gconstraints' @c f l <*> gconstraints' @c f r
+instance (GHasTypesDeep a s) => GHasTypesDeep a (M1 m meta s) where
+  gtypesDeep f (M1 s) = M1 <$> gtypesDeep f s
+  {-# INLINE gtypesDeep #-}
 
-instance (GHasConstraints' c l, GHasConstraints' c r) => GHasConstraints' c (l :+: r) where
-  gconstraints' f (L1 l) = L1 <$> gconstraints' @c f l
-  gconstraints' f (R1 r) = R1 <$> gconstraints' @c f r
+instance {-# OVERLAPPING #-} GHasTypesDeep a (Rec0 a) where
+  gtypesDeep f (K1 x) = K1 <$> f x
+  {-# INLINE gtypesDeep #-}
 
-instance GRec c (Primitive a) (K1 R a) => GHasConstraints' c (K1 R a) where
-  gconstraints' = grec @c @(Primitive a)
+instance HasTypesDeep a b => GHasTypesDeep a (Rec0 b) where
+  gtypesDeep f (K1 x) = K1 <$> typesDeep @a f x
+  {-# INLINE gtypesDeep #-}
 
-instance GHasConstraints' c f => GHasConstraints' c (M1 m meta f) where
-  gconstraints' f (M1 x) = M1 <$> gconstraints' @c f x
+instance GHasTypesDeep a U1 where
+  gtypesDeep _ _ = pure U1
+  {-# INLINE gtypesDeep #-}
 
-instance GHasConstraints' c U1 where
-  gconstraints' _ _ = pure U1
-
-class GRec (c :: * -> Constraint) (s :: Bool) (f :: * -> *) where
-  grec :: forall g x.
-    Applicative g => (forall a. c a => a -> g a) -> f x -> g (f x)
-
-instance HasConstraints' c a => GRec c 'False (K1 R a) where
-  grec f (K1 s) = K1 <$> constraints' @c @a f s
-
-instance c a => GRec c 'True (K1 R a) where
-  grec f s = kIso f s
+--instance GHasTypesDeep a V1 where
