@@ -32,7 +32,7 @@ class
   , Generic a
   ) => GenericDeep (a :: Type) where
   type family Deep (a :: Type) :: Type -> Type
-  type instance Deep t = Co (Simpl (Rep t)) '[t]
+  type instance Deep t = Fst (Co (Rep t) '[t])
   toDeep :: Deep a x -> a
   fromDeep :: a -> Deep a x
 
@@ -50,43 +50,46 @@ instance
 
 newtype Node a (b :: * -> *) x = Node (K1 R a x)
 newtype Primitive a x          = Primitive (Rec0 a x)
-newtype Found a x              = Found (Rec0 a x)
-newtype Recurse a x            = Recurse (Rec0 a x)
-newtype FoundAndRecurse a x    = FoundAndRecurse (Rec0 a x)
-newtype SStop a x              = SStop (Rec0 a x)
-
-type family Simpl (f :: * -> *) :: * -> * where
-  Simpl (M1 _ _ s)
-    = Simpl s
-  Simpl (l :+: r)
-    = Simpl l :+: Simpl r
-  Simpl (l :*: r)
-    = Simpl l :*: Simpl r
-  Simpl a
-    = a
 
 type family Elem x xs where
-  Elem _ '[] = 'False
   Elem x (x ': _) = 'True
   Elem x (_ ': xs) = Elem x xs
+  Elem _ '[] = 'False
+--  Elem x (x ': _ ': _ ': _ ': _) = 'True
+--  Elem x (_ ': x ': _ ': _ ': _) = 'True
+--  Elem x (_ ': _ ': x ': _ ': _) = 'True
+--  Elem x (_ ': _ ': _ ': x ': _) = 'True
+--  Elem x (_ ': _ ': _ ': _ ': xs) = Elem x xs
+--  Elem _ _ = 'False
 
 type family CIf b t r s where
-  CIf 'True t _ _ = t
-  CIf 'False _ r s = Node r (Co (Simpl (Rep r)) s)
+  CIf 'True t _ s = '(t, s)
+  CIf 'False _ r s = Put Node r (Co (Rep r) s)
 
-type family Co rep (seen :: [*]) where
+type family CombineWith f l r where
+  CombineWith f '(l, s) r = Put f l (Co r s)
+
+type family Put f l r where
+  Put f l '(r, s) = '(f l r, s)
+
+type family Fst a where
+  Fst '(a, _) = a
+
+type family Co rep (seen :: [*]) :: (* -> *, [*]) where
+  Co (M1 _ _ f) s
+    = Co f s
   Co (l :*: r) s
-    = (:*:) (Co l s) (Co r s)
+    = CombineWith (:*:) (Co l s) r
   Co (l :+: r) s
-    = (:+:) (Co l s) (Co r s)
-  Co (Rec0 Bool)     s = Primitive Bool
-  Co (Rec0 Char)     s = Primitive Char
-  Co (Rec0 Double)   s = Primitive Double
-  Co (Rec0 Float)    s = Primitive Float
-  Co (Rec0 Int)      s = Primitive Int
-  Co (Rec0 Integer)  s = Primitive Integer
-  Co (Rec0 Ordering) s = Primitive Ordering
+    = CombineWith (:+:) (Co l s) r
+  Co (Rec0 Bool)     s = '(Primitive Bool, s)
+  Co (Rec0 Char)     s = '(Primitive Char, s)
+  Co (Rec0 Double)   s = '(Primitive Double, s)
+  Co (Rec0 Float)    s = '(Primitive Float, s)
+  Co (Rec0 Int)      s = '(Primitive Int, s)
+  Co (Rec0 Integer)  s = '(Primitive Integer, s)
+  Co (Rec0 Ordering) s = '(Primitive Ordering, s)
   Co (Rec0 r) s
     = CIf (Elem r s) (Rec0 r) r (r ': s)
   Co U1 s
-    = U1
+    = '(U1, s)

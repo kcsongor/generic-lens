@@ -54,6 +54,7 @@ library
                     , Data.Generics.Internal.Families.Collect
                     , Data.Generics.Internal.Families.Has
                     , Data.Generics.Internal.Void
+                    , Opt
 
                     , Data.Generics.Sum.Internal.Constructors
                     , Data.Generics.Sum.Internal.Typed
