@@ -14,6 +14,7 @@ module Data.Generics.Internal.Families.Changing
   , PTag (..)
   , P
   , LookupParam
+  , ArgCount
   ) where
 
 import GHC.TypeLits (Nat, type (-), type (+), TypeError, ErrorMessage (..))
@@ -117,6 +118,10 @@ type family MaybeAdd (a :: Maybe Nat) (b :: Nat) :: Maybe Nat where
 type family IfEq (a :: k) (b :: k) (t :: l) (f :: l) :: l where
   IfEq a a t _ = t
   IfEq _ _ _ f = f
+
+type family ArgCount (t :: k) :: Nat where
+  ArgCount (f a) = 1 + ArgCount f
+  ArgCount a = 0
 
 -- Note [CPP in instance constraints]
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

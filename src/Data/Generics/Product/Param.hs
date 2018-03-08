@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE AllowAmbiguousTypes    #-}
 {-# LANGUAGE DataKinds              #-}
 {-# LANGUAGE FlexibleContexts       #-}
@@ -28,10 +29,11 @@ module Data.Generics.Product.Param
   , HasParam (..)
   ) where
 
-import GHC.TypeLits (Nat)
+import GHC.TypeLits
 import Data.Generics.Internal.Void
 import Data.Generics.Internal.Families.Changing
 import Data.Generics.Internal.VL.Traversal
+import Data.Generics.Internal.VL.Lens
 
 import GHC.Generics
 import Data.Kind
@@ -47,11 +49,26 @@ instance
   -- TODO: merge the old 'Changing' code with 'GenericN'
   , s ~ Infer t (P n b 'PTag) a
   , t ~ Infer s (P n a 'PTag) b
+  , Error ((ArgCount s) <=? n) n (ArgCount s) s
   , GHasParam n (RepN s) (RepN t) a b
   ) => HasParam n s t a b where
 
   param = confusing (\f s -> toN <$> gparam @n f (fromN s))
   {-# INLINE param #-}
+
+type family Error (b :: Bool) (expected :: Nat) (actual :: Nat) (s :: Type) :: Constraint where
+  Error 'False _ _ _
+    = ()
+
+  Error 'True expected actual typ
+    = TypeError
+        (     'Text "Expected a type with at least "
+        ':<>: 'ShowType (expected + 1)
+        ':<>: 'Text " parameters, but "
+        ':$$: 'ShowType typ
+        ':<>: 'Text " only has "
+        ':<>: 'ShowType actual
+        )
 
 instance {-# OVERLAPPING #-} HasParam p (Void1 a) (Void1 b) a b where
   param = undefined
