@@ -52,15 +52,13 @@ newtype Node a (b :: * -> *) x = Node (K1 R a x)
 newtype Primitive a x          = Primitive (Rec0 a x)
 
 type family Elem x xs where
+  Elem x (x ': _ ': _ ': _ ': _) = 'True
+  Elem x (_ ': x ': _ ': _ ': _) = 'True
+  Elem x (_ ': _ ': x ': _ ': _) = 'True
+  Elem x (_ ': _ ': _ ': x ': _) = 'True
   Elem x (x ': _) = 'True
   Elem x (_ ': xs) = Elem x xs
   Elem _ '[] = 'False
---  Elem x (x ': _ ': _ ': _ ': _) = 'True
---  Elem x (_ ': x ': _ ': _ ': _) = 'True
---  Elem x (_ ': _ ': x ': _ ': _) = 'True
---  Elem x (_ ': _ ': _ ': x ': _) = 'True
---  Elem x (_ ': _ ': _ ': _ ': xs) = Elem x xs
---  Elem _ _ = 'False
 
 type family CIf b t r s where
   CIf 'True t _ s = '(t, s)

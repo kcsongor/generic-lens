@@ -29,16 +29,15 @@
 --
 -----------------------------------------------------------------------------
 
-module Data.Generics.Product.Types where
-
-  --( -- *Traversals
-  --  --
-  --  --  $example
-  --  HasTypes (..)
-  --, HasTypesDeep (..)
-  --, Node (..)
-  --, Primitive (..)
-  --) where
+module Data.Generics.Product.Types
+  ( -- *Traversals
+    --
+    --  $example
+    HasTypes (..)
+  , HasTypesDeep (..)
+  , Node (..)
+  , Primitive (..)
+  ) where
 
 import Data.Generics.Product.Internal.Types
 import Data.Generics.Internal.GenericDeep
@@ -66,11 +65,11 @@ class HasTypesDeep a s where
   typesDeep _ = pure
 
 instance
-  ( GHasTypesDeep is a (Rep s)
-  , is ~ FindInteresting (Listify (DeepN s)) a
+  ( GHasTypesDeep a (Rep s)
+  --, is ~ FindInteresting (ToList (Listify2 (DeepN s))) a
   , GenericDeep s
   ) => HasTypesDeep a s where
-  typesDeep f s = to <$> gtypesDeep @is f (from s)
+  typesDeep f s = to <$> gtypesDeep f (from s)
   {-# INLINE[2] typesDeep #-}
 
 
@@ -84,52 +83,64 @@ instance {-# OVERLAPPING #-} HasTypesDeep a Ordering
 
 --------------------------------------------------------------------------------
 
-class GHasTypesDeep (is :: [Type]) a s where
+class GHasTypesDeep a s where
   gtypesDeep :: Traversal' (s x) a
 
-instance GHasTypesDeep is a U1 where
+instance GHasTypesDeep a U1 where
   gtypesDeep _ = pure
   {-# INLINE[0] gtypesDeep #-}
 
-instance {-# OVERLAPPING #-} GHasTypesDeep is a (Rec0 a) where
+instance {-# OVERLAPPING #-} GHasTypesDeep a (Rec0 a) where
   gtypesDeep f (K1 x) = K1 <$> f x
   {-# INLINE[0] gtypesDeep #-}
 
-instance GHasTypesDeep is a f => GHasTypesDeep is a (M1 met m f) where
-  gtypesDeep f (M1 s) = M1 <$> gtypesDeep @is f s
+instance GHasTypesDeep a f => GHasTypesDeep a (M1 met m f) where
+  gtypesDeep f (M1 s) = M1 <$> gtypesDeep f s
   {-# INLINE[0] gtypesDeep #-}
 
 instance {-# OVERLAPPABLE #-}
-  ( HasTypesDeep' is (Elem b is) a b
-  ) => GHasTypesDeep (is :: [Type]) a (Rec0 b) where
-  gtypesDeep f (K1 x) = K1 <$> typesDeep' @is @(Elem b is) f x
+  ( HasTypesDeep' (Elem b is) a b
+  , is ~ Inter b a
+  ) => GHasTypesDeep a (Rec0 b) where
+  gtypesDeep f (K1 x) = K1 <$> typesDeep' @(Elem b is) f x
   {-# INLINE[0] gtypesDeep #-}
 
-class HasTypesDeep' (is :: [Type]) b a s where
+type family Inter b a where
+  Inter Bool _ =  '[]
+  Inter Char _ =  '[]
+  Inter Double _ =  '[]
+  Inter Float _ =  '[]
+  Inter Int _ =  '[]
+  Inter Integer _ =  '[]
+  Inter Ordering _ =  '[]
+  Inter x a = FindInteresting (ToList (Listify2 (Deep x))) a
+
+
+class HasTypesDeep' b a s where
   typesDeep' :: Traversal' s a
 
-instance HasTypesDeep' is 'False a s where
+instance HasTypesDeep' 'False a s where
   typesDeep' _ = pure
   {-# INLINE[0] typesDeep' #-}
 
-instance (Generic s, GHasTypesDeep is a (Rep s))
-  => HasTypesDeep' is 'True a s where
-  typesDeep' f s = to <$> gtypesDeep @is f (from s)
+instance (Generic s, GHasTypesDeep a (Rep s))
+  => HasTypesDeep' 'True a s where
+  typesDeep' f s = to <$> gtypesDeep f (from s)
   {-# INLINE[0] typesDeep' #-}
 
 instance
-  ( GHasTypesDeep is a l
-  , GHasTypesDeep is a r
-  ) => GHasTypesDeep is a (l :*: r) where
-  gtypesDeep f (l :*: r) = (:*:) <$> gtypesDeep @is f l <*> gtypesDeep @is f r
+  ( GHasTypesDeep a l
+  , GHasTypesDeep a r
+  ) => GHasTypesDeep a (l :*: r) where
+  gtypesDeep f (l :*: r) = (:*:) <$> gtypesDeep f l <*> gtypesDeep f r
   {-# INLINE[0] gtypesDeep #-}
 
 instance
-  ( GHasTypesDeep is a l
-  , GHasTypesDeep is a r
-  ) => GHasTypesDeep is a (l :+: r) where
-  gtypesDeep f (L1 l) = L1 <$> gtypesDeep @is f l
-  gtypesDeep f (R1 r) = R1 <$> gtypesDeep @is f r
+  ( GHasTypesDeep a l
+  , GHasTypesDeep a r
+  ) => GHasTypesDeep a (l :+: r) where
+  gtypesDeep f (L1 l) = L1 <$> gtypesDeep f l
+  gtypesDeep f (R1 r) = R1 <$> gtypesDeep f r
   {-# INLINE[0] gtypesDeep #-}
 
 ---------
@@ -155,35 +166,41 @@ type family IsInteresting (t :: Type) (m :: Set) :: Bool where
   IsInteresting t ( _ ': t ': _ ': _ ': _ ) = 'True
   IsInteresting t ( _ ': _ ': t ': _ ': _ ) = 'True
   IsInteresting t ( _ ': _ ': _ ': t ': _ ) = 'True
-  IsInteresting t ( _ ': _ ': _ ': _ ': m ) = IsInteresting t m
+  --IsInteresting t ( _ ': _ ': _ ': _ ': m ) = IsInteresting t m
+  IsInteresting t (t ': _) = 'True
+  IsInteresting t (_ ': m) = IsInteresting t m
   IsInteresting _ _ = 'False
 
 --------------------------------------------------------------------------------
 
-type family FindInteresting' (haystack :: [Type -> Type]) (needle :: Type) (path :: [Type]) (m :: Set) :: Set where
+type family FindInteresting' (haystack :: [Type]) (needle :: Type) (path :: [Type]) (m :: Set) :: Set where
   FindInteresting' '[] a p map
     = map
-  FindInteresting' (Node a tree ': xs) a p map
+  FindInteresting' (StopNode2 ': xs) a '[] map
+    = FindInteresting' xs a '[] map
+  FindInteresting' (StopNode2 ': xs) a (_ ': p) map
+    = FindInteresting' xs a p map
+  FindInteresting' (Node2 a ': xs) a p map
     --                          v optimisation
-    = FindInteresting' (tree ': xs) a '[a] (MarkAll p map)
-  FindInteresting' (Node typ tree ': xs) a p map
-    = FindInteresting' (tree ': xs) a (typ ': p) map
---  FindInteresting' ((l :*: r) ': xs) a p map
---    = FindInteresting' (l ': r ': xs) a p map
-     -- = FindInteresting' l a p map
---  FindInteresting' ((l :+: r) ': xs) a p map
---    = FindInteresting' (l ': r ': xs) a p map
-    -- = FindInteresting' l a p map
-  FindInteresting' (Primitive a ': xs) a p map
-    = FindInteresting' xs a p (MarkAll p map)
-  FindInteresting' (Primitive typ ': xs) a p map
+    = FindInteresting' xs a '[a] (MarkAll p map)
+  FindInteresting' (Node2 typ ': xs) a p map
+    = FindInteresting' xs a (typ ': p) map
+----  FindInteresting' ((l :*: r) ': xs) a p map
+----    = FindInteresting' (l ': r ': xs) a p map
+--     -- = FindInteresting' l a p map
+----  FindInteresting' ((l :+: r) ': xs) a p map
+----    = FindInteresting' (l ': r ': xs) a p map
+--    -- = FindInteresting' l a p map
+  FindInteresting' (Pr a ': xs) a p map
+    = FindInteresting' xs a '[] (MarkAll p map)
+  FindInteresting' (Pr typ ': xs) a p map
     = FindInteresting' xs a p map
-  FindInteresting' (Rec0 a ': xs) a p map
-    = FindInteresting' xs a p (MarkAll p map)
-  FindInteresting' (Rec0 typ ': xs) a p map
-    = FindInteresting' xs a p (If (IsInteresting typ map) (MarkAll p map) map)
-  FindInteresting' (U1 ': xs) a p map
-    = FindInteresting' xs a p map
+  FindInteresting' (Re a ': xs) a p map
+    = FindInteresting' xs a '[] (MarkAll p map)
+  FindInteresting' (Re typ ': xs) a p map
+    = If (IsInteresting typ map) (FindInteresting' xs a '[] (MarkAll p map)) (FindInteresting' xs a p map)
+--  FindInteresting' (U1 ': xs) a p map
+--    = FindInteresting' xs a p map
 
 type FindInteresting hay need
   = Fix hay need (FindInteresting' hay need '[] EmptySet) EmptySet
@@ -194,7 +211,6 @@ type family ((as :: [k]) ++ (bs :: [k])) :: [k] where
 
 type family Any :: k
 
-type family DList :: [xs] -> [xs]
 data List a = Comp (List a) (List a) | Leaf a
 
 type family ToList (xs :: List [a]) :: [a] where
@@ -206,13 +222,13 @@ type family ToList (xs :: List [a]) :: [a] where
 type family Listify2 a :: List [Type] where
   Listify2 (l :+: r) = 'Comp (Listify2 l) (Listify2 r)
   Listify2 (l :*: r) = 'Comp (Listify2 l) (Listify2 r)
-  --Listify2 (Node a tree) = Comp (DList (Node1 a))  (Comp (Listify2 tree) '[StopNode1])
   Listify2 (Node a tree) = 'Comp ('Comp ('Leaf '[Node2 a]) (Listify2 tree)) ('Leaf '[StopNode2])
-  Listify2 (Primitive a) = 'Leaf '[a]
+  Listify2 (Primitive a) = 'Leaf '[Pr a]
   Listify2 U1 = 'Leaf '[]
-  Listify2 (Rec0 a) = 'Leaf '[a]
---  Listify2 x = '[x]
+  Listify2 (Rec0 a) = 'Leaf '[Re a]
 
+data Pr a
+data Re a
 data Node2 a
 data StopNode2
 
@@ -225,7 +241,7 @@ type family Listify a where
 data Node1 a x
 data StopNode1 a
 
-type family Fix hay need m n where
+type family Fix (hay :: [Type]) (need :: Type) m n where
   Fix _ _ m m = m
   Fix haystack needle m _
     = Fix haystack needle (FindInteresting' haystack needle '[] m) m

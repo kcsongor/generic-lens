@@ -1,5 +1,5 @@
---{-# OPTIONS_GHC -dsuppress-all #-}
---{-# OPTIONS_GHC -ddump-simpl #-}
+{-# OPTIONS_GHC -dsuppress-all #-}
+{-# OPTIONS_GHC -ddump-simpl #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE UndecidableInstances #-}
@@ -31,8 +31,8 @@ data FlatProd =
 testFlatProd
   = FlatProd 10 'c' False 20 'c' [1,2,3] [True, False] (Left 'c') "hello" "world" "foo"
 
--- updateFlatProdInt :: FlatProd -> FlatProd
--- updateFlatProdInt = (typesDeep @Int) .~ 10000
+updateFlatProdInt :: FlatProd -> FlatProd
+updateFlatProdInt = (typesDeep @Int) .~ 10000
 
 
 {-
@@ -103,8 +103,8 @@ But in general, how many steps are needed?
 
 data Poly a b = PNil | PCons a (Poly b a) deriving (Generic, Show)
 
--- updatePoly :: Poly Int String -> Poly Int String
--- updatePoly = typesDeep @Int .~ 10
+updatePoly :: Poly Int String -> Poly Int String
+updatePoly = typesDeep @Int .~ 10
 
 {-
 
@@ -129,8 +129,8 @@ infixr 5 :>
 test :: FList 0
 test = "this" :> "won't" :> "end" :> "well" :> 10 :> FNil
 
--- updateFlist :: FList 0 -> FList 0
--- updateFlist = (typesDeep @Int) .~ 10
+updateFlist :: FList 0 -> FList 0
+updateFlist = (typesDeep @Int) .~ 10
 
 -- We can even have a deeply nested mutually recursive structure:
 data T1 = T1L T2 | T1R T4 deriving Generic
@@ -141,8 +141,8 @@ data T5 = T5 Int deriving Generic
 data T6 = T6 T7 deriving Generic
 data T7 = T7 T5 T1 deriving Generic
 
--- updateT1T2 :: T1 -> T1
--- updateT1T2 = typesDeep @Int .~ undefined
+updateT1T2 :: T1 -> T1
+updateT1T2 = typesDeep @Int .~ undefined
 
 {-
   How do we know how many layers we need to look down?
