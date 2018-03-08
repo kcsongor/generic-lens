@@ -35,6 +35,8 @@ module Data.Generics.Product.Types
   ) where
 
 import Data.Generics.Product.Internal.Types
+import Data.Kind
+import Data.Type.Bool
 
 import GHC.Generics
 import Data.Generics.Internal.VL.Traversal
@@ -55,12 +57,27 @@ class HasTypesDeep a s where
 
   default typesDeep :: Traversal' s a
   typesDeep _ = pure
+  {-# INLINE typesDeep #-}
+
+instance
+  ( HasTypesDeep1 (Interesting s a) a s
+  ) => HasTypesDeep a s where
+  typesDeep = typesDeep1 @(Interesting s a)
+  {-# INLINE typesDeep #-}
+
+class HasTypesDeep1 (t :: Bool) a s where
+  typesDeep1 :: Traversal' s a
 
 instance
   ( GHasTypesDeep a (Rep s)
   , Generic s
-  ) => HasTypesDeep a s where
-  typesDeep f s = to <$> gtypesDeep f (from s)
+  ) => HasTypesDeep1 'True a s where
+  typesDeep1 f s = to <$> gtypesDeep f (from s)
+  --{-# INLINE typesDeep1 #-}
+
+instance HasTypesDeep1 'False a s where
+  typesDeep1 _ = pure
+  --{-# INLINE typesDeep1 #-}
 
 instance {-# OVERLAPPING #-} HasTypesDeep a Bool
 instance {-# OVERLAPPING #-} HasTypesDeep a Char
@@ -107,3 +124,28 @@ instance GHasTypesDeep a U1 where
   {-# INLINE gtypesDeep #-}
 
 --instance GHasTypesDeep a V1 where
+
+type Interesting f a = Interesting' f (Rep f) a
+
+type family Interesting' orig f (a :: Type) :: Bool where
+  Interesting' orig (M1 _ m f) t
+    = Interesting' orig f t
+  Interesting' orig (l :*: r) t
+    = Interesting' orig l t || Interesting' orig r t
+  Interesting' orig (l :+: r) t
+    = Interesting' orig l t || Interesting' orig r t
+  Interesting' orig (Rec0 t) t
+    = 'True
+  Interesting' _ (Rec0 Bool)     _ = 'False
+  Interesting' _ (Rec0 Char)     _ = 'False
+  Interesting' _ (Rec0 Double)   _ = 'False
+  Interesting' _ (Rec0 Float)    _ = 'False
+  Interesting' _ (Rec0 Int)      _ = 'False
+  Interesting' _ (Rec0 Integer)  _ = 'False
+  Interesting' _ (Rec0 Ordering) _ = 'False
+  Interesting' orig (Rec0 orig) _
+    = 'False
+  Interesting' _ (Rec0 _) _
+    = 'True
+  Interesting' _ _ _
+    = 'False
