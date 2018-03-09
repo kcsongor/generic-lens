@@ -1,3 +1,4 @@
+{-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE AllowAmbiguousTypes    #-}
 {-# LANGUAGE DataKinds              #-}
@@ -33,14 +34,13 @@ import GHC.TypeLits
 import Data.Generics.Internal.Void
 import Data.Generics.Internal.Families.Changing
 import Data.Generics.Internal.VL.Traversal
-import Data.Generics.Internal.VL.Lens
 
 import GHC.Generics
 import Data.Kind
 import Data.Generics.Internal.VL.Iso
 import Data.Generics.Internal.GenericN
 
-class HasParam (p :: Nat) s t a b | p t a b -> s, p s a b -> t where
+class HasParam (p :: Nat) s t a b | p t a b -> s, p s a b -> t, p s -> a, p t -> b where
   param :: Applicative g => (a -> g b) -> s -> g t
 
 instance
@@ -50,6 +50,8 @@ instance
   , s ~ Infer t (P n b 'PTag) a
   , t ~ Infer s (P n a 'PTag) b
   , Error ((ArgCount s) <=? n) n (ArgCount s) s
+  , a ~ ArgAt s n
+  , b ~ ArgAt t n
   , GHasParam n (RepN s) (RepN t) a b
   ) => HasParam n s t a b where
 

@@ -14,6 +14,7 @@ module Data.Generics.Internal.Families.Changing
   , PTag (..)
   , P
   , LookupParam
+  , ArgAt
   , ArgCount
   ) where
 
@@ -122,6 +123,11 @@ type family IfEq (a :: k) (b :: k) (t :: l) (f :: l) :: l where
 type family ArgCount (t :: k) :: Nat where
   ArgCount (f a) = 1 + ArgCount f
   ArgCount a = 0
+
+type family ArgAt (t :: k) (n :: Nat) :: j where
+  ArgAt (t a) 0 = a
+  ArgAt (t a) n = ArgAt t (n - 1)
+
 
 -- Note [CPP in instance constraints]
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
