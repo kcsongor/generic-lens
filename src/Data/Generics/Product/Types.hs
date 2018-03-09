@@ -31,99 +31,86 @@ module Data.Generics.Product.Types
     --
     --  $example
     HasTypes (..)
-  , HasTypesDeep (..)
   ) where
 
-import Data.Generics.Product.Internal.Types
 import Data.Kind
 import Data.Type.Bool
 
 import GHC.Generics
 import Data.Generics.Internal.VL.Traversal
-import Data.Generics.Internal.VL.Iso
 
 class HasTypes a s where
   types :: Traversal' s a
 
-instance
-  ( Generic s
-  , GHasTypes (Rep s) '[a]
-  ) => HasTypes a s where
-  types = confusing (\f -> (repIso . gtypes) (f :> HNil))
+  default types :: Traversal' s a
+  types _ = pure
   {-# INLINE types #-}
 
-class HasTypesDeep a s where
-  typesDeep :: Traversal' s a
+instance
+  ( HasTypes1 (Interesting s a) a s
+  ) => HasTypes a s where
+  types = types1 @(Interesting s a)
+  {-# INLINE types #-}
 
-  default typesDeep :: Traversal' s a
-  typesDeep _ = pure
-  {-# INLINE typesDeep #-}
+class HasTypes1 (t :: Bool) a s where
+  types1 :: Traversal' s a
 
 instance
-  ( HasTypesDeep1 (Interesting s a) a s
-  ) => HasTypesDeep a s where
-  typesDeep = typesDeep1 @(Interesting s a)
-  {-# INLINE typesDeep #-}
-
-class HasTypesDeep1 (t :: Bool) a s where
-  typesDeep1 :: Traversal' s a
-
-instance
-  ( GHasTypesDeep a (Rep s)
+  ( GHasTypes a (Rep s)
   , Generic s
-  ) => HasTypesDeep1 'True a s where
-  typesDeep1 f s = to <$> gtypesDeep f (from s)
-  --{-# INLINE typesDeep1 #-}
+  ) => HasTypes1 'True a s where
+  types1 f s = to <$> gtypes f (from s)
+  --{-# INLINE types1 #-}
 
-instance HasTypesDeep1 'False a s where
-  typesDeep1 _ = pure
-  --{-# INLINE typesDeep1 #-}
+instance HasTypes1 'False a s where
+  types1 _ = pure
+  --{-# INLINE types1 #-}
 
-instance {-# OVERLAPPING #-} HasTypesDeep a Bool
-instance {-# OVERLAPPING #-} HasTypesDeep a Char
-instance {-# OVERLAPPING #-} HasTypesDeep a Double
-instance {-# OVERLAPPING #-} HasTypesDeep a Float
-instance {-# OVERLAPPING #-} HasTypesDeep a Int
-instance {-# OVERLAPPING #-} HasTypesDeep a Integer
-instance {-# OVERLAPPING #-} HasTypesDeep a Ordering
+instance {-# OVERLAPPING #-} HasTypes a Bool
+instance {-# OVERLAPPING #-} HasTypes a Char
+instance {-# OVERLAPPING #-} HasTypes a Double
+instance {-# OVERLAPPING #-} HasTypes a Float
+instance {-# OVERLAPPING #-} HasTypes a Int
+instance {-# OVERLAPPING #-} HasTypes a Integer
+instance {-# OVERLAPPING #-} HasTypes a Ordering
 
 --------------------------------------------------------------------------------
 
-class GHasTypesDeep a s where
-  gtypesDeep :: Traversal' (s x) a
+class GHasTypes a s where
+  gtypes :: Traversal' (s x) a
 
 instance
-  ( GHasTypesDeep a l
-  , GHasTypesDeep a r
-  ) => GHasTypesDeep a (l :*: r) where
-  gtypesDeep f (l :*: r) = (:*:) <$> gtypesDeep f l <*> gtypesDeep f r
-  {-# INLINE gtypesDeep #-}
+  ( GHasTypes a l
+  , GHasTypes a r
+  ) => GHasTypes a (l :*: r) where
+  gtypes f (l :*: r) = (:*:) <$> gtypes f l <*> gtypes f r
+  {-# INLINE gtypes #-}
 
 instance
-  ( GHasTypesDeep a l
-  , GHasTypesDeep a r
-  ) => GHasTypesDeep a (l :+: r) where
-  gtypesDeep f (L1 l) = L1 <$> gtypesDeep f l
-  gtypesDeep f (R1 r) = R1 <$> gtypesDeep f r
-  {-# INLINE gtypesDeep #-}
+  ( GHasTypes a l
+  , GHasTypes a r
+  ) => GHasTypes a (l :+: r) where
+  gtypes f (L1 l) = L1 <$> gtypes f l
+  gtypes f (R1 r) = R1 <$> gtypes f r
+  {-# INLINE gtypes #-}
 
-instance (GHasTypesDeep a s) => GHasTypesDeep a (M1 m meta s) where
-  gtypesDeep f (M1 s) = M1 <$> gtypesDeep f s
-  {-# INLINE gtypesDeep #-}
+instance (GHasTypes a s) => GHasTypes a (M1 m meta s) where
+  gtypes f (M1 s) = M1 <$> gtypes f s
+  {-# INLINE gtypes #-}
 
-instance {-# OVERLAPPING #-} GHasTypesDeep a (Rec0 a) where
-  gtypesDeep f (K1 x) = K1 <$> f x
-  {-# INLINE gtypesDeep #-}
+instance {-# OVERLAPPING #-} GHasTypes a (Rec0 a) where
+  gtypes f (K1 x) = K1 <$> f x
+  {-# INLINE gtypes #-}
 
-instance HasTypesDeep a b => GHasTypesDeep a (Rec0 b) where
-  gtypesDeep f (K1 x) = K1 <$> typesDeep @a f x
-  {-# INLINE gtypesDeep #-}
+instance HasTypes a b => GHasTypes a (Rec0 b) where
+  gtypes f (K1 x) = K1 <$> types @a f x
+  {-# INLINE gtypes #-}
 
-instance GHasTypesDeep a U1 where
-  gtypesDeep _ _ = pure U1
-  {-# INLINE gtypesDeep #-}
+instance GHasTypes a U1 where
+  gtypes _ _ = pure U1
+  {-# INLINE gtypes #-}
 
---instance GHasTypesDeep a V1 where
+--instance GHasTypes a V1 where
 
 type Interesting f a = Interesting' f (Rep f) a
 

@@ -50,7 +50,7 @@ poly = PCons 10 (PCons "hello" (PCons 20 (PCons "world" PNil)))
 -- So (1.) confuses leafs and weights whereas (2.) does not.
 tests :: Test
 tests = TestList
-  [ toListOf (typesDeep @Int) mytree ~=? [42,1,88,37,2]
+  [ toListOf (types @Int) mytree ~=? [42,1,88,37,2]
   , toListOf (param @1) mytree       ~=? [42,88,37]
 
   -- Things not (easily) doable in SYB:
@@ -59,9 +59,9 @@ tests = TestList
   -- collect values in poly corresponding to the first param
   , toListOf (param @0) poly                              ~=? ["hello", "world"]
   -- collect all Ints inside poly
-  , toListOf (typesDeep @Int) poly                        ~=? [10, 20]
+  , toListOf (types @Int) poly                        ~=? [10, 20]
   -- map length over the Strings, then collect all Ints
-  , toListOf (typesDeep @Int) (poly & param @0 %~ length) ~=? [10, 5, 20, 5]
+  , toListOf (types @Int) (poly & param @0 %~ length) ~=? [10, 5, 20, 5]
   -- map length over the Strings, then collect all the resulting Ints
   , toListOf (param @0) (poly & param @0 %~ length)       ~=? [5,5]
   ]

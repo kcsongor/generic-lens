@@ -26,9 +26,8 @@
 -----------------------------------------------------------------------------
 
 module Data.Generics.Product.Internal.Types
-  ( GHasTypes
-  , GHasConstraints (..)
-  , gtypes
+  (
+    GHasConstraints (..)
   , HList (..)
   ) where
 
@@ -60,15 +59,17 @@ instance GHasConstraints c U1 where
 --------------------------------------------------------------------------------
 
 -- | Multi-traversal
-type GHasTypes rep as = GHasConstraints (Contains as) rep
+--type GHasTypes rep as = GHasConstraints (Contains as) rep
 
 -- Try to use a function from the list, or default to 'pure' if not present
+{-
 gtypes
   :: forall as x f g.
   ( GHasTypes f as
   , Applicative g
   ) => HList (Functions as g) -> f x -> g (f x)
 gtypes hl s = gconstraints @(Contains as) (pick hl) s
+-}
 
 --------------------------------------------------------------------------------
 
