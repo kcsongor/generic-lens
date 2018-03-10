@@ -1,7 +1,7 @@
-{-# LANGUAGE DefaultSignatures #-}
 {-# LANGUAGE AllowAmbiguousTypes   #-}
 {-# LANGUAGE ConstraintKinds       #-}
 {-# LANGUAGE DataKinds             #-}
+{-# LANGUAGE DefaultSignatures     #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE KindSignatures        #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -34,7 +34,6 @@ module Data.Generics.Product.Types
   ) where
 
 import Data.Kind
-import Data.Type.Bool
 
 import GHC.Generics
 import Data.Generics.Internal.VL.Traversal
@@ -47,24 +46,24 @@ class HasTypes a s where
   {-# INLINE types #-}
 
 instance
-  ( HasTypes1 (Interesting s a) a s
+  ( Hastypes' (Interesting s a) a s
   ) => HasTypes a s where
-  types = types1 @(Interesting s a)
+  types = types' @(Interesting s a)
   {-# INLINE types #-}
 
-class HasTypes1 (t :: Bool) a s where
-  types1 :: Traversal' s a
+class Hastypes' (t :: Bool) a s where
+  types' :: Traversal' s a
 
 instance
   ( GHasTypes a (Rep s)
   , Generic s
-  ) => HasTypes1 'True a s where
-  types1 f s = to <$> gtypes f (from s)
-  --{-# INLINE types1 #-}
+  ) => Hastypes' 'True a s where
+  types' f s = to <$> gtypes f (from s)
+  --{-# INLINE types' #-}
 
-instance HasTypes1 'False a s where
-  types1 _ = pure
-  --{-# INLINE types1 #-}
+instance Hastypes' 'False a s where
+  types' _ = pure
+  --{-# INLINE types' #-}
 
 instance {-# OVERLAPPING #-} HasTypes a Bool
 instance {-# OVERLAPPING #-} HasTypes a Char
@@ -110,29 +109,43 @@ instance GHasTypes a U1 where
   gtypes _ _ = pure U1
   {-# INLINE gtypes #-}
 
---instance GHasTypes a V1 where
 
-type Interesting f a = Interesting' f (Rep f) a
+instance GHasTypes a V1 where
+  gtypes _ = pure
+  {-# INLINE gtypes #-}
 
-type family Interesting' orig f (a :: Type) :: Bool where
-  Interesting' orig (M1 _ m f) t
-    = Interesting' orig f t
-  Interesting' orig (l :*: r) t
-    = Interesting' orig l t || Interesting' orig r t
-  Interesting' orig (l :+: r) t
-    = Interesting' orig l t || Interesting' orig r t
-  Interesting' orig (Rec0 t) t
+type Interesting f a = Interesting' (Rep f) a '[f]
+
+type family Interesting' f (a :: Type) (seen :: [Type]) :: Bool where
+  Interesting' (M1 _ m f) t seen
+    = Interesting' f t seen
+  Interesting' (l :*: r) t seen
+    = InterestingOr (Interesting' l t seen) r t seen
+  Interesting' (l :+: r) t seen
+    = InterestingOr (Interesting' l t seen) r t seen
+  Interesting' (Rec0 t) t seen
     = 'True
-  Interesting' _ (Rec0 Bool)     _ = 'False
-  Interesting' _ (Rec0 Char)     _ = 'False
-  Interesting' _ (Rec0 Double)   _ = 'False
-  Interesting' _ (Rec0 Float)    _ = 'False
-  Interesting' _ (Rec0 Int)      _ = 'False
-  Interesting' _ (Rec0 Integer)  _ = 'False
-  Interesting' _ (Rec0 Ordering) _ = 'False
-  Interesting' orig (Rec0 orig) _
-    = 'False
-  Interesting' _ (Rec0 _) _
-    = 'True
+  Interesting' (Rec0 Char)     _ _ = 'False
+  Interesting' (Rec0 Double)   _ _ = 'False
+  Interesting' (Rec0 Float)    _ _ = 'False
+  Interesting' (Rec0 Int)      _ _ = 'False
+  Interesting' (Rec0 Integer)  _ _ = 'False
+  Interesting' (Rec0 r) t seen
+    = InterestingUnless (Elem r seen) (Rep r) t (r ': seen)
   Interesting' _ _ _
     = 'False
+
+-- Short circuit
+type family InterestingUnless (s :: Bool) f (a :: Type) (seen :: [Type]) :: Bool where
+  InterestingUnless 'True _ _ _ = 'False
+  InterestingUnless 'False f a seen = Interesting' f a seen
+
+-- Short circuit
+type family InterestingOr (b :: Bool) r t seen where
+  InterestingOr 'True _ _ _ = 'True
+  InterestingOr 'False r t seen = Interesting' r t seen
+
+type family Elem a as where
+  Elem a (a ': _) = 'True
+  Elem a (_ ': as) = Elem a as
+  Elem a '[] = 'False

@@ -40,7 +40,7 @@ import Data.Kind
 import Data.Generics.Internal.VL.Iso
 import Data.Generics.Internal.GenericN
 
-class HasParam (p :: Nat) s t a b | p t a b -> s, p s a b -> t, p s -> a, p t -> b where
+class HasParam (p :: Nat) s t a b | p t a -> s, p s b -> t, p s -> a, p t -> b where
   param :: Applicative g => (a -> g b) -> s -> g t
 
 instance

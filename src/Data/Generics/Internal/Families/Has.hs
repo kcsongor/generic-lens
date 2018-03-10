@@ -16,7 +16,6 @@
 -----------------------------------------------------------------------------
 module Data.Generics.Internal.Families.Has
   ( HasTotalFieldP
-  , HasTotalTypeP
   , HasPartialTypeP
   , HasCtorP
   , GTypes
@@ -49,31 +48,6 @@ type family HasTotalFieldP (field :: Symbol) f :: Bool where
   HasTotalFieldP field V1
     = 'False
   HasTotalFieldP field f
-    = TypeError
-        (     'ShowType f
-        ':<>: 'Text " is not a valid GHC.Generics representation type"
-        )
-
-type family HasTotalTypeP a f :: Bool where
-  HasTotalTypeP t (S1 meta (Rec0 t))
-    = 'True
-  HasTotalTypeP t (l :*: r)
-    = HasTotalTypeP t l || HasTotalTypeP t r
-  HasTotalTypeP t (l :+: r)
-    = HasTotalTypeP t l && HasTotalTypeP t r
-  HasTotalTypeP t (S1 _ _)
-    = 'False
-  HasTotalTypeP t (C1 m f)
-    = HasTotalTypeP t f
-  HasTotalTypeP t (D1 m f)
-    = HasTotalTypeP t f
-  HasTotalTypeP t (Rec0 _)
-    = 'False
-  HasTotalTypeP t U1
-    = 'False
-  HasTotalTypeP t V1
-    = 'False
-  HasTotalTypeP t f
     = TypeError
         (     'ShowType f
         ':<>: 'Text " is not a valid GHC.Generics representation type"
