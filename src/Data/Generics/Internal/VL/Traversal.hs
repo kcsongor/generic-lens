@@ -85,7 +85,12 @@ instance Applicative f => Applicative (Yoneda f) where
   pure a = Yoneda (\f -> pure (f a))
   Yoneda m <*> Yoneda n = Yoneda (\f -> m (f .) <*> n id)
 
-newtype CurriedYoneda f a = CurriedYoneda { runCurriedYoneda2 ::  forall r . (forall b . ((a -> r) -> b) -> f b) -> f r }
+newtype CurriedYoneda f a = CurriedYoneda { runCurriedYoneda2 ::
+                    forall r . (forall b . ((a -> r) -> b) -> f b) -> f r }
+
+confusing2 :: Applicative f => Traversal s t a b -> (a -> f b) -> s -> f t
+confusing2 t = \f -> lowerCurriedYoneda2 . t (liftCurriedYoneda2 . f)
+{-# INLINE confusing2 #-}
 
 liftCurriedYoneda2 :: Applicative f => f a -> CurriedYoneda f a
 liftCurriedYoneda2 fa = CurriedYoneda (\f -> f id <*> fa)
@@ -102,6 +107,9 @@ instance Functor f => Applicative (CurriedYoneda f) where
 
   (CurriedYoneda fab) <*> (CurriedYoneda fa) =
     CurriedYoneda (\ck -> fa (\arb -> fab (\arb2 -> ck (\br -> arb2 (\f -> arb (\a -> br (f a)))))))
+
+test :: Applicative f => f Int
+test = lowerCurriedYoneda2 ((+) <$> pure 5 <*> pure 6)
 
 
 
