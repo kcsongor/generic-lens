@@ -37,6 +37,7 @@ import Data.Kind
 
 import GHC.Generics
 import Data.Generics.Internal.VL.Traversal
+import Data.Generics.Product.Constraints
 
 class HasTypes a s where
   types :: Traversal' s a
@@ -45,33 +46,85 @@ class HasTypes a s where
   types _ = pure
   {-# INLINE types #-}
 
+-- instance
+--   ( Hastypes' (Interesting s a) a s
+--   ) => HasTypes a s where
+--   types = types' @(Interesting s a)
+--   {-# INLINE types #-}
+
+instance HasTypesC a a s s => HasTypes a s where
+  types = typesC
+
+--class Hastypes' (t :: Bool) a s where
+--  types' :: Traversal' s a
+--
+--instance
+--  ( GHasTypes a (Rep s)
+--  , Generic s
+--  ) => Hastypes' 'True a s where
+--  types' f s = to <$> gtypes f (from s)
+--  --{-# INLINE types' #-}
+--
+--instance Hastypes' 'False a s where
+--  types' _ = pure
+--  --{-# INLINE types' #-}
+--
+--instance {-# OVERLAPPING #-} HasTypes a Bool
+--instance {-# OVERLAPPING #-} HasTypes a Char
+--instance {-# OVERLAPPING #-} HasTypes a Double
+--instance {-# OVERLAPPING #-} HasTypes a Float
+--instance {-# OVERLAPPING #-} HasTypes a Int
+--instance {-# OVERLAPPING #-} HasTypes a Integer
+--instance {-# OVERLAPPING #-} HasTypes a Ordering
+
+--------------------------------------------------------------------------------
+class HasTypesC a b s t where
+  typesC :: Traversal s t a b
+
 instance
-  ( Hastypes' (Interesting s a) a s
-  ) => HasTypes a s where
-  types = types' @(Interesting s a)
-  {-# INLINE types #-}
+  ( HasTypesC' (Interesting s a) a b s t
+  ) => HasTypesC a b s t where
+  typesC = typesC' @(Interesting s a)
+  {-# INLINE typesC #-}
 
-class Hastypes' (t :: Bool) a s where
-  types' :: Traversal' s a
+instance {-# OVERLAPPING #-} HasTypesC a b a b where
+  typesC f s = f s
+  {-# INLINE typesC #-}
+
+-- instance {-# OVERLAPS #-} c ~ Int => HasTypesC a b Int c where
+--   typesC _ = pure
+--   {-# INLINE typesC #-}
+
+--instance {-# OVERLAPPING #-} HasTypesC a b Char Char where
+--  typesC _ = pure
+--  {-# INLINE typesC #-}
+--
+--instance {-# OVERLAPPING #-} HasTypesC a b Double Double where
+--  typesC _ = pure
+--  {-# INLINE typesC #-}
+--
+--instance {-# OVERLAPPING #-} HasTypesC a b Float Float where
+--  typesC _ = pure
+--  {-# INLINE typesC #-}
+--
+--instance {-# OVERLAPPING #-} HasTypesC a b Integer Integer where
+--  typesC _ = pure
+--  {-# INLINE typesC #-}
+
+class HasTypesC' (i :: Bool) a b s t where
+  typesC' :: Traversal s t a b
 
 instance
-  ( GHasTypes a (Rep s)
-  , Generic s
-  ) => Hastypes' 'True a s where
-  types' f s = to <$> gtypes f (from s)
-  --{-# INLINE types' #-}
+  ( Generic s
+  , Generic t
+  , HasConstraints (HasTypesC a b) s t
+  ) => HasTypesC' 'True a b s t where
+  typesC' f s = constraints @(HasTypesC a b) (typesC @a @b f) s
+  {-# INLINE typesC' #-}
 
-instance Hastypes' 'False a s where
-  types' _ = pure
-  --{-# INLINE types' #-}
-
-instance {-# OVERLAPPING #-} HasTypes a Bool
-instance {-# OVERLAPPING #-} HasTypes a Char
-instance {-# OVERLAPPING #-} HasTypes a Double
-instance {-# OVERLAPPING #-} HasTypes a Float
-instance {-# OVERLAPPING #-} HasTypes a Int
-instance {-# OVERLAPPING #-} HasTypes a Integer
-instance {-# OVERLAPPING #-} HasTypes a Ordering
+instance HasTypesC' 'False a b s s where
+  typesC' _ = pure
+  {-# INLINE typesC' #-}
 
 --------------------------------------------------------------------------------
 
@@ -113,7 +166,15 @@ instance GHasTypes a V1 where
   gtypes _ = pure
   {-# INLINE gtypes #-}
 
-type Interesting f a = Snd (Interesting' (Rep f) a '[f])
+type family HackRep a where
+  HackRep Char = Rec0 Char
+  HackRep Double = Rec0 Double
+  HackRep Float = Rec0 Float
+  HackRep Int = Rec0 Int
+  HackRep Integer = Rec0 Integer
+  HackRep a = Rep a
+
+type Interesting f a = Snd (Interesting' (HackRep f) a '[f])
 
 type family Interesting' f (a :: Type) (seen :: [Type]) :: ([Type], Bool) where
   Interesting' (M1 _ m f) t seen

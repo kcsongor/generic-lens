@@ -36,25 +36,30 @@ import GHC.Generics
 import Data.Generics.Internal.VL.Iso
 
 -- | Constrained traversal.
-class GHasConstraints (c :: * -> Constraint) (f :: * -> *) where
-  gconstraints :: forall g x.
-    Applicative g => (forall a. c a => a -> g a) -> f x -> g (f x)
+class GHasConstraints (c :: * -> * -> Constraint) (s :: * -> *) (t :: * -> *) where
+  gconstraints :: forall f x.
+    Applicative f => (forall a b. c a b => a -> f b) -> s x -> f (t x)
 
-instance (GHasConstraints c l, GHasConstraints c r) => GHasConstraints c (l :*: r) where
+instance (GHasConstraints c l l', GHasConstraints c r r') => GHasConstraints c (l :*: r) (l' :*: r') where
   gconstraints f (l :*: r) = (:*:) <$> gconstraints @c f l <*> gconstraints @c f r
+  {-# INLINE gconstraints #-}
 
-instance (GHasConstraints c l, GHasConstraints c r) => GHasConstraints c (l :+: r) where
+instance (GHasConstraints c l l', GHasConstraints c r r') => GHasConstraints c (l :+: r) (l' :+: r') where
   gconstraints f (L1 l) = L1 <$> gconstraints @c f l
   gconstraints f (R1 r) = R1 <$> gconstraints @c f r
+  {-# INLINE gconstraints #-}
 
-instance c a => GHasConstraints c (K1 R a) where
+instance c a b => GHasConstraints c (K1 R a) (K1 R b) where
   gconstraints = kIso
+  {-# INLINE gconstraints #-}
 
-instance GHasConstraints c f => GHasConstraints c (M1 m meta f) where
+instance GHasConstraints c s t => GHasConstraints c (M1 i m s) (M1 i m t) where
   gconstraints f (M1 x) = M1 <$> gconstraints @c f x
+  {-# INLINE gconstraints #-}
 
-instance GHasConstraints c U1 where
+instance GHasConstraints c U1 U1 where
   gconstraints _ _ = pure U1
+  {-# INLINE gconstraints #-}
 
 --------------------------------------------------------------------------------
 
