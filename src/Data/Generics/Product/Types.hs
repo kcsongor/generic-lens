@@ -109,43 +109,48 @@ instance GHasTypes a U1 where
   gtypes _ _ = pure U1
   {-# INLINE gtypes #-}
 
-
 instance GHasTypes a V1 where
   gtypes _ = pure
   {-# INLINE gtypes #-}
 
-type Interesting f a = Interesting' (Rep f) a '[f]
+type Interesting f a = Snd (Interesting' (Rep f) a '[f])
 
-type family Interesting' f (a :: Type) (seen :: [Type]) :: Bool where
+type family Interesting' f (a :: Type) (seen :: [Type]) :: ([Type], Bool) where
   Interesting' (M1 _ m f) t seen
     = Interesting' f t seen
+  -- The result of the left branch is passed on to the right branch in order to avoid duplicate work
   Interesting' (l :*: r) t seen
-    = InterestingOr (Interesting' l t seen) r t seen
+    = InterestingOr (Interesting' l t seen) r t
   Interesting' (l :+: r) t seen
-    = InterestingOr (Interesting' l t seen) r t seen
+    = InterestingOr (Interesting' l t seen) r t
   Interesting' (Rec0 t) t seen
-    = 'True
-  Interesting' (Rec0 Char)     _ _ = 'False
-  Interesting' (Rec0 Double)   _ _ = 'False
-  Interesting' (Rec0 Float)    _ _ = 'False
-  Interesting' (Rec0 Int)      _ _ = 'False
-  Interesting' (Rec0 Integer)  _ _ = 'False
+    = '(seen, 'True)
+  Interesting' (Rec0 Char)     _ seen = '(seen ,'False)
+  Interesting' (Rec0 Double)   _ seen = '(seen ,'False)
+  Interesting' (Rec0 Float)    _ seen = '(seen ,'False)
+  Interesting' (Rec0 Int)      _ seen = '(seen ,'False)
+  Interesting' (Rec0 Integer)  _ seen = '(seen ,'False)
   Interesting' (Rec0 r) t seen
-    = InterestingUnless (Elem r seen) (Rep r) t (r ': seen)
-  Interesting' _ _ _
-    = 'False
+    = InterestingUnless (Elem r seen) (Rep r) t r seen
+  Interesting' _ _ seen
+    = '(seen, 'False)
 
 -- Short circuit
-type family InterestingUnless (s :: Bool) f (a :: Type) (seen :: [Type]) :: Bool where
-  InterestingUnless 'True _ _ _ = 'False
-  InterestingUnless 'False f a seen = Interesting' f a seen
+-- Note: we only insert 'r' to the seen list if it's not already there (which is precisely when `s` is 'False)
+type family InterestingUnless (s :: Bool) f (a :: Type) (r :: Type) (seen :: [Type]) :: ([Type], Bool) where
+  InterestingUnless 'True _ _ _ seen = '(seen, 'False)
+  InterestingUnless 'False f a r seen = Interesting' f a (r ': seen)
 
 -- Short circuit
-type family InterestingOr (b :: Bool) r t seen where
-  InterestingOr 'True _ _ _ = 'True
-  InterestingOr 'False r t seen = Interesting' r t seen
+type family InterestingOr (b :: ([Type], Bool)) r t :: ([Type], Bool) where
+  InterestingOr '(seen, 'True) _ _ = '(seen, 'True)
+  InterestingOr '(seen, 'False) r t = Interesting' r t seen
 
 type family Elem a as where
   Elem a (a ': _) = 'True
   Elem a (_ ': as) = Elem a as
   Elem a '[] = 'False
+
+type family Snd a where
+  Snd '(_, b) = b
+
