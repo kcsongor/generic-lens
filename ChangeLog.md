@@ -1,3 +1,6 @@
+## 1.0.0.0
+- TODO
+
 ## 0.5.1.0
 - Infer input type from result type (#25)
 - Allow changing of multiple type parameters (#24)
