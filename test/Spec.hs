@@ -120,14 +120,6 @@ sum3Param2Manual f (A3 a1 a2)         = pure (\a1' a2' -> A3 a1' a2') <*> f a1 <
 sum3Param2Manual f (B3 s b1 a1 a2 b2) = pure (\a1' a2' -> B3 s b1 a1' a2' b2) <*> f a1 <*> f a2
 sum3Param2Manual f (C3 c a i)         = pure (\a' -> C3 c a' i) <*> f a
 
-sum3Param3Derived :: Traversal (Sum3 a b c) (Sum3 a b c) xxx yyy
-sum3Param3Derived = param @3
-
-sum3Param3Manual :: Traversal (Sum3 a b c) (Sum3 a b c) xxx yyy
-sum3Param3Manual _ (A3 a1 a2)         = pure (A3 a1 a2)
-sum3Param3Manual _ (B3 s b1 a1 a2 b2) = pure (B3 s b1 a1 a2 b2)
-sum3Param3Manual _ (C3 c a i)         = pure (C3 c a i)
-
 sum1PrismManual :: Prism Sum1 Sum1 Int Int
 sum1PrismManual eta = prism g f eta
  where
@@ -241,8 +233,9 @@ tests = TestList $ map mkHUnitTest
   , $(inspectTest $ 'sum1PrismManual           === 'sum1TypePrism)
   , $(inspectTest $ 'intTraversalManual        === 'intTraversalDerived)
   , $(inspectTest $ 'sum3Param0Manual          === 'sum3Param0Derived)
---  , $(inspectTest $ 'sum3Param1Manual          === 'sum3Param1Derived)
---  , $(inspectTest $ 'sum3Param2Manual          === 'sum3Param2Derived)
+  -- TODO: these tests pass with the new implementation
+  , $(inspectTest $ 'sum3Param1Manual          === 'sum3Param1Derived)
+  , $(inspectTest $ 'sum3Param2Manual          === 'sum3Param2Derived)
   , $(inspectTest $ 'sum3Param3Manual          === 'sum3Param3Derived)
   ]
 
