@@ -24,7 +24,8 @@ data Tree a w = Leaf a
               | WithWeight (Tree a w) w
        deriving (Show, Eq, Generic)
 
-deriving instance Bifunctor Tree
+instance Bifunctor Tree where
+  bimap = gbimap
 
 mytree :: Tree Int Int
 mytree = Fork (WithWeight (Leaf 42) 1)
@@ -34,12 +35,13 @@ mytreeBimapped :: Tree Int String
 mytreeBimapped = Fork (WithWeight (Leaf 84) "1")
                       (WithWeight (Fork (Leaf 176) (Leaf 74)) "2")
 
--- Derivable Bifunctor
+--------------------------------------------------------------------------------
+
 class Bifunctor p where
   bimap :: (a -> c) -> (b -> d) -> p a b -> p c d
 
-  default bimap ::
+gbimap ::
     ( HasParam 0 (p a b) (p a d) b d
     , HasParam 1 (p a d) (p c d) a c
     ) => (a -> c) -> (b -> d) -> p a b -> p c d
-  bimap f g s = s & param @0 %~ g & param @1 %~ f
+gbimap f g s = s & param @0 %~ g & param @1 %~ f
