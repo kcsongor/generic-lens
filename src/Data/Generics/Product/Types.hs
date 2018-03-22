@@ -38,6 +38,8 @@ import Data.Kind
 import GHC.Generics
 import Data.Generics.Internal.VL.Traversal
 
+-- TODO [1.0.0.0]: use type-changing variant internally
+
 class HasTypes a s where
   types :: Traversal' s a
 
@@ -48,7 +50,7 @@ class HasTypes a s where
 instance
   ( Hastypes' (Interesting s a) a s
   ) => HasTypes a s where
-  types = types' @(Interesting s a)
+  types = confusing (types' @(Interesting s a))
   {-# INLINE types #-}
 
 class Hastypes' (t :: Bool) a s where

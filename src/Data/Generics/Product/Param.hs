@@ -72,6 +72,8 @@ type family Error (b :: Bool) (expected :: Nat) (actual :: Nat) (s :: Type) :: C
         ':<>: 'ShowType actual
         )
 
+-- TODO [1.0.0.0]: none of this is needed.
+
 instance {-# OVERLAPPING #-} HasParam p (Void1 a) (Void1 b) a b where
   param = undefined
 

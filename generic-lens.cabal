@@ -61,8 +61,7 @@ library
                     , Data.Generics.Product.Internal.Positions
                     , Data.Generics.Product.Internal.Subtype
 
-                    , Data.Generics.Product.Internal.Types
-                    , Data.Generics.Product.Internal.Param
+                    , Data.Generics.Product.Internal.Constraints
                     , Data.Generics.Product.Internal.List
                     , Data.Generics.Product.Internal.Keyed
 

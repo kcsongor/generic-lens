@@ -28,7 +28,7 @@ module Data.Generics.Product.Constraints
     HasConstraints (..)
   ) where
 
-import Data.Generics.Product.Internal.Types
+import Data.Generics.Product.Internal.Constraints
 import Data.Kind (Constraint)
 
 import GHC.Generics (Generic (Rep), from, to)
