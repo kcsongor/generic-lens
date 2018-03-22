@@ -13,7 +13,7 @@
 
 module Main where
 
-import GHC.Generics
+import qualified GHC.Generics as G
 import Data.Generics.Product
 import Data.Generics.Sum
 import Test.Inspection
@@ -23,6 +23,7 @@ import System.Exit
 import Data.Generics.Internal.VL.Lens
 import Data.Generics.Internal.VL.Prism
 import Data.Generics.Internal.VL.Traversal
+import Data.Generics.Internal.Simple
 
 -- This is sufficient at we only want to test that they typecheck
 import Test24 ()
@@ -38,21 +39,16 @@ main = do
 data Record = MkRecord
   { fieldA :: Int
   , fieldB :: Bool
-  } deriving Generic
+  } deriving G.Generic
 
 data Record2 = MkRecord2
   { fieldA :: Int
-  } deriving Generic
+  } deriving G.Generic
 
 data Record3 a = MkRecord3
   { fieldA :: a
   , fieldB :: Bool
-  } deriving (Generic, Show)
-
-data Record4 a = MkRecord4
-  { fieldA :: a
-  , fieldB :: a
-  } deriving (Generic1)
+  } deriving (G.Generic, Show)
 
 data Record5 = MkRecord5
   { fieldA :: Int
@@ -61,7 +57,7 @@ data Record5 = MkRecord5
   , fieldD :: Int
   , fieldE :: Char
   , fieldF :: Int
-  } deriving Generic
+  } deriving G.Generic
 
 typeChangingManual :: Lens (Record3 a) (Record3 b) a b
 typeChangingManual f (MkRecord3 a b) = (\a' -> MkRecord3 a' b) <$> f a
@@ -87,14 +83,14 @@ subtypeLensManual f record
                   MkRecord _ b -> MkRecord (case ds of {MkRecord2 g1 -> g1}) b
          ) (f (MkRecord2 (case record of {MkRecord a _ -> a})))
 
-data Sum1 = A Char | B Int | C () | D () deriving (Generic, Show)
-data Sum2 = A2 Char | B2 Int deriving (Generic, Show)
+data Sum1 = A Char | B Int | C () | D () deriving (G.Generic, Show)
+data Sum2 = A2 Char | B2 Int deriving (G.Generic, Show)
 
 data Sum3 a b c
   = A3 a a
   | B3 String b a a b
   | C3 c a Int
-  deriving Generic
+  deriving G.Generic
 
 sum3Param0Derived :: Traversal (Sum3 a b xxx) (Sum3 a b yyy) xxx yyy
 sum3Param0Derived = param @0

@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE AllowAmbiguousTypes   #-}
 {-# LANGUAGE ConstraintKinds       #-}
 {-# LANGUAGE DataKinds             #-}
@@ -26,105 +27,133 @@
 --
 -----------------------------------------------------------------------------
 
-module Data.Generics.Product.Types
-  ( -- *Traversals
-    --
-    --  $example
-    HasTypes (..)
-  ) where
+module Data.Generics.Product.Types where
+
+  --( -- *Traversals
+  --  --
+  --  --  $example
+  --  HasTypes (..)
+  --) where
 
 import Data.Kind
+import GHC.TypeLits
+import qualified GHC.Generics as G
 
-import GHC.Generics
+import Data.Generics.Internal.Simple
 import Data.Generics.Internal.VL.Traversal
 
 -- TODO [1.0.0.0]: use type-changing variant internally
 
-class HasTypes a s where
-  types :: Traversal' s a
+class HasTypes_ s t a b where
+  types_ :: Traversal s t a b
 
-  default types :: Traversal' s a
-  types _ = pure
-  {-# INLINE types #-}
+instance {-# OVERLAPPING #-} t ~ Char => HasTypes_ Char t a b where
+  types_ _ = pure
+  {-# INLINE types_ #-}
+instance {-# OVERLAPPING #-} t ~ Double => HasTypes_ Double t a b where
+  types_ _ = pure
+  {-# INLINE types_ #-}
+instance {-# OVERLAPPING #-} t ~ Float => HasTypes_ Float t a b where
+  types_ _ = pure
+  {-# INLINE types_ #-}
+instance {-# OVERLAPPING #-} t ~ Int => HasTypes_ Int t a b where
+  types_ _ = pure
+  {-# INLINE types_ #-}
+instance {-# OVERLAPPING #-} t ~ Integer => HasTypes_ Integer t a b where
+  types_ _ = pure
+  {-# INLINE types_ #-}
+instance {-# OVERLAPPING #-} t ~ Word => HasTypes_ Word t a b where
+  types_ _ = pure
+  {-# INLINE types_ #-}
 
-instance
-  ( Hastypes' (Interesting s a) a s
-  ) => HasTypes a s where
-  types = confusing (types' @(Interesting s a))
-  {-# INLINE types #-}
+type HasTypes s a = HasTypes_ s s a a
+types :: forall a s. HasTypes s a => Traversal s s a a
+types = confusing (\f s -> types_ f s)
+{-# INLINE types #-}
 
-class Hastypes' (t :: Bool) a s where
-  types' :: Traversal' s a
+class HasTypesOpt (i :: Bool) s t a b where
+  typesOpt :: Traversal s t a b
 
-instance
-  ( GHasTypes a (Rep s)
-  , Generic s
-  ) => Hastypes' 'True a s where
-  types' f s = to <$> gtypes f (from s)
-  --{-# INLINE types' #-}
+instance (Generic s, Generic t , GHasTypes (Rep s) (Rep t) a b)
+    => HasTypesOpt 'True s t a b where
+  typesOpt = repIso . gtypes
 
-instance Hastypes' 'False a s where
-  types' _ = pure
-  --{-# INLINE types' #-}
+instance HasTypesOpt 'False s s a b where
+  typesOpt _ = pure
 
-instance {-# OVERLAPPING #-} HasTypes a Bool
-instance {-# OVERLAPPING #-} HasTypes a Char
-instance {-# OVERLAPPING #-} HasTypes a Double
-instance {-# OVERLAPPING #-} HasTypes a Float
-instance {-# OVERLAPPING #-} HasTypes a Int
-instance {-# OVERLAPPING #-} HasTypes a Integer
-instance {-# OVERLAPPING #-} HasTypes a Ordering
+instance (Generic s, Generic t , HasTypesOpt (Interesting s a) s t a b)
+    => HasTypes_ s t a b where
+  types_ = typesOpt @(Interesting s a)
+  {-# INLINE types_ #-}
+
+-- instance {-# OVERLAPPING #-} HasTypes a Bool
+-- instance {-# OVERLAPPING #-} HasTypes a Char
+-- instance {-# OVERLAPPING #-} HasTypes a Double
+-- instance {-# OVERLAPPING #-} HasTypes a Float
+-- instance {-# OVERLAPPING #-} HasTypes a Int
+-- instance {-# OVERLAPPING #-} HasTypes a Integer
+-- instance {-# OVERLAPPING #-} HasTypes a Ordering
 
 --------------------------------------------------------------------------------
 
-class GHasTypes a s where
-  gtypes :: Traversal' (s x) a
+class GHasTypes s t a b where
+  gtypes :: Traversal s t a b
 
-instance
-  ( GHasTypes a l
-  , GHasTypes a r
-  ) => GHasTypes a (l :*: r) where
-  gtypes f (l :*: r) = (:*:) <$> gtypes f l <*> gtypes f r
-  {-# INLINE gtypes #-}
+instance GHasTypes s t a b => GHasTypes (M1 m s) (M1 m t) a b where
+  gtypes = mIso . gtypes
+  {-# INLINE gtypes#-}
 
-instance
-  ( GHasTypes a l
-  , GHasTypes a r
-  ) => GHasTypes a (l :+: r) where
+instance (GHasTypes l_1 l_2 a b , GHasTypes r_1 r_2 a b)
+    => GHasTypes (l_1 :+: r_1) (l_2 :+: r_2) a b where
   gtypes f (L1 l) = L1 <$> gtypes f l
   gtypes f (R1 r) = R1 <$> gtypes f r
-  {-# INLINE gtypes #-}
+  {-# INLINE gtypes#-}
 
-instance (GHasTypes a s) => GHasTypes a (M1 m meta s) where
-  gtypes f (M1 s) = M1 <$> gtypes f s
-  {-# INLINE gtypes #-}
+instance (GHasTypes l_1 l_2 a b , GHasTypes r_1 r_2 a b)
+    => GHasTypes (l_1 :*: r_1) (l_2 :*: r_2) a b where
+  gtypes f (l :*: r) = (:*:) <$> gtypes f l <*> gtypes f r
+  {-# INLINE gtypes#-}
 
-instance {-# OVERLAPPING #-} GHasTypes a (Rec0 a) where
-  gtypes f (K1 x) = K1 <$> f x
-  {-# INLINE gtypes #-}
+instance {-# OVERLAPPING #-} GHasTypes (Rec0 (Param n a)) (Rec0 (Param n b)) (Param n a) (Param n b) where
+  gtypes = kIso
+  {-# INLINE gtypes#-}
 
-instance HasTypes a b => GHasTypes a (Rec0 b) where
-  gtypes f (K1 x) = K1 <$> types @a f x
-  {-# INLINE gtypes #-}
+instance {-# OVERLAPPING #-} GHasTypes (Rec0 a) (Rec0 b) a b where
+  gtypes = kIso
+  {-# INLINE gtypes#-}
 
-instance GHasTypes a U1 where
-  gtypes _ _ = pure U1
-  {-# INLINE gtypes #-}
-
-instance GHasTypes a V1 where
+instance {-# OVERLAPS #-} (n ~ n', a ~ a') => GHasTypes (Rec0 (Param n a)) (Rec0 (Param n' a')) b c where
   gtypes _ = pure
-  {-# INLINE gtypes #-}
+  {-# INLINE gtypes#-}
 
+instance HasTypes_ s t a b => GHasTypes (Rec0 s) (Rec0 t) a b where
+  gtypes = kIso . types_
+  {-# INLINE gtypes#-}
+
+instance GHasTypes U1 U1 a b where
+  gtypes _ = pure
+  {-# INLINE gtypes#-}
+
+instance GHasTypes V1 V1 a b where
+  gtypes _ = pure
+  {-# INLINE gtypes#-}
+
+newtype Param (i :: Nat) a = Param { unParam :: a }
+  deriving G.Generic
+
+--------------------------------------------------------------------------------
 type Interesting f a = Snd (Interesting' (Rep f) a '[f])
 
-type family Interesting' f (a :: Type) (seen :: [Type]) :: ([Type], Bool) where
-  Interesting' (M1 _ m f) t seen
+type family Interesting' (f :: Type) (a :: Type) (seen :: [Type]) :: ([Type], Bool) where
+  Interesting' (M1 m f) t seen
     = Interesting' f t seen
   -- The result of the left branch is passed on to the right branch in order to avoid duplicate work
   Interesting' (l :*: r) t seen
     = InterestingOr (Interesting' l t seen) r t
   Interesting' (l :+: r) t seen
     = InterestingOr (Interesting' l t seen) r t
+--  Interesting' (Rec0 (Param _ _)) _ seen
+--    = '(seen, 'False)
   Interesting' (Rec0 t) t seen
     = '(seen, 'True)
   Interesting' (Rec0 Char)     _ seen = '(seen ,'False)

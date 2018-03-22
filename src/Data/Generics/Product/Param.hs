@@ -1,14 +1,16 @@
-{-# LANGUAGE PolyKinds #-}
-{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE AllowAmbiguousTypes    #-}
 {-# LANGUAGE DataKinds              #-}
+{-# LANGUAGE DeriveGeneric          #-}
 {-# LANGUAGE FlexibleContexts       #-}
 {-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE GADTs                  #-}
 {-# LANGUAGE KindSignatures         #-}
+{-# LANGUAGE PolyKinds              #-}
 {-# LANGUAGE ScopedTypeVariables    #-}
 {-# LANGUAGE TypeApplications       #-}
+{-# LANGUAGE TypeFamilies           #-}
 {-# LANGUAGE TypeOperators          #-}
 {-# LANGUAGE UndecidableInstances   #-}
 
@@ -25,38 +27,22 @@
 --
 --------------------------------------------------------------------------------
 
-module Data.Generics.Product.Param
-  ( Rec (Rec) -- TODO: this has to be re-exported so the constructor is visible for Coercible... is there a better way?
-  , HasParam (..)
-  ) where
+module Data.Generics.Product.Param where
 
-import GHC.TypeLits
-import Data.Generics.Internal.Void
-import Data.Generics.Internal.Families.Changing
+  -- ( HasParam (..)
+  -- , Param (..)
+  -- ) where
+
+import Data.Coerce
+--import Data.Generics.Internal.Families.Changing
+import Data.Generics.Internal.Simple
 import Data.Generics.Internal.VL.Traversal
+import Data.Generics.Product.Types
+import GHC.TypeLits
+import qualified GHC.Generics as G
 
-import GHC.Generics
 import Data.Kind
 import Data.Generics.Internal.VL.Iso
-import Data.Generics.Internal.GenericN
-
-class HasParam (p :: Nat) s t a b | p t a -> s, p s b -> t, p s -> a, p t -> b where
-  param :: Applicative g => (a -> g b) -> s -> g t
-
-instance
-  ( GenericN s
-  , GenericN t
-  -- TODO: merge the old 'Changing' code with 'GenericN'
-  , s ~ Infer t (P n b 'PTag) a
-  , t ~ Infer s (P n a 'PTag) b
-  , Error ((ArgCount s) <=? n) n (ArgCount s) s
-  , a ~ ArgAt s n
-  , b ~ ArgAt t n
-  , GHasParam n (RepN s) (RepN t) a b
-  ) => HasParam n s t a b where
-
-  param = confusing (\f s -> toN <$> gparam @n f (fromN s))
-  {-# INLINE param #-}
 
 type family Error (b :: Bool) (expected :: Nat) (actual :: Nat) (s :: Type) :: Constraint where
   Error 'False _ _ _
@@ -72,43 +58,57 @@ type family Error (b :: Bool) (expected :: Nat) (actual :: Nat) (s :: Type) :: C
         ':<>: 'ShowType actual
         )
 
--- TODO [1.0.0.0]: none of this is needed.
+class HasParam (i :: Nat) s t a b | i s b -> t, i s -> a, i t a -> s, i t -> b where
+  param :: Traversal s t a b
 
-instance {-# OVERLAPPING #-} HasParam p (Void1 a) (Void1 b) a b where
-  param = undefined
+instance
+  ( a ~ GetParam s i
+  , b ~ GetParam t i
+  , t ~ PutParam s i b
+  , s ~ PutParam t i a
+  , GenericN s
+  , GenericN t
+  , GHasTypes (RepN s) (RepN t) (Param i a) (Param i b)
+  --, Error ((ArgCount s) <=? i) i (ArgCount s) s
+  )
+  => HasParam i s t a b where
+  param = confusing (repIsoN . gtypes . paramIso @i)
+  {-# INLINE param #-}
 
-class GHasParam (p :: Nat) s t a b where
-  gparam :: forall g (x :: Type).  Applicative g => (a -> g b) -> s x -> g (t x)
+--------------------------------------------------------------------------------
+-- TODO: reorganise these
 
-instance (GHasParam p l l' a b, GHasParam p r r' a b) => GHasParam p (l :*: r) (l' :*: r') a b where
-  gparam f (l :*: r) = (:*:) <$> gparam @p f l <*> gparam @p f r
+type family Index (t :: k) (i :: Nat) :: k where
+  Index (t a) i   = Index t (i + 1) (Param i a)
+  Index t _       = t
 
-instance (GHasParam p l l' a b, GHasParam p r r' a b) => GHasParam p (l :+: r) (l' :+: r') a b where
-  gparam f (L1 l) = L1 <$> gparam @p f l
-  gparam f (R1 r) = R1 <$> gparam @p f r
+class (Coercible (Rep a) (RepN a),
+   Generic a) => GenericN (a :: Type) where
+  type RepN a :: Type
+  toN     :: RepN a   -> a
+  fromN   :: a        -> RepN a
 
-instance GHasParam p U1 U1 a b where
-  gparam _ _ = pure U1
+instance (Coercible (Rep a) (RepN a),
+   Generic a) => GenericN a where
+  type RepN a = Rep (Index a 0)
+  toN      = coerce (to @a)
+  {-# INLINE toN #-}
+  fromN    = coerce (from @a)
+  {-# INLINE fromN #-}
 
-instance GHasParam p s t a b => GHasParam p (M1 m meta s) (M1 m meta t) a b where
-  gparam f (M1 x) = M1 <$> gparam @p f x
+paramIso :: forall i a b. Iso (Param i a) (Param i b) a b
+paramIso = iso unParam Param
+{-# INLINE paramIso #-}
 
--- the parameter we're looking for
-instance GHasParam p (Rec (param p) a) (Rec (param p) b) a b where
-  gparam = recIso
+repIsoN :: (GenericN s, GenericN t) => Iso s t (RepN s) (RepN t)
+repIsoN = iso fromN toN
+{-# INLINE repIsoN #-}
 
--- other recursion
-instance {-# OVERLAPPABLE #-}
-  ( GHasParamRec (LookupParam si p) s t a b
-  -- TODO: reindex `ti`
-  ) => GHasParam p (Rec si s) (Rec ti t) a b where
-  gparam f (Rec (K1 x)) = Rec . K1 <$> gparamRec @(LookupParam si p) f x
+type family GetParam (t :: k) (i :: Nat) :: Type where
+  GetParam (t a) 0 = a
+  GetParam (t _) i = GetParam t (i - 1)
 
-class GHasParamRec (param :: Maybe Nat) s t a b | param t a b -> s, param s a b -> t where
-  gparamRec :: forall g.  Applicative g => (a -> g b) -> s -> g t
+type family PutParam (t :: k) (i :: Nat) (b :: Type) :: k where
+  PutParam (t _) 0 b = t b
+  PutParam (t a) i b = (PutParam t (i - 1) b) a
 
-instance GHasParamRec 'Nothing a a c d where
-  gparamRec _ = pure
-
-instance (HasParam n s t a b) => GHasParamRec ('Just n) s t a b where
-  gparamRec = param @n
