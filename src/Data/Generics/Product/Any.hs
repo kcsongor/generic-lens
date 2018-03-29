@@ -73,8 +73,6 @@ class HasAny (sel :: k) s t a b | s sel k -> a where
   the' :: (s ~ t, a ~ b) =>  VL.Lens s t a b
   the' = the
 
-  -- | a simple lens version of `the`
-
 instance HasPosition i s t a b => HasAny i s t a b where
   the = position @i
 
