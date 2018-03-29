@@ -111,6 +111,10 @@ class HasField (field :: Symbol) s t a b | s field -> a, t field -> b, s field b
   --  ...
   field :: VL.Lens s t a b
 
+  -- | A simple lens version of `field' 
+  field' :: (s ~ t, a ~ b) =>  VL.Lens s t a b
+  field' = field
+
 type HasField' field s a = HasField field s s a a
 
 -- |
