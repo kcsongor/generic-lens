@@ -89,6 +89,10 @@ class HasPosition (i :: Nat) s t a b | s i -> a, t i -> b, s i b -> t, t i a -> 
   --  ...
   position :: VL.Lens s t a b
 
+  -- | A Simple lens version of `position'
+  position' :: (s ~ t, a ~ b) =>  VL.Lens s t a b
+  position' = position
+
 type HasPosition' i s a = HasPosition i s s a a
 
 getPosition :: forall i s a. HasPosition' i s a => s -> a
