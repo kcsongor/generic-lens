@@ -30,6 +30,7 @@ module Data.Generics.Sum.Constructors
 
     -- $setup
     AsConstructor (..)
+  , AsConstructor' (..)
   ) where
 
 import Data.Generics.Internal.Families
@@ -101,6 +102,17 @@ class AsConstructor (ctor :: Symbol) s t a b | ctor s -> a, ctor t -> b where
   --  ... The type Animal Int does not contain a constructor named "Turtle"
   --  ...
   _Ctor :: Prism s t a b
+
+class AsConstructor' (ctor :: Symbol) s a | ctor s -> a where
+  _Ctor' :: Prism s s a a
+
+instance
+  ( Generic s
+  , ErrorUnless ctor s (HasCtorP ctor (Rep s))
+  , GAsConstructor' ctor (Rep s) a
+  ) => AsConstructor' ctor s a where
+  _Ctor' eta = prismRavel (prismPRavel (repIso . _GCtor @ctor)) eta
+  {-# INLINE _Ctor' #-}
 
 instance
   ( Generic s

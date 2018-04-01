@@ -111,19 +111,28 @@ class HasField (field :: Symbol) s t a b | s field -> a, t field -> b, s field b
   --  ...
   field :: VL.Lens s t a b
 
-type HasField' field s a = HasField field s s a a
+class HasField' (field :: Symbol) s a | s field -> a where
+  field' :: VL.Lens s s a a
 
 -- |
 -- >>> getField @"age" human
 -- 50
 getField :: forall f a s.  HasField' f s a => s -> a
-getField = VL.view (field @f)
+getField = VL.view (field' @f)
 
 -- |
 -- >>> setField @"age" 60 human
 -- Human {name = "Tunyasz", age = 60, address = "London", other = False}
 setField :: forall f s a. HasField' f s a => a -> s -> s
-setField = VL.set (field @f)
+setField = VL.set (field' @f)
+
+instance
+  ( Generic s
+  , ErrorUnless field s (CollectField field (Rep s))
+  , GHasKey' field (Rep s) a
+  ) => HasField' field s a where
+  field' f s = VL.ravel (repLens . gkey @field) f s
+  {-# INLINE field' #-}
 
 instance  -- see Note [Changing type parameters]
   ( Generic s
@@ -145,8 +154,8 @@ instance  -- see Note [Changing type parameters]
   , t ~ Infer s a' b
   , s ~ Infer t b' a
   ) => HasField field s t a b where
-
   field f s = VL.ravel (repLens . gkey @field) f s
+  {-# INLINE field #-}
 
 -- -- See Note [Uncluttering type signatures]
 instance {-# OVERLAPPING #-} HasField f (Void1 a) (Void1 b) a b where

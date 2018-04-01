@@ -89,13 +89,22 @@ class HasPosition (i :: Nat) s t a b | s i -> a, t i -> b, s i b -> t, t i a -> 
   --  ...
   position :: VL.Lens s t a b
 
-type HasPosition' i s a = HasPosition i s s a a
+class HasPosition' (i :: Nat) s a | s i -> a where
+  position' :: VL.Lens s s a a
 
 getPosition :: forall i s a. HasPosition' i s a => s -> a
-getPosition s = s ^. position @i
+getPosition s = s ^. position' @i
 
 setPosition :: forall i s a. HasPosition' i s a => a -> s -> s
-setPosition = VL.set (position @i)
+setPosition = VL.set (position' @i)
+
+instance
+  ( Generic s
+  , ErrorUnless i s (0 <? i && i <=? Size (Rep s))
+  , GHasPosition' i (Rep s) a
+  ) => HasPosition' i s a where
+  position' f s = VL.ravel (repLens . gposition @i) f s
+  {-# INLINE position' #-}
 
 instance  -- see Note [Changing type parameters]
   ( Generic s
