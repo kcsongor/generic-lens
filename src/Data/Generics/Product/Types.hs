@@ -50,7 +50,7 @@ class HasTypes a s where
 instance
   ( Hastypes' (Interesting s a) a s
   ) => HasTypes a s where
-  types = confusing (types' @(Interesting s a))
+  types = types' @(Interesting s a)
   {-# INLINE types #-}
 
 class Hastypes' (t :: Bool) a s where
