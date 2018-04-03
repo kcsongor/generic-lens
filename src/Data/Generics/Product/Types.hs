@@ -30,7 +30,8 @@ module Data.Generics.Product.Types
   ( -- *Traversals
     --
     --  $example
-    HasTypes (..)
+    HasTypes
+  , types
   ) where
 
 import Data.Kind
@@ -40,80 +41,84 @@ import Data.Generics.Internal.VL.Traversal
 
 -- TODO [1.0.0.0]: use type-changing variant internally
 
-class HasTypes a s where
-  types :: Traversal' s a
+types :: forall a s. HasTypes s a => Traversal' s a
+types = types_ @s @a
+{-# INLINE types #-}
 
-  default types :: Traversal' s a
-  types _ = pure
-  {-# INLINE types #-}
+class HasTypes s a where
+  types_ :: Traversal' s a
+
+  default types_ :: Traversal' s a
+  types_ _ = pure
+  {-# INLINE types_ #-}
 
 instance
-  ( Hastypes' (Interesting s a) a s
-  ) => HasTypes a s where
-  types = types' @(Interesting s a)
-  {-# INLINE types #-}
+  ( HasTypes' (Interesting s a) s a
+  ) => HasTypes s a where
+  types_ = types' @(Interesting s a)
+  {-# INLINE types_ #-}
 
-class Hastypes' (t :: Bool) a s where
+class HasTypes' (t :: Bool) s a where
   types' :: Traversal' s a
 
 instance
-  ( GHasTypes a (Rep s)
+  ( GHasTypes (Rep s) a
   , Generic s
-  ) => Hastypes' 'True a s where
-  types' f s = to <$> gtypes f (from s)
+  ) => HasTypes' 'True s a where
+  types' f s = to <$> gtypes_ f (from s)
   --{-# INLINE types' #-}
 
-instance Hastypes' 'False a s where
+instance HasTypes' 'False s a where
   types' _ = pure
   --{-# INLINE types' #-}
 
-instance {-# OVERLAPPING #-} HasTypes a Bool
-instance {-# OVERLAPPING #-} HasTypes a Char
-instance {-# OVERLAPPING #-} HasTypes a Double
-instance {-# OVERLAPPING #-} HasTypes a Float
-instance {-# OVERLAPPING #-} HasTypes a Int
-instance {-# OVERLAPPING #-} HasTypes a Integer
-instance {-# OVERLAPPING #-} HasTypes a Ordering
+instance {-# OVERLAPPING #-} HasTypes Bool a
+instance {-# OVERLAPPING #-} HasTypes Char a
+instance {-# OVERLAPPING #-} HasTypes Double a
+instance {-# OVERLAPPING #-} HasTypes Float a
+instance {-# OVERLAPPING #-} HasTypes Int a
+instance {-# OVERLAPPING #-} HasTypes Integer a
+instance {-# OVERLAPPING #-} HasTypes Ordering a
 
 --------------------------------------------------------------------------------
 
-class GHasTypes a s where
-  gtypes :: Traversal' (s x) a
+class GHasTypes s a where
+  gtypes_ :: Traversal' (s x) a
 
 instance
-  ( GHasTypes a l
-  , GHasTypes a r
-  ) => GHasTypes a (l :*: r) where
-  gtypes f (l :*: r) = (:*:) <$> gtypes f l <*> gtypes f r
-  {-# INLINE gtypes #-}
+  ( GHasTypes l a
+  , GHasTypes r a
+  ) => GHasTypes (l :*: r) a where
+  gtypes_ f (l :*: r) = (:*:) <$> gtypes_ f l <*> gtypes_ f r
+  {-# INLINE gtypes_ #-}
 
 instance
-  ( GHasTypes a l
-  , GHasTypes a r
-  ) => GHasTypes a (l :+: r) where
-  gtypes f (L1 l) = L1 <$> gtypes f l
-  gtypes f (R1 r) = R1 <$> gtypes f r
-  {-# INLINE gtypes #-}
+  ( GHasTypes l a
+  , GHasTypes r a
+  ) => GHasTypes (l :+: r) a where
+  gtypes_ f (L1 l) = L1 <$> gtypes_ f l
+  gtypes_ f (R1 r) = R1 <$> gtypes_ f r
+  {-# INLINE gtypes_ #-}
 
-instance (GHasTypes a s) => GHasTypes a (M1 m meta s) where
-  gtypes f (M1 s) = M1 <$> gtypes f s
-  {-# INLINE gtypes #-}
+instance (GHasTypes s a) => GHasTypes (M1 m meta s) a where
+  gtypes_ f (M1 s) = M1 <$> gtypes_ f s
+  {-# INLINE gtypes_ #-}
 
-instance {-# OVERLAPPING #-} GHasTypes a (Rec0 a) where
-  gtypes f (K1 x) = K1 <$> f x
-  {-# INLINE gtypes #-}
+instance {-# OVERLAPPING #-} GHasTypes (Rec0 a) a where
+  gtypes_ f (K1 x) = K1 <$> f x
+  {-# INLINE gtypes_ #-}
 
-instance HasTypes a b => GHasTypes a (Rec0 b) where
-  gtypes f (K1 x) = K1 <$> types @a f x
-  {-# INLINE gtypes #-}
+instance HasTypes b a => GHasTypes (Rec0 b) a where
+  gtypes_ f (K1 x) = K1 <$> types_ @_ @a f x
+  {-# INLINE gtypes_ #-}
 
-instance GHasTypes a U1 where
-  gtypes _ _ = pure U1
-  {-# INLINE gtypes #-}
+instance GHasTypes U1 a where
+  gtypes_ _ _ = pure U1
+  {-# INLINE gtypes_ #-}
 
-instance GHasTypes a V1 where
-  gtypes _ = pure
-  {-# INLINE gtypes #-}
+instance GHasTypes V1 a where
+  gtypes_ _ = pure
+  {-# INLINE gtypes_ #-}
 
 type Interesting f a = Snd (Interesting' (Rep f) a '[f])
 

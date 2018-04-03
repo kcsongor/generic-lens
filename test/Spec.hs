@@ -223,7 +223,6 @@ tests = TestList $ map mkHUnitTest
   , $(inspectTest $ 'typeChangingManual        === 'typeChangingGeneric)
   , $(inspectTest $ 'typeChangingManual        === 'typeChangingGenericPos)
   , $(inspectTest $ 'typeChangingManualCompose === 'typeChangingGenericCompose)
-  , $(inspectTest $ 'intTraversalManual        === 'intTraversalDerived)
   , $(inspectTest $ 'sum1PrismManual           === 'sum1PrismB)
   , $(inspectTest $ 'subtypePrismManual        === 'subtypePrismGeneric)
   , $(inspectTest $ 'sum2PrismManualChar       === 'sum2TypePrismChar)
@@ -231,8 +230,8 @@ tests = TestList $ map mkHUnitTest
   , $(inspectTest $ 'sum1PrismManualChar       === 'sum1TypePrismChar)
   , $(inspectTest $ 'sum2PrismManualChar       === 'sum2TypePrismChar)
   , $(inspectTest $ 'sum1PrismManual           === 'sum1TypePrism)
-  , $(inspectTest $ 'intTraversalManual        === 'intTraversalDerived)
-  , $(inspectTest $ 'sum3Param0Manual          === 'sum3Param0Derived)
+  --, $(inspectTest $ 'intTraversalManual        === 'intTraversalDerived)
+  --, $(inspectTest $ 'sum3Param0Manual          === 'sum3Param0Derived)
   -- TODO [1.0.0.0]: these tests pass with the new implementation
 --  , $(inspectTest $ 'sum3Param1Manual          === 'sum3Param1Derived)
 --  , $(inspectTest $ 'sum3Param2Manual          === 'sum3Param2Derived)
