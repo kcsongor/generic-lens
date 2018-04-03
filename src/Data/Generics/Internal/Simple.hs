@@ -36,7 +36,7 @@ data V1
 data f :*: g             = f :*: g
 data f :+: g             = L1 f | R1 g
 newtype M1 (m :: Meta) a = M1 { unM1 :: a }
-newtype Rec0 a           = K1 {unK1 :: a }
+newtype Rec0 a           = K1 { unK1 :: a }
 
 data Meta  =  MetaData Symbol
            |  MetaCons Symbol
@@ -50,21 +50,21 @@ class G.Generic a => Generic a where
 
 instance G.Generic a => Generic a where
   from = unsafeCoerce (G.from @a @())
-  {-# INLINE from #-}
+  {-# INLINE[0] from #-}
   to   = unsafeCoerce (G.to @a @())
-  {-# INLINE to #-}
+  {-# INLINE[0] to #-}
 
 repIso :: (Generic s, Generic t) => Lens s t (Rep s) (Rep t)
 repIso f = fmap to . f . from
-{-# INLINE repIso #-}
+{-# INLINE[0] repIso #-}
 
 kIso :: Lens (Rec0 a) (Rec0 b) a b
 kIso f s = K1 <$> f (unK1 s)
-{-# INLINE kIso #-}
+{-# INLINE[0] kIso #-}
 
 mIso :: Lens (M1 m s) (M1 m t) s t
 mIso f s = M1 <$> f (unM1 s)
-{-# INLINE mIso #-}
+{-# INLINE[0] mIso #-}
 
 type family OurRep a  where
   OurRep (G.M1 _ ('G.MetaData dataname _ _ _) f x)

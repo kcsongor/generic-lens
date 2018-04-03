@@ -42,8 +42,6 @@ import qualified GHC.Generics as G
 import Data.Generics.Internal.Simple
 import Data.Generics.Internal.VL.Traversal
 
--- TODO [1.0.0.0]: use type-changing variant internally
-
 class HasTypes_ s t a b where
   types_ :: Traversal s t a b
 
@@ -68,7 +66,7 @@ instance {-# OVERLAPPING #-} t ~ Word => HasTypes_ Word t a b where
 
 type HasTypes s a = HasTypes_ s s a a
 types :: forall a s. HasTypes s a => Traversal s s a a
-types = confusing (\f s -> types_ f s)
+types f s = types_ f s
 {-# INLINE types #-}
 
 class HasTypesOpt (i :: Bool) s t a b where
@@ -86,14 +84,6 @@ instance (Generic s, Generic t , HasTypesOpt (Interesting s a) s t a b)
   types_ = typesOpt @(Interesting s a)
   {-# INLINE types_ #-}
 
--- instance {-# OVERLAPPING #-} HasTypes a Bool
--- instance {-# OVERLAPPING #-} HasTypes a Char
--- instance {-# OVERLAPPING #-} HasTypes a Double
--- instance {-# OVERLAPPING #-} HasTypes a Float
--- instance {-# OVERLAPPING #-} HasTypes a Int
--- instance {-# OVERLAPPING #-} HasTypes a Integer
--- instance {-# OVERLAPPING #-} HasTypes a Ordering
-
 --------------------------------------------------------------------------------
 
 class GHasTypes s t a b where
@@ -101,42 +91,34 @@ class GHasTypes s t a b where
 
 instance GHasTypes s t a b => GHasTypes (M1 m s) (M1 m t) a b where
   gtypes = mIso . gtypes
-  {-# INLINE gtypes#-}
+  {-# INLINE gtypes #-}
 
 instance (GHasTypes l_1 l_2 a b , GHasTypes r_1 r_2 a b)
     => GHasTypes (l_1 :+: r_1) (l_2 :+: r_2) a b where
   gtypes f (L1 l) = L1 <$> gtypes f l
   gtypes f (R1 r) = R1 <$> gtypes f r
-  {-# INLINE gtypes#-}
+  {-# INLINE gtypes #-}
 
 instance (GHasTypes l_1 l_2 a b , GHasTypes r_1 r_2 a b)
     => GHasTypes (l_1 :*: r_1) (l_2 :*: r_2) a b where
   gtypes f (l :*: r) = (:*:) <$> gtypes f l <*> gtypes f r
-  {-# INLINE gtypes#-}
-
-instance {-# OVERLAPPING #-} GHasTypes (Rec0 (Param n a)) (Rec0 (Param n b)) (Param n a) (Param n b) where
-  gtypes = kIso
-  {-# INLINE gtypes#-}
+  {-# INLINE gtypes #-}
 
 instance {-# OVERLAPPING #-} GHasTypes (Rec0 a) (Rec0 b) a b where
   gtypes = kIso
-  {-# INLINE gtypes#-}
-
-instance {-# OVERLAPS #-} (n ~ n', a ~ a') => GHasTypes (Rec0 (Param n a)) (Rec0 (Param n' a')) b c where
-  gtypes _ = pure
-  {-# INLINE gtypes#-}
+  {-# INLINE gtypes #-}
 
 instance HasTypes_ s t a b => GHasTypes (Rec0 s) (Rec0 t) a b where
   gtypes = kIso . types_
-  {-# INLINE gtypes#-}
+  {-# INLINE gtypes #-}
 
 instance GHasTypes U1 U1 a b where
   gtypes _ = pure
-  {-# INLINE gtypes#-}
+  {-# INLINE gtypes #-}
 
 instance GHasTypes V1 V1 a b where
   gtypes _ = pure
-  {-# INLINE gtypes#-}
+  {-# INLINE gtypes #-}
 
 newtype Param (i :: Nat) a = Param { unParam :: a }
   deriving G.Generic
@@ -163,7 +145,9 @@ type family Interesting' (f :: Type) (a :: Type) (seen :: [Type]) :: ([Type], Bo
   Interesting' (Rec0 Integer)  _ seen = '(seen ,'False)
   Interesting' (Rec0 r) t seen
     = InterestingUnless (Elem r seen) (Rep r) t r seen
-  Interesting' _ _ seen
+  Interesting' V1 _ seen
+    = '(seen, 'False)
+  Interesting' U1 _ seen
     = '(seen, 'False)
 
 -- Short circuit

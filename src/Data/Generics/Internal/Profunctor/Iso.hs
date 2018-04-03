@@ -34,6 +34,7 @@ type Iso' s a = Iso s s a a
 -- | A type and its generic representation are isomorphic
 repIso :: (Generic a, Generic b) => Iso a b (Rep a x) (Rep b x)
 repIso = iso from to
+{-# INLINE repIso #-}
 
 -- | 'M1' is just a wrapper around `f p`
 --mIso :: Iso' (M1 i c f p) (f p)
@@ -59,9 +60,11 @@ sumIso = iso back forth
 
 prodIso :: Iso ((a :*: b) x) ((a' :*: b') x) (a x, b x) (a' x, b' x)
 prodIso = iso (\(a :*: b) -> (a, b)) (\(a, b) -> (a :*: b))
+{-# INLINE prodIso #-}
 
 assoc3 :: Iso ((a, b), c) ((a', b'), c') (a, (b, c)) (a', (b', c'))
 assoc3 = iso (\((a, b), c) -> (a, (b, c))) (\(a, (b, c)) -> ((a, b), c))
+{-# INLINE assoc3 #-}
 
 --------------------------------------------------------------------------------
 -- Iso stuff

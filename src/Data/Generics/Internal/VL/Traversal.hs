@@ -29,6 +29,8 @@ type Traversal' s a
 type TraversalC' s c
   = forall f. Applicative f => LensLikeC f s c
 
+type LensLike f s t a b = (a -> f b) -> s -> f t
+
 type LensLikeC f s c
   = (forall a. c a => a -> f a) -> s -> f s
 

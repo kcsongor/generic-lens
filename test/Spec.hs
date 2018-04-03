@@ -1,5 +1,6 @@
+--{-# OPTIONS_GHC -funfolding-use-threshold=10000 #-}
 {-# OPTIONS_GHC -O -fplugin Test.Inspection.Plugin #-}
-{-# OPTIONS_GHC -dsuppress-all #-}
+--{-# OPTIONS_GHC -dsuppress-all #-}
 
 {-# LANGUAGE AllowAmbiguousTypes             #-}
 {-# LANGUAGE DataKinds                       #-}
@@ -13,7 +14,7 @@
 
 module Main where
 
-import qualified GHC.Generics as G
+import GHC.Generics
 import Data.Generics.Product
 import Data.Generics.Sum
 import Test.Inspection
@@ -23,7 +24,6 @@ import System.Exit
 import Data.Generics.Internal.VL.Lens
 import Data.Generics.Internal.VL.Prism
 import Data.Generics.Internal.VL.Traversal
-import Data.Generics.Internal.Simple
 
 -- This is sufficient at we only want to test that they typecheck
 import Test24 ()
@@ -39,16 +39,16 @@ main = do
 data Record = MkRecord
   { fieldA :: Int
   , fieldB :: Bool
-  } deriving G.Generic
+  } deriving Generic
 
 data Record2 = MkRecord2
   { fieldA :: Int
-  } deriving G.Generic
+  } deriving Generic
 
 data Record3 a = MkRecord3
   { fieldA :: a
   , fieldB :: Bool
-  } deriving (G.Generic, Show)
+  } deriving (Generic, Show)
 
 data Record5 = MkRecord5
   { fieldA :: Int
@@ -57,7 +57,7 @@ data Record5 = MkRecord5
   , fieldD :: Int
   , fieldE :: Char
   , fieldF :: Int
-  } deriving G.Generic
+  } deriving Generic
 
 typeChangingManual :: Lens (Record3 a) (Record3 b) a b
 typeChangingManual f (MkRecord3 a b) = (\a' -> MkRecord3 a' b) <$> f a
@@ -83,14 +83,14 @@ subtypeLensManual f record
                   MkRecord _ b -> MkRecord (case ds of {MkRecord2 g1 -> g1}) b
          ) (f (MkRecord2 (case record of {MkRecord a _ -> a})))
 
-data Sum1 = A Char | B Int | C () | D () deriving (G.Generic, Show)
-data Sum2 = A2 Char | B2 Int deriving (G.Generic, Show)
+data Sum1 = A Char | B Int | C () | D () deriving (Generic, Show)
+data Sum2 = A2 Char | B2 Int deriving (Generic, Show)
 
 data Sum3 a b c
   = A3 a a
   | B3 String b a a b
   | C3 c a Int
-  deriving G.Generic
+  deriving Generic
 
 sum3Param0Derived :: Traversal (Sum3 a b xxx) (Sum3 a b yyy) xxx yyy
 sum3Param0Derived = param @0
@@ -227,7 +227,6 @@ tests = TestList $ map mkHUnitTest
   , $(inspectTest $ 'sum1PrismManualChar       === 'sum1TypePrismChar)
   , $(inspectTest $ 'sum2PrismManualChar       === 'sum2TypePrismChar)
   , $(inspectTest $ 'sum1PrismManual           === 'sum1TypePrism)
-  , $(inspectTest $ 'intTraversalManual        === 'intTraversalDerived)
   , $(inspectTest $ 'sum3Param0Manual          === 'sum3Param0Derived)
   -- TODO [1.0.0.0]: these tests pass with the new implementation
 --  , $(inspectTest $ 'sum3Param1Manual          === 'sum3Param1Derived)

@@ -1,3 +1,5 @@
+{-# LANGUAGE Rank2Types #-}
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE AllowAmbiguousTypes    #-}
 {-# LANGUAGE DataKinds              #-}
@@ -33,8 +35,8 @@ module Data.Generics.Product.Param where
   -- , Param (..)
   -- ) where
 
-import Data.Coerce
---import Data.Generics.Internal.Families.Changing
+import           Unsafe.Coerce (unsafeCoerce)
+import Data.Generics.Internal.Families.Changing
 import Data.Generics.Internal.Simple
 import Data.Generics.Internal.VL.Traversal
 import Data.Generics.Product.Types
@@ -68,32 +70,34 @@ instance
   , s ~ PutParam t i a
   , GenericN s
   , GenericN t
-  , GHasTypes (RepN s) (RepN t) (Param i a) (Param i b)
-  --, Error ((ArgCount s) <=? i) i (ArgCount s) s
+  , GHasTypes (RepN s) (RepN t) (Param i Any) (Param i Any)
+  , Error ((ArgCount s) <=? i) i (ArgCount s) s
   )
   => HasParam i s t a b where
-  param = confusing (repIsoN . gtypes . paramIso @i)
+  param = confusing (repIsoN . conv gtypes . paramIso @i)
+    where conv :: LensLike f (RepN s) (RepN t) (Param i Any) (Param i Any) -> LensLike f (RepN s) (RepN t) (Param i a) (Param i b)
+          conv = unsafeCoerce
   {-# INLINE param #-}
 
 --------------------------------------------------------------------------------
 -- TODO: reorganise these
 
+data Any deriving G.Generic
+
 type family Index (t :: k) (i :: Nat) :: k where
-  Index (t a) i   = Index t (i + 1) (Param i a)
+  Index (t _) i   = Index t (i + 1) (Param i Any)
   Index t _       = t
 
-class (Coercible (Rep a) (RepN a),
-   Generic a) => GenericN (a :: Type) where
+class Generic a => GenericN (a :: Type) where
   type RepN a :: Type
   toN     :: RepN a   -> a
   fromN   :: a        -> RepN a
 
-instance (Coercible (Rep a) (RepN a),
-   Generic a) => GenericN a where
+instance Generic a => GenericN a where
   type RepN a = Rep (Index a 0)
-  toN      = coerce (to @a)
+  toN      = unsafeCoerce (to @a)
   {-# INLINE toN #-}
-  fromN    = coerce (from @a)
+  fromN    = unsafeCoerce (from @a)
   {-# INLINE fromN #-}
 
 paramIso :: forall i a b. Iso (Param i a) (Param i b) a b
