@@ -132,7 +132,6 @@ instance
   , GHasKey' field (Rep s) a
   ) => HasField' field s a where
   field' f s = VL.ravel (repLens . gkey @field) f s
-  {-# INLINE field' #-}
 
 instance  -- see Note [Changing type parameters]
   ( Generic s
@@ -155,7 +154,6 @@ instance  -- see Note [Changing type parameters]
   , s ~ Infer t b' a
   ) => HasField field s t a b where
   field f s = VL.ravel (repLens . gkey @field) f s
-  {-# INLINE field #-}
 
 -- -- See Note [Uncluttering type signatures]
 instance {-# OVERLAPPING #-} HasField f (Void1 a) (Void1 b) a b where
