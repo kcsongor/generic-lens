@@ -33,6 +33,7 @@ Table of contents
    * [Prisms](#prisms)
       * [By name](#by-name-1)
       * [By type](#by-type-2)
+* [Performance](#performance)
 * [Contributors](#contributors)
 
 # Preliminaries
@@ -328,6 +329,8 @@ error:
 Duck 6
 ```
 
+# Performance
+TODO.
 # Contributors
 
 + [Matthew Pickering](https://github.com/mpickering)

@@ -89,15 +89,17 @@ class AsSubtype sub sup where
   --  >>> duck ^? _Sub :: Maybe FourLeggedAnimal
   --  Nothing
   _Sub :: Prism' sup sub
-  _Sub = prism injectSub projectSub
+  _Sub = prism injectSub (\i -> maybe (Left i) Right (projectSub i))
 
   -- |Injects a subtype into a supertype (upcast).
   injectSub  :: sub -> sup
-  injectSub = build (_Sub @sub @sup)
+  injectSub
+    = build (_Sub @sub @sup)
 
   -- |Projects a subtype from a supertype (downcast).
-  projectSub :: sup -> Either sup sub
-  projectSub = match (_Sub @sub @sup)
+  projectSub :: sup -> Maybe sub
+  projectSub
+    = either (const Nothing) Just . match (_Sub @sub @sup)
 
   {-# MINIMAL (injectSub, projectSub) | _Sub #-}
 

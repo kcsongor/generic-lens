@@ -1,6 +1,9 @@
 ## 1.0.0.0
 - TODO
 
+### Breaking API changes
+- `projectSub` now returns `Maybe sub` instead of `Either sup sub` (#21)
+
 ## 0.5.1.0
 - Infer input type from result type (#25)
 - Allow changing of multiple type parameters (#24)

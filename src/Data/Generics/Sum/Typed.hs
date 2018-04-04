@@ -88,6 +88,7 @@ class AsType a s where
   --  ... Turtle
   --  ...
   _Typed :: Prism' s a
+  _Typed = prism injectTyped (\i -> maybe (Left i) Right (projectTyped i))
 
   -- |Inject by type.
   injectTyped :: a -> s
@@ -98,6 +99,8 @@ class AsType a s where
   projectTyped :: s -> Maybe a
   projectTyped
     = either (const Nothing) Just . match _Typed
+
+  {-# MINIMAL (injectTyped, projectTyped) | _Typed #-}
 
 instance
   ( Generic s
