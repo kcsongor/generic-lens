@@ -16,7 +16,26 @@ fully interoperable with the combinators found in mainstream lens libraries.
 
 Examples can be found in the `examples` and `tests` folders.
 
-## Preliminaries
+Table of contents
+=================
+
+* [Preliminaries](#preliminaries)
+* [Taxonomy of optics](#taxonomy-of-optics)
+   * [Lenses](#lenses)
+      * [By name](#by-name-1)
+      * [By position](#by-position)
+      * [By type](#by-type-1)
+      * [By structure](#by-structure)
+   * [Traversals](#traversals)
+      * [By type](#by-type-2)
+      * [By parameter](#by-parameter)
+      * [By constraint](#by-constraint)
+   * [Prisms](#prisms)
+      * [By name](#by-name-2)
+      * [By type](#by-type-3)
+* [Contributors](#contributors)
+
+# Preliminaries
 A typical module using `generic-lens` will usually have the following
 extensions turned on:
 ```haskell
@@ -31,7 +50,7 @@ extensions turned on:
 
 # Taxonomy of optics
 Here is a comprehensive list of the optics exposed by `generic-lens`. The
-combinators each allows a different way of identifying certain parts of
+combinators each allow a different way of identifying certain parts of
 algebraic data types.
 
 ## Lenses
@@ -80,7 +99,10 @@ error:
 
 For types with multiple constructors, we can still use `field` as long as all constructors contain the required field
 ```haskell
-data Two = First { wurble :: String, banana :: Int } | Second { wurble :: String } deriving (Generic, Show)
+data Two
+ = First  { wurble :: String, banana :: Int }
+ | Second { wurble :: String }
+ deriving (Generic, Show)
 
 >>> Second "woops" ^. field @"wurble"
 "woops"
@@ -113,7 +135,9 @@ foo1 = Foo (Just 10)
 foo2 :: Foo [] String
 foo2 = foo1 & field @"foo" %~ (maybeToList . fmap show)
 ```
-This example shows that higher-kinded parameters can also be changed (`Maybe` -> `[]`).
+This example shows that higher-kinded parameters can also be changed (`Maybe`
+-> `[]`). We turn a `Foo Maybe Int` into a `Foo [] String` by turning the inner
+`Maybe Int` into a `[String]`.
 
 ### By position
 
@@ -304,7 +328,7 @@ error:
 Duck 6
 ```
 
-## Contributors
+# Contributors
 
 + [Matthew Pickering](https://github.com/mpickering)
 + [Toby Shaw](https://github.com/TobyShaw)
