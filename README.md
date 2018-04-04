@@ -11,11 +11,6 @@ This library uses `GHC.Generics` to derive efficient optics (traversals, lenses
 and prisms) for algebraic data types in a type-directed way, with a focus on
 good type inference and error messages when possible.
 
-This package uses the GHC 8 `Generic` representation to derive various operations
-on data structures with lens interfaces, including structural subtype
-relationships between records and positional indexing into arbitrary product
-types.
-
 The derived optics use the so-called van Laarhoven representation, thus are
 fully interoperable with the combinators found in mainstream lens libraries.
 
