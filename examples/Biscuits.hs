@@ -1,16 +1,14 @@
-{-# LANGUAGE ConstraintKinds           #-}
+{-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE DataKinds                 #-}
 {-# LANGUAGE DeriveGeneric             #-}
 {-# LANGUAGE DuplicateRecordFields     #-}
-{-# LANGUAGE FlexibleContexts          #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
-{-# LANGUAGE RankNTypes                #-}
-{-# LANGUAGE StandaloneDeriving        #-}
 {-# LANGUAGE TypeApplications          #-}
-{-# LANGUAGE TypeInType                #-}
 
 module Main where
 
 import Control.Lens
+import           Data.Maybe (maybeToList)
 import Data.Generics.Product
 import Data.Generics.Sum
 import GHC.Generics (Generic)
@@ -126,14 +124,10 @@ data WeighedItem = WItem
  } deriving (Generic, Show)
 
 data D = DInt Int | DPair Bool String
-
-deriving instance Generic D
-deriving instance Show D
+  deriving (Generic, Show)
 
 data E = EInt Int | EPair Bool String | EChar Char
-
-deriving instance Generic E
-deriving instance Show E
+  deriving (Generic, Show)
 
 costInc :: HasTypes t Cost => t -> t
 costInc = over (types @Cost) (\(Cost c) -> Cost (c + 5))
@@ -146,4 +140,3 @@ treeIncParam = over (param @0) (+ 1)
 
 instance Functor Invoice where
   fmap = over (param @0)
-

@@ -32,7 +32,7 @@ module Data.Generics.Product.Positions
 
     -- $setup
     HasPosition (..)
-  , HasPosition'
+  , HasPosition' (..)
 
   , getPosition
   , setPosition

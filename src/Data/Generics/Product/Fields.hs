@@ -31,7 +31,7 @@ module Data.Generics.Product.Fields
 
     -- $setup
     HasField (..)
-  , HasField'
+  , HasField' (..)
 
   , getField
   , setField
