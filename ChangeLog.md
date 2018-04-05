@@ -1,3 +1,7 @@
+## 1.0.0.1
+- Remove dump-core dependency
+- Relax upper bound on criterion (#42)
+
 ## 1.0.0.0
 - Traversals (types, param, constraints)
 - Prisms are now optimal too

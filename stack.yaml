@@ -1,10 +1,7 @@
-resolver: lts-10.3
+resolver: nightly-2018-04-05
 
 packages:
 - '.'
-
-extra-deps:
-- 'inspection-testing-0.2'
 
 flags: {}
 
