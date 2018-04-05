@@ -34,6 +34,8 @@ Table of contents
       * [By name](#by-name-1)
       * [By type](#by-type-2)
 * [Performance](#performance)
+  * [Inspection testing](#inspection-testing)
+  * [Benchmarks](#benchmarks)
 * [Contributors](#contributors)
 
 # Preliminaries
@@ -140,6 +142,10 @@ foo2 = foo1 & field @"foo" %~ (maybeToList . fmap show)
 This example shows that higher-kinded parameters can also be changed (`Maybe`
 -> `[]`). We turn a `Foo Maybe Int` into a `Foo [] String` by turning the inner
 `Maybe Int` into a `[String]`.
+
+With `DuplicateRecordFields`, multiple data types can share the same field
+name, and the `field` lens works in this case too. No more field name
+prefixing!
 
 ### By position
 
@@ -295,7 +301,7 @@ type class.
 
 ```haskell
 constraints   :: HasConstraints c s t => Applicative g => (forall a b . c a b => a -> g b) -> s -> g t
-constraints'  :: HasConstraints' c s  => Applicative g => (forall a . c a => a -> g b) -> s -> g s
+constraints'  :: HasConstraints' c s  => Applicative g => (forall a . c a => a -> g a) -> s -> g s
 ```
 
 Consider the `Numbers` type, which contains three different numeric types:
@@ -393,6 +399,8 @@ Duck 6
 
 # Performance
 TODO.
+## Inspection testing
+## Benchmarks
 # Contributors
 
 + [Matthew Pickering](https://github.com/mpickering)
