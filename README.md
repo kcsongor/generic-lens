@@ -40,6 +40,7 @@ Table of contents
 A typical module using `generic-lens` will usually have the following
 extensions turned on:
 ```haskell
+{-# LANGUAGE AllowAmbiguousTypes       #-}
 {-# LANGUAGE DataKinds                 #-}
 {-# LANGUAGE DeriveGeneric             #-}
 {-# LANGUAGE DuplicateRecordFields     #-}
@@ -232,22 +233,83 @@ Human {name = "Tunyasz", age = 60, address = "London"}
 
 Traversals allow multiple values to be queried or updated at the same time.
 
-### By type
+As a running example, consider a data type of weighted trees. There are two
+type parameters, which correspond to the type of elements and weights in the
+tree:
 ```haskell
-types :: HasTypes s a => Traversal s s a a
+data WTree a w
+  = Leaf a
+  | Fork (WTree a w) (WTree a w)
+  | WithWeight (WTree a w) w
+  deriving (Generic, Show)
+
+mytree :: WTree Int Int
+mytree = Fork (WithWeight (Leaf 42) 1)
+              (WithWeight (Fork (Leaf 88) (Leaf 37)) 2)
 ```
-TODO.
+
+### By type
+Focus on all values of a given type.
+
+```haskell
+types :: HasTypes s a => Traversal' s a
+```
+
+```haskell
+>>> toListOf (types @Int) myTree
+[42,1,88,37,2]
+```
+
+Note that this traversal is `deep': the subtrees are recursively traversed.
 
 ### By parameter
-TODO.
+As the above example shows, the `types` traversal is limited in that it cannot
+distinguish between the two types of `Int`s: the weights and the values.
+
+Instead, the `param` traversal allows specifying types that correspond to a
+certain type parameter.
 ```haskell
 param :: HasParam pos s t a b => Traversal s t a b
 ```
 
-### By constraint
-TODO.
 ```haskell
-constraints  :: HasConstraints c s t => Applicative g => (forall a b . c a b => a -> g b) -> s -> g t
+>>> toListOf (param @1) myTree
+[42,88,37]
+```
+
+Here, the numbering starts from 0, with 0 being the rightmost parameter.
+Because `param` is guaranteed to focus on parametric values, it allows the type
+to be changed as well.
+
+For example, we can implement `Functor` for `WTree` as simply as:
+
+```haskell
+instance Functor (WTree a) where
+  fmap = over (param @0)
+```
+
+### By constraint
+The most general type of traversal: we can apply a given function to every
+value in a structure, by requiring that all values have an instance for some
+type class.
+
+```haskell
+constraints   :: HasConstraints c s t => Applicative g => (forall a b . c a b => a -> g b) -> s -> g t
+constraints'  :: HasConstraints' c s  => Applicative g => (forall a . c a => a -> g b) -> s -> g s
+```
+
+Consider the `Numbers` type, which contains three different numeric types:
+```haskell
+data Numbers = Numbers Int Float Double
+  deriving (Show, Generic)
+
+numbers = Numbers 10 20.0 30.0
+```
+
+With `constraints'`, we can uniformly add 20 to each number in one go:
+```haskell
+>>> constraints' @Num (\x -> pure (x + 20)) numbers
+Numbers 30 40.0 50.0
 ```
 
 ## Prisms

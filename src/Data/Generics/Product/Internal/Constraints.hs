@@ -30,33 +30,75 @@
 module Data.Generics.Product.Internal.Constraints
   (
     GHasConstraints (..)
+  , GHasConstraints' (..)
   , HList (..)
   ) where
 
 import Data.Kind (Type, Constraint)
 import GHC.Generics
 import Data.Generics.Internal.VL.Iso
+import Data.Generics.Internal.VL.Traversal
 
 -- | Constrained traversal.
-class GHasConstraints (c :: * -> Constraint) (f :: * -> *) where
-  gconstraints :: forall g x.
+class GHasConstraints' (c :: * -> Constraint) (f :: * -> *) where
+  gconstraints' :: forall g x.
     Applicative g => (forall a. c a => a -> g a) -> f x -> g (f x)
 
-instance (GHasConstraints c l, GHasConstraints c r) => GHasConstraints c (l :*: r) where
-  gconstraints f (l :*: r) = (:*:) <$> gconstraints @c f l <*> gconstraints @c f r
+instance
+  ( GHasConstraints' c l
+  , GHasConstraints' c r
+  ) => GHasConstraints' c (l :*: r) where
+  gconstraints' f (l :*: r)
+    = (:*:) <$> gconstraints' @c f l <*> gconstraints' @c f r
 
-instance (GHasConstraints c l, GHasConstraints c r) => GHasConstraints c (l :+: r) where
+instance
+  ( GHasConstraints' c l
+  , GHasConstraints' c r
+  ) => GHasConstraints' c (l :+: r) where
+  gconstraints' f (L1 l) = L1 <$> gconstraints' @c f l
+  gconstraints' f (R1 r) = R1 <$> gconstraints' @c f r
+
+instance c a => GHasConstraints' c (Rec0 a) where
+  gconstraints' = kIso
+
+instance GHasConstraints' c f
+  => GHasConstraints' c (M1 m meta f) where
+  gconstraints' f (M1 x) = M1 <$> gconstraints' @c f x
+
+instance GHasConstraints' c U1 where
+  gconstraints' _ _ = pure U1
+
+--------------------------------------------------------------------------------
+
+class GHasConstraints (c :: * -> * -> Constraint) s t where
+  gconstraints :: TraversalC c (s x) (t x)
+
+instance
+  ( GHasConstraints c l l'
+  , GHasConstraints c r r'
+  ) => GHasConstraints c (l :*: r) (l' :*: r') where
+  gconstraints f (l :*: r)
+    = (:*:) <$> gconstraints @c f l <*> gconstraints @c f r
+
+instance
+  ( GHasConstraints c l l'
+  , GHasConstraints c r r'
+  ) => GHasConstraints c (l :+: r) (l' :+: r') where
   gconstraints f (L1 l) = L1 <$> gconstraints @c f l
   gconstraints f (R1 r) = R1 <$> gconstraints @c f r
 
-instance c a => GHasConstraints c (K1 R a) where
-  gconstraints = kIso
-
-instance GHasConstraints c f => GHasConstraints c (M1 m meta f) where
+instance GHasConstraints c s t
+  => GHasConstraints c (M1 i m s) (M1 i m t) where
   gconstraints f (M1 x) = M1 <$> gconstraints @c f x
 
-instance GHasConstraints c U1 where
+instance GHasConstraints c U1 U1 where
   gconstraints _ _ = pure U1
+
+instance GHasConstraints c V1 V1 where
+  gconstraints _ = pure
+
+instance c a b => GHasConstraints c (Rec0 a) (Rec0 b) where
+  gconstraints = kIso
 
 --------------------------------------------------------------------------------
 
