@@ -1,7 +1,7 @@
 name:                 generic-lens
 version:              1.0.0.0
-synopsis:             Generic data-structure operations exposed as lenses.
-description:          This package uses the GHC 8 Generic representation to derive various operations on data structures with a lens interface, including structural subtype relationship between records and positional indexing into arbitrary product types.
+synopsis:             Generically derive traversals, lenses and prisms.
+description:          This library uses GHC.Generics to derive efficient optics (traversals, lenses and prisms) for algebraic data types in a type-directed way, with a focus on good type inference and error messages when possible.
 
 homepage:             https://github.com/kcsongor/generic-lens
 license:              BSD3
