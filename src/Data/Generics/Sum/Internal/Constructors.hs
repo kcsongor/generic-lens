@@ -54,24 +54,24 @@ instance
   ) => GAsConstructor ctor (M1 C ('MetaCons ctor fixity fields) f) (M1 C ('MetaCons ctor fixity fields) g) a b where
 
   _GCtor = prism (M1 . view (fromIso (glist @Type)) . tupleToList) (Right . listToTuple . view (glist @Type) . unM1)
-  {-# INLINE _GCtor #-}
+  {-# INLINE[0] _GCtor #-}
 
 
 instance GSumAsConstructor ctor (HasCtorP ctor l) l r l' r' a b => GAsConstructor ctor (l :+: r) (l' :+: r') a b where
   _GCtor = _GSumCtor @ctor @(HasCtorP ctor l)
-  {-# INLINE _GCtor #-}
+  {-# INLINE[0] _GCtor #-}
 
 instance GAsConstructor ctor f f' a b => GAsConstructor ctor (M1 D meta f) (M1 D meta f') a b where
   _GCtor = mIso . _GCtor @ctor
-  {-# INLINE _GCtor #-}
+  {-# INLINE[0] _GCtor #-}
 
 class GSumAsConstructor (ctor :: Symbol) (contains :: Bool) l r l' r' a b | ctor l r -> a, ctor l' r' -> b where
   _GSumCtor :: Prism ((l :+: r) x) ((l' :+: r') x) a b
 
 instance GAsConstructor ctor l l' a b => GSumAsConstructor ctor 'True l r l' r a b where
   _GSumCtor = left . _GCtor @ctor
-  {-# INLINE _GSumCtor #-}
+  {-# INLINE[0] _GSumCtor #-}
 
 instance GAsConstructor ctor r r' a b => GSumAsConstructor ctor 'False l r l r' a b where
   _GSumCtor = right . _GCtor @ctor
-  {-# INLINE _GSumCtor #-}
+  {-# INLINE[0] _GSumCtor #-}

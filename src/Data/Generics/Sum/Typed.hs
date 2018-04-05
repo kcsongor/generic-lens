@@ -89,6 +89,7 @@ class AsType a s where
   --  ...
   _Typed :: Prism' s a
   _Typed = prism injectTyped (\i -> maybe (Left i) Right (projectTyped i))
+  {-# INLINE[2] _Typed #-}
 
   -- |Inject by type.
   injectTyped :: a -> s
@@ -111,7 +112,7 @@ instance
   ) => AsType a s where
 
   _Typed eta = prismRavel (prismPRavel (repIso . _GTyped @_ @as . tupled)) eta
-  {-# INLINE _Typed #-}
+  {-# INLINE[2] _Typed #-}
 
 -- See Note [Uncluttering type signatures]
 instance {-# OVERLAPPING #-} AsType a Void where

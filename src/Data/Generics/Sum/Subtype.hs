@@ -90,6 +90,7 @@ class AsSubtype sub sup where
   --  Nothing
   _Sub :: Prism' sup sub
   _Sub = prism injectSub (\i -> maybe (Left i) Right (projectSub i))
+  {-# INLINE[2] _Sub #-}
 
   -- |Injects a subtype into a supertype (upcast).
   injectSub  :: sub -> sup

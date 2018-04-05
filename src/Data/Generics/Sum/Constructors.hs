@@ -112,7 +112,7 @@ instance
   , GAsConstructor' ctor (Rep s) a
   ) => AsConstructor' ctor s a where
   _Ctor' eta = prismRavel (prismPRavel (repIso . _GCtor @ctor)) eta
-  {-# INLINE _Ctor' #-}
+  {-# INLINE[2] _Ctor' #-}
 
 instance
   ( Generic s
@@ -136,7 +136,7 @@ instance
   ) => AsConstructor ctor s t a b where
 
   _Ctor eta = prismRavel (prismPRavel (repIso . _GCtor @ctor)) eta
-  {-# INLINE _Ctor #-}
+  {-# INLINE[2] _Ctor #-}
 
 -- See Note [Uncluttering type signatures]
 instance {-# OVERLAPPING #-} AsConstructor ctor (Void1 a) (Void1 b) a b where
