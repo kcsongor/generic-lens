@@ -1,5 +1,7 @@
 ## 1.0.0.0
-- TODO
+- Traversals (types, param, constraints)
+- Prisms are now optimal too
+- Monomorphic versions of lenses and prisms also included
 
 ### Breaking API changes
 - `projectSub` now returns `Maybe sub` instead of `Either sup sub` (#21)

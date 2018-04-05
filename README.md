@@ -266,7 +266,7 @@ types :: HasTypes s a => Traversal' s a
 [42,1,88,37,2]
 ```
 
-Note that this traversal is `deep': the subtrees are recursively traversed.
+Note that this traversal is "deep": the subtrees are recursively traversed.
 
 ### By parameter
 As the above example shows, the `types` traversal is limited in that it cannot
@@ -398,9 +398,16 @@ Duck 6
 ```
 
 # Performance
-TODO.
-## Inspection testing
-## Benchmarks
+The runtime characteristics of the derived optics is in most cases identical at
+`-O1`, in some cases only slightly slower than the hand-written version. This
+is thanks to GHC's optimiser eliminating the generic overhead.
+
+The
+[inspection-testing](https://hackage.haskell.org/package/inspection-testing)
+library is used to ensure (see [here](test/Spec.hs)) that everything gets
+inlined away.
+
+TODO push benchmarks too
 # Contributors
 
 + [Matthew Pickering](https://github.com/mpickering)
