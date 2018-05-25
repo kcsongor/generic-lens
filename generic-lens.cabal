@@ -97,7 +97,7 @@ test-suite generic-lens-test
   type:               exitcode-stdio-1.0
   hs-source-dirs:     test
   main-is:            Spec.hs
-  other-modules:      Util Test24 Test25 Test40
+  other-modules:      Util Test24 Test25 Test40 TestX
 
   build-depends:      base          >= 4.9 && <= 5.0
                     , generic-lens
@@ -105,6 +105,7 @@ test-suite generic-lens-test
                     , profunctors
                     , inspection-testing >= 0.2
                     , HUnit
+                    , monoidal-containers
 
   default-language:   Haskell2010
   ghc-options:        -Wall
@@ -176,4 +177,3 @@ benchmark generic-lens-bench
 
   default-language:   Haskell2010
   ghc-options:        -Wall
-
