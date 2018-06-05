@@ -9,6 +9,7 @@
 {-# LANGUAGE TypeFamilies           #-}
 {-# LANGUAGE TypeOperators          #-}
 {-# LANGUAGE UndecidableInstances   #-}
+{-# LANGUAGE ConstraintKinds #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -28,6 +29,7 @@ module Data.Generics.Sum.Typed
     --
     --  $setup
     AsType (..)
+  , OnlyOne
   ) where
 
 import Data.Kind
@@ -104,11 +106,8 @@ class AsType a s where
   {-# MINIMAL (injectTyped, projectTyped) | _Typed #-}
 
 instance
-  ( Generic s
-  , ErrorUnlessOne a s (CollectPartialType as (Rep s))
+  ( OnlyOne a s
   , as ~ TupleToList a
-  , ListTuple a as
-  , GAsType (Rep s) as
   ) => AsType a s where
 
   _Typed eta = prismRavel (prismPRavel (repIso . _GTyped @_ @as . tupled)) eta
@@ -123,6 +122,13 @@ instance {-# OVERLAPPING #-} AsType Void a where
   _Typed = undefined
   injectTyped = undefined
   projectTyped = undefined
+
+type OnlyOne a s =
+  ( Generic s
+  , ErrorUnlessOne a s (CollectPartialType (TupleToList a) (Rep s))
+  , ListTuple a (TupleToList a)
+  , GAsType (Rep s) (TupleToList a)
+  )
 
 type family ErrorUnlessOne (a :: Type) (s :: Type) (ctors :: [Symbol]) :: Constraint where
   ErrorUnlessOne _ _ '[_]
