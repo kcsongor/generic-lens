@@ -1,3 +1,5 @@
+{-# LANGUAGE TypeInType #-}
+{-# LANGUAGE PartialTypeSignatures #-}
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE AllowAmbiguousTypes    #-}
 {-# LANGUAGE ConstraintKinds        #-}
@@ -42,12 +44,14 @@ import Data.Generics.Internal.VL.Lens as VL
 import Data.Generics.Internal.Void
 import Data.Generics.Internal.Families
 import Data.Generics.Product.Internal.Positions
+import Data.Generics.Product.Internal.GLens
 
 import Data.Kind      (Constraint, Type)
 import Data.Type.Bool (type (&&))
 import GHC.Generics
 import GHC.TypeLits   (type (<=?),  Nat, TypeError, ErrorMessage(..))
-import Data.Generics.Internal.Profunctor.Lens
+import Data.Generics.Internal.Profunctor.Lens as P
+import Data.Coerce
 
 -- $setup
 -- == /Running example:/
@@ -101,9 +105,11 @@ setPosition = VL.set (position' @i)
 instance
   ( Generic s
   , ErrorUnless i s (0 <? i && i <=? Size (Rep s))
-  , GHasPosition' i (Rep s) a
+  , cs ~ CRep s
+  , Coercible (Rep s) cs
+  , GLens' (HasTotalPositionPSym i) cs a
   ) => HasPosition' i s a where
-  position' f s = VL.ravel (repLens . gposition @i) f s
+  position' f s = VL.ravel (repLens . coerced @cs @cs . glens @(HasTotalPositionPSym i)) f s
   {-# INLINE position' #-}
 
 instance  -- see Note [Changing type parameters]
@@ -119,16 +125,27 @@ instance  -- see Note [Changing type parameters]
 #endif
   , Generic s'
   , Generic t'
-  , GHasPosition' i (Rep s) a
-  , GHasPosition' i (Rep s') a'
-  , GHasPosition i (Rep s) (Rep t) a b
+  , GLens (HasTotalPositionPSym i) cs ct a b
+  , cs ~ CRep s
+  , ct ~ CRep t
+  , GLens' (HasTotalPositionPSym i) (CRep s') a'
+  , GLens' (HasTotalPositionPSym i) (CRep t') b'
   , t ~ Infer s a' b
-  , GHasPosition' i (Rep t') b'
   , s ~ Infer t b' a
+  , Coercible cs (Rep s)
+  , Coercible ct (Rep t)
   ) => HasPosition i s t a b where
 
-  position = VL.ravel (repLens . gposition @i)
+  position = VL.ravel (repLens . coerced @cs @ct . glens @(HasTotalPositionPSym i))
   {-# INLINE position #-}
+
+-- We wouldn't need the universal 'x' here if we could express above that
+-- forall x. Coercible (cs x) (Rep s x), but this requires quantified
+-- constraints
+coerced :: forall s t s' t' x a b. (Coercible t t', Coercible s s')
+        => P.ALens a b (s x) (t x) -> P.ALens a b (s' x) (t' x)
+coerced = coerce
+{-# INLINE coerced #-}
 
 -- See Note [Uncluttering type signatures]
 instance {-# OVERLAPPING #-} HasPosition f (Void1 a) (Void1 b) a b where
@@ -145,3 +162,6 @@ type family ErrorUnless (i :: Nat) (s :: Type) (hasP :: Bool) :: Constraint wher
 
   ErrorUnless _ _ 'True
     = ()
+
+data HasTotalPositionPSym  :: Nat -> (TyFun (Type -> Type) Bool)
+type instance Eval (HasTotalPositionPSym t) tt = HasTotalPositionP t tt

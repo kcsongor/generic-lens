@@ -7,6 +7,7 @@
 {-# LANGUAGE ScopedTypeVariables   #-}
 {-# LANGUAGE TypeApplications      #-}
 {-# LANGUAGE TypeFamilies          #-}
+{-# LANGUAGE TypeInType            #-}
 {-# LANGUAGE TypeOperators         #-}
 {-# LANGUAGE UndecidableInstances  #-}
 
@@ -33,7 +34,7 @@ module Data.Generics.Product.Typed
 import Data.Generics.Internal.Families
 import Data.Generics.Internal.VL.Lens as VL
 import Data.Generics.Internal.Void
-import Data.Generics.Product.Internal.Keyed
+import Data.Generics.Product.Internal.GLens
 
 import Data.Kind    (Constraint, Type)
 import GHC.Generics (Generic (Rep))
@@ -110,10 +111,10 @@ class HasType a s where
 instance
   ( Generic s
   , ErrorUnlessOne a s (CollectTotalType a (Rep s))
-  , GHasKey a (Rep s) (Rep s) a a
+  , GLens (HasTotalTypePSym a) (Rep s) (Rep s) a a
   ) => HasType a s where
 
-  typed f s = VL.ravel (repLens . gkey @a) f s
+  typed f s = VL.ravel (repLens . glens @(HasTotalTypePSym a)) f s
 
 -- See Note [Uncluttering type signatures]
 instance {-# OVERLAPPING #-} HasType a Void where
@@ -150,3 +151,7 @@ type family ErrorUnlessOne (a :: Type) (s :: Type) (stat :: TypeStat) :: Constra
 
   ErrorUnlessOne _ _ ('TypeStat '[] '[] _)
     = ()
+
+data HasTotalTypePSym :: Type -> (TyFun (Type -> Type) Bool)
+type instance Eval (HasTotalTypePSym t) tt = HasTotalTypeP t tt
+

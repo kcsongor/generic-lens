@@ -59,11 +59,11 @@ library
                     , Data.Generics.Sum.Internal.Subtype
 
                     , Data.Generics.Product.Internal.Positions
+                    , Data.Generics.Product.Internal.GLens
                     , Data.Generics.Product.Internal.Subtype
 
                     , Data.Generics.Product.Internal.Constraints
                     , Data.Generics.Product.Internal.List
-                    , Data.Generics.Product.Internal.Keyed
 
   build-depends:      base        >= 4.9 && <= 5.0
                     , profunctors >= 5.0 && <= 6.0

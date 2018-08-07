@@ -40,7 +40,7 @@ module Data.Generics.Product.Fields
 import Data.Generics.Internal.Families
 import Data.Generics.Internal.VL.Lens as VL
 import Data.Generics.Internal.Void
-import Data.Generics.Product.Internal.Keyed
+import Data.Generics.Product.Internal.GLens
 
 import Data.Kind    (Constraint, Type)
 import GHC.Generics
@@ -129,9 +129,9 @@ setField = VL.set (field' @f)
 instance
   ( Generic s
   , ErrorUnless field s (CollectField field (Rep s))
-  , GHasKey' field (Rep s) a
+  , GLens' (HasTotalFieldPSym field) (Rep s) a
   ) => HasField' field s a where
-  field' f s = VL.ravel (repLens . gkey @field) f s
+  field' f s = VL.ravel (repLens . glens @(HasTotalFieldPSym field)) f s
 
 instance  -- see Note [Changing type parameters]
   ( Generic s
@@ -146,14 +146,13 @@ instance  -- see Note [Changing type parameters]
 #endif
   , Generic s'
   , Generic t'
-  , GHasKey' field (Rep s) a
-  , GHasKey' field (Rep s') a'
-  , GHasKey' field (Rep t') b'
-  , GHasKey  field (Rep s) (Rep t) a b
+  , GLens' (HasTotalFieldPSym field) (Rep s') a'
+  , GLens' (HasTotalFieldPSym field) (Rep t') b'
+  , GLens  (HasTotalFieldPSym field) (Rep s) (Rep t) a b
   , t ~ Infer s a' b
   , s ~ Infer t b' a
   ) => HasField field s t a b where
-  field f s = VL.ravel (repLens . gkey @field) f s
+  field f s = VL.ravel (repLens . glens @(HasTotalFieldPSym field)) f s
 
 -- -- See Note [Uncluttering type signatures]
 instance {-# OVERLAPPING #-} HasField f (Void1 a) (Void1 b) a b where
@@ -180,3 +179,6 @@ type family ErrorUnless (field :: Symbol) (s :: Type) (stat :: TypeStat) :: Cons
 
   ErrorUnless _ _ ('TypeStat '[] '[] _)
     = ()
+
+data HasTotalFieldPSym :: Symbol -> (TyFun (Type -> Type) Bool)
+type instance Eval (HasTotalFieldPSym sym) tt = HasTotalFieldP sym tt

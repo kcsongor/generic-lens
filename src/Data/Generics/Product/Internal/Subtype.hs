@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeInType #-}
 {-# LANGUAGE AllowAmbiguousTypes       #-}
 {-# LANGUAGE DataKinds                 #-}
 {-# LANGUAGE FlexibleContexts          #-}
@@ -31,11 +32,12 @@ module Data.Generics.Product.Internal.Subtype
   ) where
 
 import Data.Generics.Internal.Families
-import Data.Generics.Product.Internal.Keyed
+import Data.Generics.Product.Internal.GLens
 
 import Data.Kind (Type)
 import GHC.Generics
-import Data.Generics.Internal.Profunctor.Lens
+import GHC.TypeLits (Symbol)
+import Data.Generics.Internal.Profunctor.Lens (view)
 
 --------------------------------------------------------------------------------
 -- * Generic upcasting
@@ -47,10 +49,10 @@ instance (GUpcast sub a, GUpcast sub b) => GUpcast sub (a :*: b) where
   gupcast rep = gupcast rep :*: gupcast rep
 
 instance
-  GHasKey field sub sub t t
+  GLens' (HasTotalFieldPSym field) sub t
   => GUpcast sub (S1 ('MetaSel ('Just field) p f b) (Rec0 t)) where
 
-  gupcast r = M1 (K1 (view (gkey @field) r))
+  gupcast r = M1 (K1 (view (glens @(HasTotalFieldPSym field)) r))
 
 instance GUpcast sub sup => GUpcast sub (C1 c sup) where
   gupcast = M1 . gupcast
@@ -84,9 +86,12 @@ class GSmashLeaf sub sup (w :: Bool) where
   gsmashLeaf :: sup p -> sub p -> sub p
 
 instance
-  GHasKey field sup sup t t
+  GLens' (HasTotalFieldPSym field) sup t
   => GSmashLeaf (S1 ('MetaSel ('Just field) p f b) (Rec0 t)) sup 'True where
-  gsmashLeaf sup _ = M1 (K1 (view (gkey @field) sup))
+  gsmashLeaf sup _ = M1 (K1 (view (glens @(HasTotalFieldPSym field)) sup))
 
 instance GSmashLeaf (S1 ('MetaSel ('Just field) p f b) (Rec0 t)) sup 'False where
   gsmashLeaf _ = id
+
+data HasTotalFieldPSym :: Symbol -> (TyFun (Type -> Type) Bool)
+type instance Eval (HasTotalFieldPSym sym) tt = HasTotalFieldP sym tt
