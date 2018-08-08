@@ -96,7 +96,7 @@ class GIsList
 instance
   ( GIsList l l' as as'
   , GIsList r r' bs bs'
-  , Appending HList as bs cs as' bs' cs'
+  , Appending as bs cs as' bs' cs'
   , cs ~ (as ++ bs)
   , cs' ~ (as' ++ bs')
   ) => GIsList (l :*: r) (l' :*: r') cs cs' where
@@ -118,24 +118,29 @@ instance GIsList U1 U1 '[] '[] where
 
 --------------------------------------------------------------------------------
 -- | as ++ bs === cs
-class Appending f (as :: [k]) bs cs (as' :: [k]) bs' cs' | as bs cs cs' -> as' bs', as' bs' cs cs' -> as bs, as bs -> cs, as' bs' -> cs' where
-  appending :: Iso (f as, f bs) (f as', f bs') (f cs) (f cs')
+class Appending as bs cs as' bs' cs'
+  | as bs cs cs'   -> as' bs'
+  , as' bs' cs cs' -> as bs
+  , as bs          -> cs
+  , as' bs'        -> cs'
+  where
+  appending :: Iso (HList as, HList bs) (HList as', HList bs') (HList cs) (HList cs')
 
 -- | [] ++ bs === bs
-instance Appending HList '[] bs bs '[] bs' bs' where
-  appending = iso (\(_, b) -> b) (Nil,)
+instance Appending '[] bs bs '[] bs' bs' where
+  appending = iso snd (Nil,)
 
 -- | (a : as) ++ bs === (a : cs)
 instance
-  Appending HList as bs cs as' bs' cs' -- as ++ bs == cs
-  => Appending HList (a ': as) bs (a ': cs) (a' ': as') bs' (a' ': cs') where
+  Appending as bs cs as' bs' cs' -- as ++ bs == cs
+  => Appending (a ': as) bs (a ': cs) (a' ': as') bs' (a' ': cs') where
   appending
     = pairing (fromIso consing) id -- ((a, as), bs)
     . assoc3                       -- (a, (as, bs))
     . pairing id appending         -- (a, cs)
     . consing                      -- (a : cs)
 
-singleton :: Iso a b (HList '[ a]) (HList '[ b])
+singleton :: Iso a b (HList '[a]) (HList '[ b])
 singleton = iso (:> Nil) (\(x :> _) -> x)
 
 consing :: Iso (a, HList as) (b, HList bs) (HList (a ': as)) (HList (b ': bs))
@@ -176,127 +181,127 @@ instance ListTuple () '[] where
   tupleToList _ = Nil
   listToTuple _ = ()
 
-instance ListTuple a '[ a] where
-  type ListToTuple '[ a] = a
+instance ListTuple a '[a] where
+  type ListToTuple '[a] = a
   tupleToList a
     = a :> Nil
   listToTuple (a :> Nil)
     = a
 
-instance ListTuple (a, b) '[ a, b] where
-  type ListToTuple '[ a, b] = (a, b)
+instance ListTuple (a, b) '[a, b] where
+  type ListToTuple '[a, b] = (a, b)
   tupleToList (a, b)
     = a :> b :> Nil
   listToTuple (a :> b :> Nil)
     = (a, b)
 
-instance ListTuple (a, b, c) '[ a, b, c] where
-  type ListToTuple '[ a, b, c] = (a, b, c)
+instance ListTuple (a, b, c) '[a, b, c] where
+  type ListToTuple '[a, b, c] = (a, b, c)
   tupleToList (a, b, c)
     = a :> b :> c :> Nil
   listToTuple (a :> b :> c :> Nil)
     = (a, b, c)
 
-instance ListTuple (a, b, c, d) '[ a, b, c, d] where
-  type ListToTuple '[ a, b, c, d] = (a, b, c, d)
+instance ListTuple (a, b, c, d) '[a, b, c, d] where
+  type ListToTuple '[a, b, c, d] = (a, b, c, d)
   tupleToList (a, b, c, d)
     = a :> b :> c :> d:> Nil
   listToTuple (a :> b :> c :> d :> Nil)
     = (a, b, c, d)
 
-instance ListTuple (a, b, c, d, e) '[ a, b, c, d, e] where
-  type ListToTuple '[ a, b, c, d, e] = (a, b, c, d, e)
+instance ListTuple (a, b, c, d, e) '[a, b, c, d, e] where
+  type ListToTuple '[a, b, c, d, e] = (a, b, c, d, e)
   tupleToList (a, b, c, d, e)
     = a :> b :> c :> d:> e :> Nil
   listToTuple (a :> b :> c :> d :> e :> Nil)
     = (a, b, c, d, e)
 
-instance ListTuple (a, b, c, d, e, f) '[ a, b, c, d, e, f] where
-  type ListToTuple '[ a, b, c, d, e, f] = (a, b, c, d, e, f)
+instance ListTuple (a, b, c, d, e, f) '[a, b, c, d, e, f] where
+  type ListToTuple '[a, b, c, d, e, f] = (a, b, c, d, e, f)
   tupleToList (a, b, c, d, e, f)
     = a :> b :> c :> d:> e :> f :> Nil
   listToTuple (a :> b :> c :> d :> e :> f :> Nil)
     = (a, b, c, d, e, f)
 
-instance ListTuple (a, b, c, d, e, f, g) '[ a, b, c, d, e, f, g] where
-  type ListToTuple '[ a, b, c, d, e, f, g] = (a, b, c, d, e, f, g)
+instance ListTuple (a, b, c, d, e, f, g) '[a, b, c, d, e, f, g] where
+  type ListToTuple '[a, b, c, d, e, f, g] = (a, b, c, d, e, f, g)
   tupleToList (a, b, c, d, e, f, g)
     = a :> b :> c :> d:> e :> f :> g :> Nil
   listToTuple (a :> b :> c :> d :> e :> f :> g :> Nil)
     = (a, b, c, d, e, f, g)
 
-instance ListTuple (a, b, c, d, e, f, g, h) '[ a, b, c, d, e, f, g, h] where
-  type ListToTuple '[ a, b, c, d, e, f, g, h] = (a, b, c, d, e, f, g, h)
+instance ListTuple (a, b, c, d, e, f, g, h) '[a, b, c, d, e, f, g, h] where
+  type ListToTuple '[a, b, c, d, e, f, g, h] = (a, b, c, d, e, f, g, h)
   tupleToList (a, b, c, d, e, f, g, h)
     = a :> b :> c :> d:> e :> f :> g :> h :> Nil
   listToTuple (a :> b :> c :> d :> e :> f :> g :> h :> Nil)
     = (a, b, c, d, e, f, g, h)
 
-instance ListTuple (a, b, c, d, e, f, g, h, j) '[ a, b, c, d, e, f, g, h, j] where
-  type ListToTuple '[ a, b, c, d, e, f, g, h, j] = (a, b, c, d, e, f, g, h, j)
+instance ListTuple (a, b, c, d, e, f, g, h, j) '[a, b, c, d, e, f, g, h, j] where
+  type ListToTuple '[a, b, c, d, e, f, g, h, j] = (a, b, c, d, e, f, g, h, j)
   tupleToList (a, b, c, d, e, f, g, h, j)
     = a :> b :> c :> d:> e :> f :> g :> h :> j :> Nil
   listToTuple (a :> b :> c :> d :> e :> f :> g :> h :> j :> Nil)
     = (a, b, c, d, e, f, g, h, j)
 
-instance ListTuple (a, b, c, d, e, f, g, h, j, k) '[ a, b, c, d, e, f, g, h, j, k] where
-  type ListToTuple '[ a, b, c, d, e, f, g, h, j, k] = (a, b, c, d, e, f, g, h, j, k)
+instance ListTuple (a, b, c, d, e, f, g, h, j, k) '[a, b, c, d, e, f, g, h, j, k] where
+  type ListToTuple '[a, b, c, d, e, f, g, h, j, k] = (a, b, c, d, e, f, g, h, j, k)
   tupleToList (a, b, c, d, e, f, g, h, j, k)
     = a :> b :> c :> d:> e :> f :> g :> h :> j :> k :> Nil
   listToTuple (a :> b :> c :> d :> e :> f :> g :> h :> j :> k :> Nil)
     = (a, b, c, d, e, f, g, h, j, k)
 
-instance ListTuple (a, b, c, d, e, f, g, h, j, k, l) '[ a, b, c, d, e, f, g, h, j, k, l] where
-  type ListToTuple '[ a, b, c, d, e, f, g, h, j, k, l] = (a, b, c, d, e, f, g, h, j, k, l)
+instance ListTuple (a, b, c, d, e, f, g, h, j, k, l) '[a, b, c, d, e, f, g, h, j, k, l] where
+  type ListToTuple '[a, b, c, d, e, f, g, h, j, k, l] = (a, b, c, d, e, f, g, h, j, k, l)
   tupleToList (a, b, c, d, e, f, g, h, j, k, l)
     = a :> b :> c :> d:> e :> f :> g :> h :> j :> k :> l :> Nil
   listToTuple (a :> b :> c :> d :> e :> f :> g :> h :> j :> k :> l :> Nil)
     = (a, b, c, d, e, f, g, h, j, k, l)
 
-instance ListTuple (a, b, c, d, e, f, g, h, j, k, l, m) '[ a, b, c, d, e, f, g, h, j, k, l, m] where
-  type ListToTuple '[ a, b, c, d, e, f, g, h, j, k, l, m] = (a, b, c, d, e, f, g, h, j, k, l, m)
+instance ListTuple (a, b, c, d, e, f, g, h, j, k, l, m) '[a, b, c, d, e, f, g, h, j, k, l, m] where
+  type ListToTuple '[a, b, c, d, e, f, g, h, j, k, l, m] = (a, b, c, d, e, f, g, h, j, k, l, m)
   tupleToList (a, b, c, d, e, f, g, h, j, k, l, m)
     = a :> b :> c :> d:> e :> f :> g :> h :> j :> k :> l :> m :> Nil
   listToTuple (a :> b :> c :> d :> e :> f :> g :> h :> j :> k :> l :> m :> Nil)
     = (a, b, c, d, e, f, g, h, j, k, l, m)
 
-instance ListTuple (a, b, c, d, e, f, g, h, j, k, l, m, n) '[ a, b, c, d, e, f, g, h, j, k, l, m, n] where
-  type ListToTuple '[ a, b, c, d, e, f, g, h, j, k, l, m, n] = (a, b, c, d, e, f, g, h, j, k, l, m, n)
+instance ListTuple (a, b, c, d, e, f, g, h, j, k, l, m, n) '[a, b, c, d, e, f, g, h, j, k, l, m, n] where
+  type ListToTuple '[a, b, c, d, e, f, g, h, j, k, l, m, n] = (a, b, c, d, e, f, g, h, j, k, l, m, n)
   tupleToList (a, b, c, d, e, f, g, h, j, k, l, m, n)
     = a :> b :> c :> d:> e :> f :> g :> h :> j :> k :> l :> m :> n :> Nil
   listToTuple (a :> b :> c :> d :> e :> f :> g :> h :> j :> k :> l :> m :> n :> Nil)
     = (a, b, c, d, e, f, g, h, j, k, l, m, n)
 
-instance ListTuple (a, b, c, d, e, f, g, h, j, k, l, m, n, o) '[ a, b, c, d, e, f, g, h, j, k, l, m, n, o] where
-  type ListToTuple '[ a, b, c, d, e, f, g, h, j, k, l, m, n, o] = (a, b, c, d, e, f, g, h, j, k, l, m, n, o)
+instance ListTuple (a, b, c, d, e, f, g, h, j, k, l, m, n, o) '[a, b, c, d, e, f, g, h, j, k, l, m, n, o] where
+  type ListToTuple '[a, b, c, d, e, f, g, h, j, k, l, m, n, o] = (a, b, c, d, e, f, g, h, j, k, l, m, n, o)
   tupleToList (a, b, c, d, e, f, g, h, j, k, l, m, n, o)
     = a :> b :> c :> d:> e :> f :> g :> h :> j :> k :> l :> m :> n :> o :> Nil
   listToTuple (a :> b :> c :> d :> e :> f :> g :> h :> j :> k :> l :> m :> n :> o :> Nil)
     = (a, b, c, d, e, f, g, h, j, k, l, m, n, o)
 
-instance ListTuple (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p) '[ a, b, c, d, e, f, g, h, j, k, l, m, n, o, p] where
-  type ListToTuple '[ a, b, c, d, e, f, g, h, j, k, l, m, n, o, p] = (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p)
+instance ListTuple (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p) '[a, b, c, d, e, f, g, h, j, k, l, m, n, o, p] where
+  type ListToTuple '[a, b, c, d, e, f, g, h, j, k, l, m, n, o, p] = (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p)
   tupleToList (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p)
     = a :> b :> c :> d:> e :> f :> g :> h :> j :> k :> l :> m :> n :> o :> p :> Nil
   listToTuple (a :> b :> c :> d :> e :> f :> g :> h :> j :> k :> l :> m :> n :> o :> p :> Nil)
     = (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p)
 
-instance ListTuple (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q) '[ a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q] where
-  type ListToTuple '[ a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q] = (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q)
+instance ListTuple (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q) '[a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q] where
+  type ListToTuple '[a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q] = (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q)
   tupleToList (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q)
     = a :> b :> c :> d:> e :> f :> g :> h :> j :> k :> l :> m :> n :> o :> p :> q :> Nil
   listToTuple (a :> b :> c :> d :> e :> f :> g :> h :> j :> k :> l :> m :> n :> o :> p :> q :> Nil)
     = (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q)
 
-instance ListTuple (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q, r) '[ a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q, r] where
-  type ListToTuple '[ a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q, r] = (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q, r)
+instance ListTuple (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q, r) '[a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q, r] where
+  type ListToTuple '[a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q, r] = (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q, r)
   tupleToList (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q, r)
     = a :> b :> c :> d:> e :> f :> g :> h :> j :> k :> l :> m :> n :> o :> p :> q :> r :> Nil
   listToTuple (a :> b :> c :> d :> e :> f :> g :> h :> j :> k :> l :> m :> n :> o :> p :> q :> r :> Nil)
     = (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q, r)
 
-instance ListTuple (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q, r, s) '[ a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q, r, s] where
-  type ListToTuple '[ a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q, r, s] = (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q, r, s)
+instance ListTuple (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q, r, s) '[a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q, r, s] where
+  type ListToTuple '[a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q, r, s] = (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q, r, s)
   tupleToList (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q, r, s)
     = a :> b :> c :> d:> e :> f :> g :> h :> j :> k :> l :> m :> n :> o :> p :> q :> r :> s :> Nil
   listToTuple (a :> b :> c :> d :> e :> f :> g :> h :> j :> k :> l :> m :> n :> o :> p :> q :> r :> s :> Nil)
@@ -304,21 +309,21 @@ instance ListTuple (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q, r, s) '[ a, 
 
 type family TupleToList a where
   TupleToList () = '[]
-  TupleToList (a, b) = '[ a, b]
-  TupleToList (a, b, c) = '[ a, b, c]
-  TupleToList (a, b, c, d) = '[ a, b, c, d]
-  TupleToList (a, b, c, d, e) = '[ a, b, c, d, e]
-  TupleToList (a, b, c, d, e, f) = '[ a, b, c, d, e, f]
-  TupleToList (a, b, c, d, e, f, g) = '[ a, b, c, d, e, f, g]
-  TupleToList (a, b, c, d, e, f, g, h) = '[ a, b, c, d, e, f, g, h]
-  TupleToList (a, b, c, d, e, f, g, h, j) = '[ a, b, c, d, e, f, g, h, j]
-  TupleToList (a, b, c, d, e, f, g, h, j, k) = '[ a, b, c, d, e, f, g, h, j, k]
-  TupleToList (a, b, c, d, e, f, g, h, j, k, l) = '[ a, b, c, d, e, f, g, h, j, k, l]
-  TupleToList (a, b, c, d, e, f, g, h, j, k, l, m) = '[ a, b, c, d, e, f, g, h, j, k, l, m]
-  TupleToList (a, b, c, d, e, f, g, h, j, k, l, m, n) = '[ a, b, c, d, e, f, g, h, j, k, l, m, n]
-  TupleToList (a, b, c, d, e, f, g, h, j, k, l, m, n, o) = '[ a, b, c, d, e, f, g, h, j, k, l, m, n, o]
-  TupleToList (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p) = '[ a, b, c, d, e, f, g, h, j, k, l, m, n, o, p]
-  TupleToList (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q) = '[ a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q]
-  TupleToList (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q, r) = '[ a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q, r]
-  TupleToList (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q, r, s) = '[ a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q, r, s]
-  TupleToList a = '[ a]
+  TupleToList (a, b) = '[a, b]
+  TupleToList (a, b, c) = '[a, b, c]
+  TupleToList (a, b, c, d) = '[a, b, c, d]
+  TupleToList (a, b, c, d, e) = '[a, b, c, d, e]
+  TupleToList (a, b, c, d, e, f) = '[a, b, c, d, e, f]
+  TupleToList (a, b, c, d, e, f, g) = '[a, b, c, d, e, f, g]
+  TupleToList (a, b, c, d, e, f, g, h) = '[a, b, c, d, e, f, g, h]
+  TupleToList (a, b, c, d, e, f, g, h, j) = '[a, b, c, d, e, f, g, h, j]
+  TupleToList (a, b, c, d, e, f, g, h, j, k) = '[a, b, c, d, e, f, g, h, j, k]
+  TupleToList (a, b, c, d, e, f, g, h, j, k, l) = '[a, b, c, d, e, f, g, h, j, k, l]
+  TupleToList (a, b, c, d, e, f, g, h, j, k, l, m) = '[a, b, c, d, e, f, g, h, j, k, l, m]
+  TupleToList (a, b, c, d, e, f, g, h, j, k, l, m, n) = '[a, b, c, d, e, f, g, h, j, k, l, m, n]
+  TupleToList (a, b, c, d, e, f, g, h, j, k, l, m, n, o) = '[a, b, c, d, e, f, g, h, j, k, l, m, n, o]
+  TupleToList (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p) = '[a, b, c, d, e, f, g, h, j, k, l, m, n, o, p]
+  TupleToList (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q) = '[a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q]
+  TupleToList (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q, r) = '[a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q, r]
+  TupleToList (a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q, r, s) = '[a, b, c, d, e, f, g, h, j, k, l, m, n, o, p, q, r, s]
+  TupleToList a = '[a]
