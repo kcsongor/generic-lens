@@ -14,7 +14,7 @@
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Data.Generics.Sum.Internal.Subtype
--- Copyright   :  (C) 2017 Csongor Kiss
+-- Copyright   :  (C) 2018 Csongor Kiss
 -- License     :  BSD3
 -- Maintainer  :  Csongor Kiss <kiss.csongor.kiss@gmail.com>
 -- Stability   :  experimental
@@ -28,7 +28,7 @@ module Data.Generics.Sum.Internal.Subtype
   ( GAsSubtype (..)
   ) where
 
-import Data.Generics.Product.Internal.List
+import Data.Generics.Product.Internal.HList
 import Data.Generics.Sum.Internal.Typed
 
 import Data.Kind
@@ -46,7 +46,7 @@ instance
   ( GSplash sub sup
   , GDowncast sub sup
   ) => GAsSubtype sub sup where
-  _GSub f = (prism _GSplash _GDowncast) f
+  _GSub f = prism _GSplash _GDowncast f
   {-# INLINE[0] _GSub #-}
 
 --------------------------------------------------------------------------------
@@ -60,10 +60,10 @@ instance (GSplash a sup, GSplash b sup) => GSplash (a :+: b) sup where
   {-# INLINE[0] _GSplash #-}
 
 instance
-  ( GIsList () subf subf as as
+  ( GIsList subf subf as as
   , GAsType supf as
   ) => GSplash (C1 meta subf) supf where
-  _GSplash p = build ((_GTyped . fromIso (glist @()) . fromIso mIso)) p
+  _GSplash p = build (_GTyped . fromIso (mIso . glist)) p
   {-# INLINE[0] _GSplash #-}
 
 instance GSplash sub sup => GSplash (D1 c sub) sup where
@@ -76,7 +76,7 @@ class GDowncast sub sup where
   _GDowncast :: sup x -> Either (sup x) (sub x)
 
 instance
-  ( GIsList () sup sup as as
+  ( GIsList sup sup as as
   , GDowncastC (HasPartialTypeP as sub) sub sup
   ) => GDowncast sub (C1 m sup) where
   _GDowncast (M1 m) = case _GDowncastC @(HasPartialTypeP as sub) m of
@@ -108,8 +108,8 @@ instance GDowncastC 'False sub sup where
 
 instance
   ( GAsType sub subl
-  , GIsList () sup sup subl subl
+  , GIsList sup sup subl subl
   ) => GDowncastC 'True sub sup where
-  _GDowncastC sup = Right (build (_GTyped . fromIso (glist @())) sup)
+  _GDowncastC sup = Right (build (_GTyped . fromIso glist) sup)
   {-# INLINE[0] _GDowncastC #-}
 

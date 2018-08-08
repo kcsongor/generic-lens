@@ -14,7 +14,7 @@
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Data.Generics.Sum.Internal.Constructors
--- Copyright   :  (C) 2017 Csongor Kiss
+-- Copyright   :  (C) 2018 Csongor Kiss
 -- License     :  BSD3
 -- Maintainer  :  Csongor Kiss <kiss.csongor.kiss@gmail.com>
 -- Stability   :  experimental
@@ -30,11 +30,10 @@ module Data.Generics.Sum.Internal.Constructors
   ) where
 
 import Data.Generics.Internal.Families
-import Data.Generics.Product.Internal.List
+import Data.Generics.Product.Internal.HList
 
 import GHC.Generics
 import GHC.TypeLits (Symbol)
-import Data.Kind
 import Data.Generics.Internal.Profunctor.Lens
 import Data.Generics.Internal.Profunctor.Iso
 import Data.Generics.Internal.Profunctor.Prism
@@ -47,13 +46,13 @@ class GAsConstructor (ctor :: Symbol) s t a b | ctor s -> a, ctor t -> b where
 type GAsConstructor' ctor s a = GAsConstructor ctor s s a a
 
 instance
-  ( GIsList Type f f as as
-  , GIsList Type g g bs bs
+  ( GIsList f f as as
+  , GIsList g g bs bs
   , ListTuple a as
   , ListTuple b bs
   ) => GAsConstructor ctor (M1 C ('MetaCons ctor fixity fields) f) (M1 C ('MetaCons ctor fixity fields) g) a b where
 
-  _GCtor = prism (M1 . view (fromIso (glist @Type)) . tupleToList) (Right . listToTuple . view (glist @Type) . unM1)
+  _GCtor = prism (M1 . view (fromIso glist) . tupleToList) (Right . listToTuple . view glist . unM1)
   {-# INLINE[0] _GCtor #-}
 
 

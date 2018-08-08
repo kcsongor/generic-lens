@@ -7,7 +7,7 @@
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Data.Generics.Internal.Families.Collect
--- Copyright   :  (C) 2017 Csongor Kiss
+-- Copyright   :  (C) 2018 Csongor Kiss
 -- License     :  BSD3
 -- Maintainer  :  Csongor Kiss <kiss.csongor.kiss@gmail.com>
 -- Stability   :  experimental
@@ -28,7 +28,7 @@ import Data.Type.Equality (type (==))
 import GHC.Generics
 import GHC.TypeLits       (Symbol, CmpSymbol)
 
-import Data.Generics.Product.Internal.List (type (++))
+import Data.Generics.Product.Internal.HList (type (++))
 import Data.Generics.Internal.Families.Has (GTypes)
 
 data TypeStat

@@ -13,7 +13,7 @@
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Data.Generics.Sum.Internal.Typed
--- Copyright   :  (C) 2017 Csongor Kiss
+-- Copyright   :  (C) 2018 Csongor Kiss
 -- License     :  BSD3
 -- Maintainer  :  Csongor Kiss <kiss.csongor.kiss@gmail.com>
 -- Stability   :  experimental
@@ -32,13 +32,13 @@ import GHC.Generics
 import Data.Tagged
 
 import Data.Generics.Internal.Families
-import Data.Generics.Product.Internal.List
+import Data.Generics.Product.Internal.HList
 import Data.Generics.Internal.Profunctor.Iso
 import Data.Generics.Internal.Profunctor.Prism
 
 -- |As 'AsType' but over generic representations as defined by "GHC.Generics".
-class GAsType (f :: Type -> Type) (as :: [((), Type)]) where
-  _GTyped :: Prism (f x) (f x) (List as) (List as)
+class GAsType (f :: Type -> Type) (as :: [Type]) where
+  _GTyped :: Prism (f x) (f x) (HList as) (HList as)
 -- We create this specialised version as we use it in the subtype prism
 -- If we don't create it, the opportunity for specialisation is only
 -- created after specialisation happens, I think a late specialisation pass
@@ -47,9 +47,9 @@ class GAsType (f :: Type -> Type) (as :: [((), Type)]) where
 
 
 instance
-  ( GIsList () f f as as
+  ( GIsList f f as as
   ) => GAsType (M1 C meta f) as where
-  _GTyped = mIso . glist @()
+  _GTyped = mIso . glist
   {-# INLINE[0] _GTyped #-}
 
 instance GSumAsType (HasPartialTypeP a l) l r a => GAsType (l :+: r) a where
@@ -60,8 +60,8 @@ instance GAsType f a => GAsType (M1 D meta f) a where
   _GTyped = mIso . _GTyped
   {-# INLINE[0] _GTyped #-}
 
-class GSumAsType (contains :: Bool) l r (a :: [((), Type)]) where
-  _GSumTyped :: Prism ((l :+: r) x) ((l :+: r) x) (List a) (List a)
+class GSumAsType (contains :: Bool) l r (a :: [Type]) where
+  _GSumTyped :: Prism ((l :+: r) x) ((l :+: r) x) (HList a) (HList a)
 
 instance GAsType l a => GSumAsType 'True l r a where
   _GSumTyped = left . _GTyped

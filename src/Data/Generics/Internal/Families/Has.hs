@@ -7,7 +7,7 @@
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Data.Generics.Internal.Families.Has
--- Copyright   :  (C) 2017 Csongor Kiss
+-- Copyright   :  (C) 2018 Csongor Kiss
 -- License     :  BSD3
 -- Maintainer  :  Csongor Kiss <kiss.csongor.kiss@gmail.com>
 -- Stability   :  experimental
@@ -30,7 +30,7 @@ import GHC.Generics
 import GHC.TypeLits (Symbol, Nat)
 import Data.Kind (Type)
 
-import Data.Generics.Product.Internal.List
+import Data.Generics.Product.Internal.HList
 
 -- Note: these could be factored out into a single traversal
 
@@ -116,11 +116,11 @@ type family HasCtorP (ctor :: Symbol) f :: Bool where
   HasCtorP ctor _
     = 'False
 
-type family GTypes (rep :: Type -> Type) :: [((), Type)] where
+type family GTypes (rep :: Type -> Type) :: [(Type)] where
   GTypes (l :*: r)
     = GTypes l ++ GTypes r
   GTypes (K1 _ a)
-    = '[ '( '(), a)]
+    = '[ a]
   GTypes (M1 _ m a)
     = GTypes a
   GTypes U1 = '[]

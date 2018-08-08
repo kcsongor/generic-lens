@@ -15,7 +15,7 @@
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Data.Generics.Product.Internal.Constraints
--- Copyright   :  (C) 2017 Csongor Kiss
+-- Copyright   :  (C) 2018 Csongor Kiss
 -- License     :  BSD3
 -- Maintainer  :  Csongor Kiss <kiss.csongor.kiss@gmail.com>
 -- Stability   :  experimental
@@ -31,13 +31,13 @@ module Data.Generics.Product.Internal.Constraints
   (
     GHasConstraints (..)
   , GHasConstraints' (..)
-  , HList (..)
   ) where
 
 import Data.Kind (Type, Constraint)
 import GHC.Generics
 import Data.Generics.Internal.VL.Iso
 import Data.Generics.Internal.VL.Traversal
+import Data.Generics.Product.Internal.HList
 
 -- | Constrained traversal.
 class GHasConstraints' (c :: * -> Constraint) (f :: * -> *) where
@@ -116,11 +116,6 @@ gtypes hl s = gconstraints @(Contains as) (pick hl) s
 -}
 
 --------------------------------------------------------------------------------
-
-data HList (ts :: [Type]) where
-  HNil :: HList '[]
-  (:>) :: a -> HList as -> HList (a ': as)
-infixr 5 :>
 
 -- >>> :kind! Functions '[Int, Char, Bool] Maybe
 -- '[Int -> Maybe Int, Char -> Maybe Char, Bool -> Maybe Bool]

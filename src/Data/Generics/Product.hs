@@ -1,7 +1,7 @@
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Data.Generics.Product
--- Copyright   :  (C) 2017 Csongor Kiss
+-- Copyright   :  (C) 2018 Csongor Kiss
 -- License     :  BSD3
 -- Maintainer  :  Csongor Kiss <kiss.csongor.kiss@gmail.com>
 -- Stability   :  experimental
@@ -22,7 +22,7 @@ module Data.Generics.Product
   , module Data.Generics.Product.Positions
   , module Data.Generics.Product.Subtype
   , module Data.Generics.Product.Typed
-  , module Data.Generics.Product.List
+  , module Data.Generics.Product.HList
   -- *Traversals
   , module Data.Generics.Product.Types
   , module Data.Generics.Product.Param
@@ -37,4 +37,4 @@ import Data.Generics.Product.Typed
 import Data.Generics.Product.Types
 import Data.Generics.Product.Constraints
 import Data.Generics.Product.Param
-import Data.Generics.Product.List
+import Data.Generics.Product.HList

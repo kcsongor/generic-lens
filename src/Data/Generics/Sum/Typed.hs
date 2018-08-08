@@ -13,7 +13,7 @@
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Data.Generics.Sum.Typed
--- Copyright   :  (C) 2017 Csongor Kiss
+-- Copyright   :  (C) 2018 Csongor Kiss
 -- License     :  BSD3
 -- Maintainer  :  Csongor Kiss <kiss.csongor.kiss@gmail.com>
 -- Stability   :  experimental
@@ -37,7 +37,7 @@ import Data.Generics.Sum.Internal.Typed
 
 import Data.Generics.Internal.Families
 import Data.Generics.Internal.Void
-import Data.Generics.Product.Internal.List
+import Data.Generics.Product.Internal.HList
 import Data.Generics.Internal.VL.Prism
 import Data.Generics.Internal.Profunctor.Iso
 import Data.Generics.Internal.Profunctor.Prism (prismPRavel)

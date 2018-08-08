@@ -11,7 +11,7 @@
 --------------------------------------------------------------------------------
 -- |
 -- Module      : Data.Generics.Labels
--- Copyright   : (C) 2017 Csongor Kiss
+-- Copyright   : (C) 2018 Csongor Kiss
 -- Maintainer  : Csongor Kiss <kiss.csongor.kiss@gmail.com>
 -- License     : BSD3
 -- Stability   : experimental

@@ -9,7 +9,7 @@
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Data.Generics.Internal.VL.Prism
--- Copyright   :  (C) 2017 Csongor Kiss
+-- Copyright   :  (C) 2018 Csongor Kiss
 -- License     :  BSD3
 -- Maintainer  :  Csongor Kiss <kiss.csongor.kiss@gmail.com>
 -- Stability   :  experimental
