@@ -1,3 +1,6 @@
+## 1.0.0.2
+- Fix compile-time performance regression
+
 ## 1.0.0.1
 - Remove dump-core dependency
 - Relax upper bound on criterion (#42)
