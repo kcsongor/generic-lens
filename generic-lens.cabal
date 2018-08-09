@@ -23,7 +23,8 @@ flag dump-core
   default:     False
 
 library
-  exposed-modules:    Data.Generics.Product
+  exposed-modules:    Data.Generics.Iso
+                    , Data.Generics.Product
                     , Data.Generics.Product.Any
                     , Data.Generics.Product.Fields
                     , Data.Generics.Product.Param

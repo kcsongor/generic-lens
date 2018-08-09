@@ -20,15 +20,42 @@
 -----------------------------------------------------------------------------
 module Data.Generics.Internal.VL.Iso where
 
-import Data.Profunctor        (Profunctor(..))
+import Data.Coerce (coerce)
+import Data.Functor.Identity (Identity(..))
+import Data.Profunctor (Profunctor(..))
 import GHC.Generics
 import Data.Generics.Internal.GenericN (Rec (..))
+
+data Exchange a b s t = Exchange (s -> a) (b -> t)
+
+instance Functor (Exchange a b s) where
+  fmap f (Exchange sa bt) = Exchange sa (f . bt)
+  {-# INLINE fmap #-}
+
+instance Profunctor (Exchange a b) where
+  dimap f g (Exchange sa bt) = Exchange (sa . f) (g . bt)
+  {-# INLINE dimap #-}
+  lmap f (Exchange sa bt) = Exchange (sa . f) bt
+  {-# INLINE lmap #-}
+  rmap f (Exchange sa bt) = Exchange sa (f . bt)
+  {-# INLINE rmap #-}
 
 type Iso' s a
   = forall p f. (Profunctor p, Functor f) => p a (f a) -> p s (f s)
 
 type Iso s t a b
   = forall p f. (Profunctor p, Functor f) => p a (f b) -> p s (f t)
+
+fromIso :: Iso s t a b -> Iso b a t s
+fromIso l = withIso l $ \ sa bt -> iso bt sa
+{-# inline fromIso #-}
+
+-- | Extract the two functions, one from @s -> a@ and
+-- one from @b -> t@ that characterize an 'Iso'.
+withIso :: Iso s t a b -> ((s -> a) -> (b -> t) -> r) -> r
+withIso ai k = case ai (Exchange id Identity) of
+  Exchange sa bt -> k sa (coerce bt)
+{-# inline withIso #-}
 
 -- | A type and its generic representation are isomorphic
 repIso :: (Generic a, Generic b) => Iso a b (Rep a x) (Rep b x)
