@@ -138,7 +138,6 @@ instance  -- see Note [Changing type parameters]
   , Generic t
   , ErrorUnless field s (CollectField field (Rep s))
   , HasTotalFieldP field (Rep s) ~ 'Just a
-  , HasTotalFieldP field (Rep t) ~ 'Just b
   , HasTotalFieldP field (Rep (Indexed s)) ~ 'Just a'
   , HasTotalFieldP field (Rep (Indexed t)) ~ 'Just b'
   , t ~ Infer s a' b
