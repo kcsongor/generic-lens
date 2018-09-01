@@ -114,29 +114,20 @@ instance
 
 instance  -- see Note [Changing type parameters]
   ( Generic s
-  , ErrorUnless i s (0 <? i && i <=? Size (Rep s))
   , Generic t
-  -- see Note [CPP in instance constraints]
-#if __GLASGOW_HASKELL__ < 802
-  , '(s', t') ~ '(Proxied s, Proxied t)
-#else
-  , s' ~ Proxied s
-  , t' ~ Proxied t
-#endif
-  , Generic s'
-  , Generic t'
-  , GLens (HasTotalPositionPSym i) cs ct a b
-  , cs ~ CRep s
-  , ct ~ CRep t
-  , GLens' (HasTotalPositionPSym i) (CRep s') a'
-  , GLens' (HasTotalPositionPSym i) (CRep t') b'
+  , ErrorUnless i s (0 <? i && i <=? Size (Rep s))
+  , GLens (HasTotalPositionPSym i) (CRep s) (CRep t) a b
+  , HasTotalPositionP i (CRep s) ~ 'Just a
+  , HasTotalPositionP i (CRep t) ~ 'Just b
+  , HasTotalPositionP i (CRep (Indexed s)) ~ 'Just a'
+  , HasTotalPositionP i (CRep (Indexed t)) ~ 'Just b'
   , t ~ Infer s a' b
   , s ~ Infer t b' a
-  , Coercible cs (Rep s)
-  , Coercible ct (Rep t)
+  , Coercible (CRep s) (Rep s)
+  , Coercible (CRep t) (Rep t)
   ) => HasPosition i s t a b where
 
-  position = VL.ravel (repLens . coerced @cs @ct . glens @(HasTotalPositionPSym i))
+  position = VL.ravel (repLens . coerced @(CRep s) @(CRep t) . glens @(HasTotalPositionPSym i))
   {-# INLINE position #-}
 
 -- We wouldn't need the universal 'x' here if we could express above that
@@ -163,5 +154,5 @@ type family ErrorUnless (i :: Nat) (s :: Type) (hasP :: Bool) :: Constraint wher
   ErrorUnless _ _ 'True
     = ()
 
-data HasTotalPositionPSym  :: Nat -> (TyFun (Type -> Type) Bool)
+data HasTotalPositionPSym  :: Nat -> (TyFun (Type -> Type) (Maybe Type))
 type instance Eval (HasTotalPositionPSym t) tt = HasTotalPositionP t tt

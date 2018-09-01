@@ -82,16 +82,16 @@ instance GSmash sub sup => GSmash (C1 c sub) sup where
 instance GSmash sub sup => GSmash (D1 c sub) sup where
   gsmash sup (M1 sub) = M1 (gsmash sup sub)
 
-class GSmashLeaf sub sup (w :: Bool) where
+class GSmashLeaf sub sup (w :: Maybe Type) where
   gsmashLeaf :: sup p -> sub p -> sub p
 
 instance
   GLens' (HasTotalFieldPSym field) sup t
-  => GSmashLeaf (S1 ('MetaSel ('Just field) p f b) (Rec0 t)) sup 'True where
+  => GSmashLeaf (S1 ('MetaSel ('Just field) p f b) (Rec0 t)) sup ('Just t) where
   gsmashLeaf sup _ = M1 (K1 (view (glens @(HasTotalFieldPSym field)) sup))
 
-instance GSmashLeaf (S1 ('MetaSel ('Just field) p f b) (Rec0 t)) sup 'False where
+instance GSmashLeaf (S1 ('MetaSel ('Just field) p f b) (Rec0 t)) sup 'Nothing where
   gsmashLeaf _ = id
 
-data HasTotalFieldPSym :: Symbol -> (TyFun (Type -> Type) Bool)
+data HasTotalFieldPSym :: Symbol -> (TyFun (Type -> Type) (Maybe Type))
 type instance Eval (HasTotalFieldPSym sym) tt = HasTotalFieldP sym tt

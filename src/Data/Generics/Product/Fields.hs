@@ -135,22 +135,15 @@ instance
 
 instance  -- see Note [Changing type parameters]
   ( Generic s
-  , ErrorUnless field s (CollectField field (Rep s))
   , Generic t
-  -- see Note [CPP in instance constraints]
-#if __GLASGOW_HASKELL__ < 802
-  , '(s', t') ~ '(Proxied s, Proxied t)
-#else
-  , s' ~ Proxied s
-  , t' ~ Proxied t
-#endif
-  , Generic s'
-  , Generic t'
-  , GLens' (HasTotalFieldPSym field) (Rep s') a'
-  , GLens' (HasTotalFieldPSym field) (Rep t') b'
-  , GLens  (HasTotalFieldPSym field) (Rep s) (Rep t) a b
+  , ErrorUnless field s (CollectField field (Rep s))
+  , HasTotalFieldP field (Rep s) ~ 'Just a
+  , HasTotalFieldP field (Rep t) ~ 'Just b
+  , HasTotalFieldP field (Rep (Indexed s)) ~ 'Just a'
+  , HasTotalFieldP field (Rep (Indexed t)) ~ 'Just b'
   , t ~ Infer s a' b
   , s ~ Infer t b' a
+  , GLens  (HasTotalFieldPSym field) (Rep s) (Rep t) a b
   ) => HasField field s t a b where
   field f s = VL.ravel (repLens . glens @(HasTotalFieldPSym field)) f s
 
@@ -180,5 +173,5 @@ type family ErrorUnless (field :: Symbol) (s :: Type) (stat :: TypeStat) :: Cons
   ErrorUnless _ _ ('TypeStat '[] '[] _)
     = ()
 
-data HasTotalFieldPSym :: Symbol -> (TyFun (Type -> Type) Bool)
+data HasTotalFieldPSym :: Symbol -> (TyFun (Type -> Type) (Maybe Type))
 type instance Eval (HasTotalFieldPSym sym) tt = HasTotalFieldP sym tt

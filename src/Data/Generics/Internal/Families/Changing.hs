@@ -9,7 +9,7 @@
 {-# LANGUAGE UndecidableInstances   #-}
 
 module Data.Generics.Internal.Families.Changing
-  ( Proxied
+  ( Indexed
   , Infer
   , PTag (..)
   , P
@@ -55,11 +55,11 @@ import GHC.TypeLits (Nat, type (-), type (+), TypeError, ErrorMessage (..))
 data PTag = PTag
 type family P :: Nat -> k -> PTag -> k
 
-type Proxied t = Proxied' t 0
+type Indexed t = Indexed' t 0
 
-type family Proxied' (t :: k) (next :: Nat) :: k where
-  Proxied' (t (a :: j) :: k) next = (Proxied' t (next + 1)) (P next a 'PTag)
-  Proxied' t _ = t
+type family Indexed' (t :: k) (next :: Nat) :: k where
+  Indexed' (t (a :: j) :: k) next = (Indexed' t (next + 1)) (P next a 'PTag)
+  Indexed' t _ = t
 
 data Sub where
   Sub :: Nat -> k -> Sub

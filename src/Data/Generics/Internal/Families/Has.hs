@@ -24,7 +24,7 @@ module Data.Generics.Internal.Families.Has
   , GTypes
   ) where
 
-import Data.Type.Bool     (type (||), type (&&))
+import Data.Type.Bool     (type (||))
 import Data.Type.Equality (type (==))
 import GHC.Generics
 import GHC.TypeLits (Symbol, Nat)
@@ -34,67 +34,74 @@ import Data.Generics.Product.Internal.HList
 
 -- Note: these could be factored out into a single traversal
 
-type family HasTotalFieldP (field :: Symbol) f :: Bool where
-  HasTotalFieldP field (S1 ('MetaSel ('Just field) _ _ _) _)
-    = 'True
+type family Both (m1 :: Maybe a) (m2 :: Maybe a) :: Maybe a where
+  Both ('Just a) ('Just a) = 'Just a
+
+type family Alt (m1 :: Maybe a) (m2 :: Maybe a) :: Maybe a where
+  Alt ('Just a) _ = 'Just a
+  Alt _ b = b
+
+type family HasTotalFieldP (field :: Symbol) f :: Maybe Type where
+  HasTotalFieldP field (S1 ('MetaSel ('Just field) _ _ _) (Rec0 t))
+    = 'Just t
   HasTotalFieldP field (l :*: r)
-    = HasTotalFieldP field l || HasTotalFieldP field r
+    = Alt (HasTotalFieldP field l) (HasTotalFieldP field r)
   HasTotalFieldP field (l :+: r)
-    = HasTotalFieldP field l && HasTotalFieldP field r
+    = Both (HasTotalFieldP field l) (HasTotalFieldP field r)
   HasTotalFieldP field (S1 _ _)
-    = 'False
+    = 'Nothing
   HasTotalFieldP field (C1 _ f)
     = HasTotalFieldP field f
   HasTotalFieldP field (D1 _ f)
     = HasTotalFieldP field f
   HasTotalFieldP field (K1 _ _)
-    = 'False
+    = 'Nothing
   HasTotalFieldP field U1
-    = 'False
+    = 'Nothing
   HasTotalFieldP field V1
-    = 'False
+    = 'Nothing
 
-type family HasTotalTypeP (typ :: Type) f :: Bool where
+type family HasTotalTypeP (typ :: Type) f :: Maybe Type where
   HasTotalTypeP typ (S1 _ (K1 _ typ))
-    = 'True
+    = 'Just typ
   HasTotalTypeP typ (l :*: r)
-    = HasTotalTypeP typ l || HasTotalTypeP typ r
+    = Alt (HasTotalTypeP typ l) (HasTotalTypeP typ r)
   HasTotalTypeP typ (l :+: r)
-    = HasTotalTypeP typ l && HasTotalTypeP typ r
+    = Both (HasTotalTypeP typ l) (HasTotalTypeP typ r)
   HasTotalTypeP typ (S1 _ _)
-    = 'False
+    = 'Nothing
   HasTotalTypeP typ (C1 _ f)
     = HasTotalTypeP typ f
   HasTotalTypeP typ (D1 _ f)
     = HasTotalTypeP typ f
   HasTotalTypeP typ (K1 _ _)
-    = 'False
+    = 'Nothing
   HasTotalTypeP typ U1
-    = 'False
+    = 'Nothing
   HasTotalTypeP typ V1
-    = 'False
+    = 'Nothing
 
 data Pos (p :: Nat)
 
-type family HasTotalPositionP (pos :: Nat) f :: Bool where
-  HasTotalPositionP pos (S1 _ (K1 (Pos pos) _))
-    = 'True
+type family HasTotalPositionP (pos :: Nat) f :: Maybe Type where
+  HasTotalPositionP pos (S1 _ (K1 (Pos pos) t))
+    = 'Just t
   HasTotalPositionP pos (l :*: r)
-    = HasTotalPositionP pos l || HasTotalPositionP pos r
+    = Alt (HasTotalPositionP pos l) (HasTotalPositionP pos r)
   HasTotalPositionP pos (l :+: r)
-    = HasTotalPositionP pos l && HasTotalPositionP pos r
+    = Both (HasTotalPositionP pos l) (HasTotalPositionP pos r)
   HasTotalPositionP pos (S1 _ _)
-    = 'False
+    = 'Nothing
   HasTotalPositionP pos (C1 _ f)
     = HasTotalPositionP pos f
   HasTotalPositionP pos (D1 _ f)
     = HasTotalPositionP pos f
   HasTotalPositionP pos (K1 _ _)
-    = 'False
+    = 'Nothing
   HasTotalPositionP pos U1
-    = 'False
+    = 'Nothing
   HasTotalPositionP pos V1
-    = 'False
+    = 'Nothing
 
 type family HasPartialTypeP a f :: Bool where
   HasPartialTypeP t (l :+: r)
@@ -116,7 +123,7 @@ type family HasCtorP (ctor :: Symbol) f :: Bool where
   HasCtorP ctor _
     = 'False
 
-type family GTypes (rep :: Type -> Type) :: [(Type)] where
+type family GTypes (rep :: Type -> Type) :: [Type] where
   GTypes (l :*: r)
     = GTypes l ++ GTypes r
   GTypes (K1 _ a)

@@ -40,7 +40,7 @@ import GHC.Generics
 import GHC.TypeLits   (type (<=?), type (+), Nat)
 
 -- | Alias for the kind of the generic rep
-type G k = k -> Type
+type G = Type -> Type
 
 --------------------------------------------------------------------------------
 
@@ -50,7 +50,7 @@ type G k = k -> Type
 -- of the field in question in the data type. This is convenient, because we
 -- can reuse all the existing functions as long as they are polymorphic in the
 -- first parameter of 'K1'.
-type family CRep (a :: Type) :: G k where
+type family CRep (a :: Type) :: G where
   CRep rep = Fst (Traverse (Rep rep) 1)
 
 -- | The actual traversal.
@@ -58,7 +58,7 @@ type family CRep (a :: Type) :: G k where
 -- Might be cleaner if the sum and product parts were separated (as there's
 -- and invariant that 'n' should be zero when we're at a sum node, which holds
 -- for derived Generic instances (where the sums are strictly above the products))
-type family Traverse (a :: G k) (n :: Nat) :: (G k, Nat) where
+type family Traverse (a :: G) (n :: Nat) :: (G, Nat) where
   Traverse (M1 mt m s) n
     = Traverse1 (M1 mt m) (Traverse s n)
   Traverse (l :+: r) n
@@ -70,12 +70,12 @@ type family Traverse (a :: G k) (n :: Nat) :: (G k, Nat) where
   Traverse U1 n
     = '(U1, n)
 
-type family Traverse1 (w :: G k -> G k) (z :: (G k, Nat)) :: (G k, Nat) where
+type family Traverse1 (w :: G -> G) (z :: (G, Nat)) :: (G, Nat) where
   Traverse1 w '(i, n) = '(w i, n)
 
 -- | For products, we first traverse the left-hand side, followed by the second
 -- using the counter returned by the left traversal.
-type family TraverseProd (c :: G k -> G k -> G k) (a :: (G k, Nat)) (r :: G k) :: (G k, Nat) where
+type family TraverseProd (c :: G -> G -> G) (a :: (G, Nat)) (r :: G) :: (G, Nat) where
   TraverseProd w '(i, n) r = Traverse1 (w i) (Traverse r n)
 
 --------------------------------------------------------------------------------

@@ -152,6 +152,6 @@ type family ErrorUnlessOne (a :: Type) (s :: Type) (stat :: TypeStat) :: Constra
   ErrorUnlessOne _ _ ('TypeStat '[] '[] _)
     = ()
 
-data HasTotalTypePSym :: Type -> (TyFun (Type -> Type) Bool)
+data HasTotalTypePSym :: Type -> (TyFun (Type -> Type) (Maybe Type))
 type instance Eval (HasTotalTypePSym t) tt = HasTotalTypeP t tt
 

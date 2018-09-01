@@ -116,22 +116,13 @@ instance
 
 instance
   ( Generic s
-  , ErrorUnless ctor s (HasCtorP ctor (Rep s))
   , Generic t
-  -- see Note [CPP in instance constraints]
-#if __GLASGOW_HASKELL__ < 802
-  , '(s', t') ~ '(Proxied s, Proxied t)
-#else
-  , s' ~ Proxied s
-  , t' ~ Proxied t
-#endif
-  , Generic s'
-  , Generic t'
-  , GAsConstructor' ctor (Rep s) a
-  , GAsConstructor' ctor (Rep s') a'
+  , ErrorUnless ctor s (HasCtorP ctor (Rep s))
+  , GAsConstructor' ctor (Rep s) a -- TODO: add a test similar to #62 for prisms
+  , GAsConstructor' ctor (Rep (Indexed s)) a'
   , GAsConstructor ctor (Rep s) (Rep t) a b
   , t ~ Infer s a' b
-  , GAsConstructor' ctor (Rep t') b'
+  , GAsConstructor' ctor (Rep (Indexed t)) b'
   , s ~ Infer t b' a
   ) => AsConstructor ctor s t a b where
 
