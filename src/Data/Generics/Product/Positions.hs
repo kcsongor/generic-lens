@@ -112,16 +112,22 @@ instance
   position' f s = VL.ravel (repLens . coerced @cs @cs . glens @(HasTotalPositionPSym i)) f s
   {-# INLINE position' #-}
 
+-- this is to 'hide' the equality constraints which interfere with inlining
+-- pre 8.4.3
+class (~~) a b | a -> b, b -> a
+instance (a ~ b) => (~~) a b
+
 instance  -- see Note [Changing type parameters]
   ( Generic s
   , Generic t
   , ErrorUnless i s (0 <? i && i <=? Size (Rep s))
   , GLens (HasTotalPositionPSym i) (CRep s) (CRep t) a b
-  , HasTotalPositionP i (CRep s) ~ 'Just a
-  , HasTotalPositionP i (CRep (Indexed s)) ~ 'Just a'
-  , HasTotalPositionP i (CRep (Indexed t)) ~ 'Just b'
-  , t ~ Infer s a' b
-  , s ~ Infer t b' a
+  , HasTotalPositionP i (CRep s) ~~ 'Just a
+  , HasTotalPositionP i (CRep t) ~~ 'Just b
+  , HasTotalPositionP i (CRep (Indexed s)) ~~ 'Just a'
+  , HasTotalPositionP i (CRep (Indexed t)) ~~ 'Just b'
+  , t ~~ Infer s a' b
+  , s ~~ Infer t b' a
   , Coercible (CRep s) (Rep s)
   , Coercible (CRep t) (Rep t)
   ) => HasPosition i s t a b where

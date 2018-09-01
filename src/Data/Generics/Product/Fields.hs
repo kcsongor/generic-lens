@@ -133,15 +133,19 @@ instance
   ) => HasField' field s a where
   field' f s = VL.ravel (repLens . glens @(HasTotalFieldPSym field)) f s
 
+class (~~) a b | a -> b, b -> a
+instance (a ~ b) => (~~) a b
+
 instance  -- see Note [Changing type parameters]
   ( Generic s
   , Generic t
   , ErrorUnless field s (CollectField field (Rep s))
-  , HasTotalFieldP field (Rep s) ~ 'Just a
-  , HasTotalFieldP field (Rep (Indexed s)) ~ 'Just a'
-  , HasTotalFieldP field (Rep (Indexed t)) ~ 'Just b'
-  , t ~ Infer s a' b
-  , s ~ Infer t b' a
+  , HasTotalFieldP field (Rep s) ~~ 'Just a
+  , HasTotalFieldP field (Rep t) ~~ 'Just b
+  , HasTotalFieldP field (Rep (Indexed s)) ~~ 'Just a'
+  , HasTotalFieldP field (Rep (Indexed t)) ~~ 'Just b'
+  , t ~~ Infer s a' b
+  , s ~~ Infer t b' a
   , GLens  (HasTotalFieldPSym field) (Rep s) (Rep t) a b
   ) => HasField field s t a b where
   field f s = VL.ravel (repLens . glens @(HasTotalFieldPSym field)) f s
