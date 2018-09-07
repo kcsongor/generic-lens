@@ -9,7 +9,7 @@
 {-# language TypeOperators #-}
 {-# language UndecidableInstances #-}
 module Data.Generics.Iso
-  ( Is(..)
+  ( Wrapped(..)
   , _Unwrapped
   , _Wrapped
   )
@@ -22,25 +22,25 @@ import Data.Kind (Constraint)
 import GHC.Generics
 import GHC.TypeLits
 
-class GIso a b | a -> b where
-  gIso :: Iso' (a x) b
+class GWrapped a b | a -> b where
+  gWrapped :: Iso' (a x) b
 
-instance GIso a b => GIso (M1 i k a) b where
-  gIso = mIso.gIso
+instance GWrapped a b => GWrapped (M1 i k a) b where
+  gWrapped = mIso.gWrapped
 
-instance GIso (K1 i c) c where
-  gIso = kIso
+instance GWrapped (K1 i c) c where
+  gWrapped = kIso
 
-class Is a b | a -> b where
-  {-# minimal _Is | isTo, isFrom #-}
-  _Is :: VL.Iso' a b
-  _Is = iso isTo isFrom
+class Wrapped a b | a -> b where
+  {-# minimal wrappedIso | wrappedTo, wrappedFrom #-}
+  wrappedIso :: VL.Iso' a b
+  wrappedIso = iso wrappedTo wrappedFrom
 
-  isTo :: a -> b
-  isTo a = a ^. _Is
+  wrappedTo :: a -> b
+  wrappedTo a = a ^. wrappedIso
 
-  isFrom :: b -> a
-  isFrom a = a ^. fromIso _Is
+  wrappedFrom :: b -> a
+  wrappedFrom a = a ^. fromIso wrappedIso
 
 type family ErrorUnlessOnlyOne a b :: Constraint where
   ErrorUnlessOnlyOne t (M1 i k a) = ErrorUnlessOnlyOne t a
@@ -48,11 +48,11 @@ type family ErrorUnlessOnlyOne a b :: Constraint where
   ErrorUnlessOnlyOne t a =
     TypeError ('ShowType t ':<>: 'Text " is not a single-constructor, single-field datatype")
 
-instance (Generic a, ErrorUnlessOnlyOne a (Rep a), GIso (Rep a) b) => Is a b where
-  _Is = repIso . gIso
+instance (Generic a, ErrorUnlessOnlyOne a (Rep a), GWrapped (Rep a) b) => Wrapped a b where
+  wrappedIso = repIso . gWrapped
 
-_Unwrapped :: Is a b => Iso' a b
-_Unwrapped = _Is
+_Unwrapped :: Wrapped a b => Iso' a b
+_Unwrapped = wrappedIso
 
-_Wrapped :: Is a b => Iso' b a
-_Wrapped = fromIso _Is
+_Wrapped :: Wrapped a b => Iso' b a
+_Wrapped = fromIso wrappedIso
