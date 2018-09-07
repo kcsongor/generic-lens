@@ -15,8 +15,10 @@ module Data.Generics.Iso
   )
 where
 
-import Data.Generics.Internal.VL.Iso as VL
+import Data.Generics.Internal.Profunctor.Iso
 import Data.Generics.Internal.VL.Lens ((^.))
+
+import qualified Data.Generics.Internal.VL.Iso as VL
 
 import Data.Kind (Constraint)
 import GHC.Generics
@@ -34,13 +36,13 @@ instance GWrapped (K1 i c) c where
 class Wrapped a b | a -> b where
   {-# minimal wrappedIso | wrappedTo, wrappedFrom #-}
   wrappedIso :: VL.Iso' a b
-  wrappedIso = iso wrappedTo wrappedFrom
+  wrappedIso = VL.iso wrappedTo wrappedFrom
 
   wrappedTo :: a -> b
   wrappedTo a = a ^. wrappedIso
 
   wrappedFrom :: b -> a
-  wrappedFrom a = a ^. fromIso wrappedIso
+  wrappedFrom a = a ^. VL.fromIso wrappedIso
 
 type family ErrorUnlessOnlyOne a b :: Constraint where
   ErrorUnlessOnlyOne t (M1 i k a) = ErrorUnlessOnlyOne t a
@@ -49,10 +51,10 @@ type family ErrorUnlessOnlyOne a b :: Constraint where
     TypeError ('ShowType t ':<>: 'Text " is not a single-constructor, single-field datatype")
 
 instance (Generic a, ErrorUnlessOnlyOne a (Rep a), GWrapped (Rep a) b) => Wrapped a b where
-  wrappedIso = repIso . gWrapped
+  wrappedIso = withIso (repIso . gWrapped) VL.iso
 
-_Unwrapped :: Wrapped a b => Iso' a b
+_Unwrapped :: Wrapped a b => VL.Iso' a b
 _Unwrapped = wrappedIso
 
-_Wrapped :: Wrapped a b => Iso' b a
-_Wrapped = fromIso wrappedIso
+_Wrapped :: Wrapped a b => VL.Iso' b a
+_Wrapped = VL.fromIso wrappedIso
