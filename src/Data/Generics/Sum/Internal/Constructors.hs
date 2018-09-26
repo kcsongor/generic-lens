@@ -31,6 +31,7 @@ module Data.Generics.Sum.Internal.Constructors
 
 import Data.Generics.Internal.Families
 import Data.Generics.Product.Internal.HList
+import Data.Profunctor (Profunctor(..))
 
 import GHC.Generics
 import GHC.TypeLits (Symbol)
@@ -52,9 +53,8 @@ instance
   , ListTuple b bs
   ) => GAsConstructor ctor (M1 C ('MetaCons ctor fixity fields) f) (M1 C ('MetaCons ctor fixity fields) g) a b where
 
-  _GCtor = prism (M1 . view (fromIso glist) . tupleToList) (Right . listToTuple . view glist . unM1)
+  _GCtor = dimap (listToTuple . view glist . unM1) (M1 . view (fromIso glist) . tupleToList)
   {-# INLINE[0] _GCtor #-}
-
 
 instance GSumAsConstructor ctor (HasCtorP ctor l) l r l' r' a b => GAsConstructor ctor (l :+: r) (l' :+: r') a b where
   _GCtor = _GSumCtor @ctor @(HasCtorP ctor l)

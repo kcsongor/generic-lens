@@ -21,6 +21,7 @@
 -----------------------------------------------------------------------------
 module Data.Generics.Internal.Profunctor.Prism where
 
+import Data.Bifunctor         (bimap)
 import Data.Profunctor        (Choice(..), Profunctor(..))
 import Data.Tagged
 import Data.Profunctor.Unsafe ((#.), (.#))
@@ -44,12 +45,12 @@ prism :: (b -> t) -> (s -> Either t a) -> Prism s t a b
 prism bt seta eta = dimap seta (either id bt) (right' eta)
 
 _Left :: Prism (Either a c) (Either b c) a b
-_Left = prism Left $ either Right (Left . Right)
+_Left = left'
 
 _Right :: Prism (Either c a) (Either c b) a b
-_Right = prism Right $ either (Left . Left) Right
+_Right = right'
 
-prismPRavel :: (Market a b a b -> Market a b s t) -> Prism s t a b
+prismPRavel :: APrism s t a b -> Prism s t a b
 prismPRavel l pab = (prism2prismp $ l idPrism) pab
 
 build :: (Tagged b b -> Tagged t t) -> b -> t
@@ -65,9 +66,7 @@ without' :: Prism s t a b -> Prism s t c d -> Prism s t (Either a c) (Either b d
 without' k =
   withPrism k  $ \bt _ k' ->
   withPrism k' $ \dt setc ->
-    prism (foldEither bt dt) $ \s -> fmap Right (setc s)
-  where foldEither _ g (Right r) = g r
-        foldEither f _ (Left l) = f l
+    prism (either bt dt) $ \s -> fmap Right (setc s)
 {-# INLINE without' #-}
 
 withPrism :: APrism s t a b -> ((b -> t) -> (s -> Either t a) -> r) -> r
@@ -85,8 +84,7 @@ gsum f _ (L1 x) =  f x
 gsum _ g (R1 y) =  g y
 
 plus :: (a -> b) -> (c -> d) -> Either a c -> Either b d
-plus f _ (Left x) = Left (f x)
-plus _ g (Right y) = Right (g y)
+plus = bimap
 
 --------------------------------------------------------------------------------
 -- Market
