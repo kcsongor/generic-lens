@@ -32,6 +32,9 @@ type Lens' s a
 type Lens s t a b
   = forall f. Functor f => (a -> f b) -> s -> f t
 
+type LensLike f s t a b
+  = (a -> f b) -> s -> f t
+
 view :: ((a -> Const a a) -> s -> Const a s) -> s -> a
 view l s = (^.) s l
 
@@ -47,7 +50,7 @@ infixr 4 .~
 set :: Lens s t a b -> b -> s -> t
 set l x = l .~ x
 
-lens2lensvl :: ALens a b s t -> Lens s t a b
+lens2lensvl :: Functor f => ALens a b s t -> LensLike f s t a b
 lens2lensvl (ALens _get _set) =
   \f x ->
     case _get x of
