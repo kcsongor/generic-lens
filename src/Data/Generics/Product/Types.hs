@@ -35,6 +35,8 @@ module Data.Generics.Product.Types
   ) where
 
 import Data.Kind
+import Data.Int (Int8, Int16, Int32, Int64)
+import Data.Word (Word, Word8, Word16, Word32, Word64)
 
 import GHC.Generics
 import Data.Generics.Internal.VL.Traversal
@@ -76,9 +78,18 @@ instance {-# OVERLAPPING #-} HasTypes Bool a
 instance {-# OVERLAPPING #-} HasTypes Char a
 instance {-# OVERLAPPING #-} HasTypes Double a
 instance {-# OVERLAPPING #-} HasTypes Float a
-instance {-# OVERLAPPING #-} HasTypes Int a
 instance {-# OVERLAPPING #-} HasTypes Integer a
 instance {-# OVERLAPPING #-} HasTypes Ordering a
+instance {-# OVERLAPPING #-} HasTypes Int a
+instance {-# OVERLAPPING #-} HasTypes Int8 a
+instance {-# OVERLAPPING #-} HasTypes Int16 a
+instance {-# OVERLAPPING #-} HasTypes Int32 a
+instance {-# OVERLAPPING #-} HasTypes Int64 a
+instance {-# OVERLAPPING #-} HasTypes Word a
+instance {-# OVERLAPPING #-} HasTypes Word8 a
+instance {-# OVERLAPPING #-} HasTypes Word16 a
+instance {-# OVERLAPPING #-} HasTypes Word32 a
+instance {-# OVERLAPPING #-} HasTypes Word64 a
 
 --------------------------------------------------------------------------------
 
@@ -135,8 +146,17 @@ type family Interesting' f (a :: Type) (seen :: [Type]) :: ([Type], Bool) where
   Interesting' (Rec0 Char)     _ seen = '(seen ,'False)
   Interesting' (Rec0 Double)   _ seen = '(seen ,'False)
   Interesting' (Rec0 Float)    _ seen = '(seen ,'False)
-  Interesting' (Rec0 Int)      _ seen = '(seen ,'False)
   Interesting' (Rec0 Integer)  _ seen = '(seen ,'False)
+  Interesting' (Rec0 Int)      _ seen = '(seen ,'False)
+  Interesting' (Rec0 Int8)     _ seen = '(seen ,'False)
+  Interesting' (Rec0 Int16)    _ seen = '(seen ,'False)
+  Interesting' (Rec0 Int32)    _ seen = '(seen ,'False)
+  Interesting' (Rec0 Int64)    _ seen = '(seen ,'False)
+  Interesting' (Rec0 Word)     _ seen = '(seen ,'False)
+  Interesting' (Rec0 Word8)    _ seen = '(seen ,'False)
+  Interesting' (Rec0 Word16)   _ seen = '(seen ,'False)
+  Interesting' (Rec0 Word32)   _ seen = '(seen ,'False)
+  Interesting' (Rec0 Word64)   _ seen = '(seen ,'False)
   Interesting' (Rec0 r) t seen
     = InterestingUnless (Elem r seen) (Rep r) t r seen
   Interesting' _ _ seen
