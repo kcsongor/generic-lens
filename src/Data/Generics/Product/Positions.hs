@@ -35,6 +35,8 @@ module Data.Generics.Product.Positions
     -- $setup
     HasPosition (..)
   , HasPosition' (..)
+  , HasPosition_ (..)
+  , HasPosition0 (..)
 
   , getPosition
   , setPosition
@@ -93,8 +95,24 @@ class HasPosition (i :: Nat) s t a b | s i -> a, t i -> b, s i b -> t, t i a -> 
   --  ...
   position :: VL.Lens s t a b
 
+class HasPosition_ (i :: Nat) s t a b where
+  position_ :: VL.Lens s t a b
+
+-- |Records that have a field at a given position.
+--
+-- The difference between 'HasPosition' and 'HasPosition_' is similar to the
+-- one between 'Data.Generics.Product.Fields.HasField' and
+-- 'Data.Generics.Product.Fields.HasField_'.
+-- See 'Data.Generics.Product.Fields.HasField_'.
 class HasPosition' (i :: Nat) s a | s i -> a where
   position' :: VL.Lens s s a a
+
+-- |Records that have a field at a given position.
+--
+-- This class gives the minimal constraints needed to define this lens.
+-- For common uses, see 'HasPosition'.
+class HasPosition0 (i :: Nat) s t a b where
+  position0 :: VL.Lens s t a b
 
 getPosition :: forall i s a. HasPosition' i s a => s -> a
 getPosition s = s ^. position' @i
@@ -114,7 +132,7 @@ instance
 
 -- this is to 'hide' the equality constraints which interfere with inlining
 -- pre 8.4.3
-class (~~) a b | a -> b, b -> a
+class (~~) (a :: k) (b :: k) | a -> b, b -> a
 instance (a ~ b) => (~~) a b
 
 instance  -- see Note [Changing type parameters]
@@ -132,7 +150,7 @@ instance  -- see Note [Changing type parameters]
   , Coercible (CRep t) (Rep t)
   ) => HasPosition i s t a b where
 
-  position = VL.ravel (repLens . coerced @(CRep s) @(CRep t) . glens @(HasTotalPositionPSym i))
+  position = position0 @i
   {-# INLINE position #-}
 
 -- We wouldn't need the universal 'x' here if we could express above that
@@ -146,6 +164,33 @@ coerced = coerce
 -- See Note [Uncluttering type signatures]
 instance {-# OVERLAPPING #-} HasPosition f (Void1 a) (Void1 b) a b where
   position = undefined
+
+instance
+  ( Generic s
+  , Generic t
+  , ErrorUnless i s (0 <? i && i <=? Size (Rep s))
+  , GLens (HasTotalPositionPSym i) (CRep s) (CRep t) a b
+  , UnifyHead s t
+  , UnifyHead t s
+  , Coercible (CRep s) (Rep s)
+  , Coercible (CRep t) (Rep t)
+  ) => HasPosition_ i s t a b where
+
+  position_ = position0 @i
+  {-# INLINE position_ #-}
+
+instance {-# OVERLAPPING #-} HasPosition_ f (Void1 a) (Void1 b) a b where
+  position_ = undefined
+
+instance
+  ( Generic s
+  , Generic t
+  , GLens (HasTotalPositionPSym i) (CRep s) (CRep t) a b
+  , Coercible (CRep s) (Rep s)
+  , Coercible (CRep t) (Rep t)
+  ) => HasPosition0 i s t a b where
+  position0 = VL.ravel (repLens . coerced @(CRep s) @(CRep t) . glens @(HasTotalPositionPSym i))
+  {-# INLINE position0 #-}
 
 type family ErrorUnless (i :: Nat) (s :: Type) (hasP :: Bool) :: Constraint where
   ErrorUnless i s 'False

@@ -30,7 +30,9 @@ module Data.Generics.Sum.Constructors
 
     -- $setup
     AsConstructor (..)
+  , AsConstructor_ (..)
   , AsConstructor' (..)
+  , AsConstructor0 (..)
   ) where
 
 import Data.Generics.Internal.Families
@@ -103,8 +105,24 @@ class AsConstructor (ctor :: Symbol) s t a b | ctor s -> a, ctor t -> b where
   --  ...
   _Ctor :: Prism s t a b
 
+-- |Sums that have a constructor with a given name.
+--
+-- The difference between 'HasConstructor' and 'HasConstructor_' is similar to
+-- the one between 'Data.Generics.Product.Fields.HasField' and
+-- 'Data.Generics.Product.Fields.HasField_'.
+-- See 'Data.Generics.Product.Fields.HasField_'.
+class AsConstructor_ (ctor :: Symbol) s t a b where
+  _Ctor_ :: Prism s t a b
+
 class AsConstructor' (ctor :: Symbol) s a | ctor s -> a where
   _Ctor' :: Prism s s a a
+
+-- |Sums that have a constructor with a given name.
+--
+-- This class gives the minimal constraints needed to define this prism.
+-- For common uses, see 'HasConstructor'.
+class AsConstructor0 (ctor :: Symbol) s t a b where
+  _Ctor0 :: Prism s t a b
 
 instance
   ( Generic s
@@ -126,12 +144,38 @@ instance
   , s ~ Infer t b' a
   ) => AsConstructor ctor s t a b where
 
-  _Ctor eta = prismRavel (prismPRavel (repIso . _GCtor @ctor)) eta
+  _Ctor = _Ctor0 @ctor
   {-# INLINE[2] _Ctor #-}
 
 -- See Note [Uncluttering type signatures]
 instance {-# OVERLAPPING #-} AsConstructor ctor (Void1 a) (Void1 b) a b where
   _Ctor = undefined
+
+instance
+  ( Generic s
+  , Generic t
+  , ErrorUnless ctor s (HasCtorP ctor (Rep s))
+  , GAsConstructor' ctor (Rep s) a -- TODO: add a test similar to #62 for prisms
+  , GAsConstructor' ctor (Rep (Indexed s)) a'
+  , GAsConstructor ctor (Rep s) (Rep t) a b
+  , GAsConstructor' ctor (Rep (Indexed t)) b'
+  , UnifyHead s t
+  , UnifyHead t s
+  ) => AsConstructor_ ctor s t a b where
+
+  _Ctor_ = _Ctor0 @ctor
+  {-# INLINE[2] _Ctor_ #-}
+
+instance {-# OVERLAPPING #-} AsConstructor_ ctor (Void1 a) (Void1 b) a b where
+  _Ctor_ = undefined
+
+instance
+  ( Generic s
+  , Generic t
+  , GAsConstructor ctor (Rep s) (Rep t) a b
+  ) => AsConstructor0 ctor s t a b where
+  _Ctor0 = prismRavel (prismPRavel (repIso . _GCtor @ctor))
+  {-# INLINE[2] _Ctor0 #-}
 
 type family ErrorUnless (ctor :: Symbol) (s :: Type) (contains :: Bool) :: Constraint where
   ErrorUnless ctor s 'False

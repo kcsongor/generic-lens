@@ -16,6 +16,7 @@ module Data.Generics.Internal.Families.Changing
   , LookupParam
   , ArgAt
   , ArgCount
+  , UnifyHead
   ) where
 
 import GHC.TypeLits (Nat, type (-), type (+), TypeError, ErrorMessage (..))
@@ -152,3 +153,9 @@ type family ArgAt (t :: k) (n :: Nat) :: j where
 -- However, for some reason, this violates the functional dependencies on 8.2.2.
 -- Therefore, when using a newer version of the compiler, the original constraints
 -- are used, as the expression size is smaller under 8.2.2.
+
+-- | Ensure that the types @a@ and @b@ are both applications of the same
+-- constructor. The arguments may be different.
+class UnifyHead (a :: k) (b :: k)
+instance {-# OVERLAPPING #-} (gb ~ g b, UnifyHead f g) => UnifyHead (f a) gb
+instance (a ~ b) => UnifyHead a b
