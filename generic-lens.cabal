@@ -48,6 +48,8 @@ library
                     , Data.Generics.Internal.VL.Prism
                     , Data.Generics.Internal.VL.Iso
 
+                    , Data.Generics.Labels
+
   other-modules:      Data.Generics.Internal.Families
                     , Data.Generics.Internal.Families.Changing
                     , Data.Generics.Internal.Families.Collect
