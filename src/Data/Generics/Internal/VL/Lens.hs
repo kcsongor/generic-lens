@@ -22,6 +22,7 @@
 module Data.Generics.Internal.VL.Lens where
 
 import Control.Applicative    (Const(..))
+import Data.Coerce            (coerce)
 import Data.Functor.Identity  (Identity(..))
 import Data.Generics.Internal.Profunctor.Lens (ALens (..), idLens)
 
@@ -46,6 +47,9 @@ infixr 4 .~
 
 set :: Lens s t a b -> b -> s -> t
 set l x = l .~ x
+
+over :: ((a -> Identity b) -> s -> Identity t) -> (a -> b) -> s -> t
+over = coerce
 
 lens2lensvl :: ALens a b s t -> Lens s t a b
 lens2lensvl (ALens _get _set) =
