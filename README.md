@@ -16,6 +16,9 @@ fully interoperable with the combinators found in mainstream lens libraries.
 
 Examples can be found in the `examples` and `tests` folders.
 
+The library is described in the paper:
+> Csongor Kiss, Matthew Pickering, and Nicolas Wu. 2018. Generic deriving of generic traversals. Proc. ACM Program. Lang. 2, ICFP, Article 85 (July 2018), 30 pages. DOI: https://doi.org/10.1145/3236780
+
 Table of contents
 =================
 
@@ -407,7 +410,7 @@ The
 library is used to ensure (see [here](test/Spec.hs)) that everything gets
 inlined away.
 
-TODO push benchmarks too
+There is also a [benchmark suite](https://github.com/mpickering/generic-lens-benchmarks) with larger, real-world examples.
 # Contributors
 
 + [Matthew Pickering](https://github.com/mpickering)
