@@ -8,7 +8,7 @@
 {-# language TypeFamilies #-}
 {-# language TypeOperators #-}
 {-# language UndecidableInstances #-}
-module Data.Generics.Iso
+module Data.Generics.Wrapped
   ( Wrapped(..)
   , _Unwrapped
   , _Wrapped
