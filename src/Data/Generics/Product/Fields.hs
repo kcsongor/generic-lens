@@ -182,8 +182,6 @@ instance
   , ErrorUnless field s (CollectField field (Rep s))
   , HasTotalFieldP field (Rep s) ~~ 'Just a
   , HasTotalFieldP field (Rep t) ~~ 'Just b
-  , HasTotalFieldP field (Rep (Indexed s)) ~~ 'Just a'
-  , HasTotalFieldP field (Rep (Indexed t)) ~~ 'Just b'
   , UnifyHead s t
   , UnifyHead t s
   , GLens  (HasTotalFieldPSym field) (Rep s) (Rep t) a b

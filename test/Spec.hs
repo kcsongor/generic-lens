@@ -178,11 +178,17 @@ subtypePrismManual eta = prism g f eta
 fieldALensName :: Lens' Record Int
 fieldALensName = field @"fieldA"
 
+fieldALensName_ :: Lens' Record Int
+fieldALensName_ = field_ @"fieldA"
+
 fieldALensType :: Lens' Record Int
 fieldALensType = typed @Int
 
 fieldALensPos :: Lens' Record Int
 fieldALensPos = position @1
+
+fieldALensPos_ :: Lens' Record Int
+fieldALensPos_ = position_ @1
 
 subtypeLensGeneric :: Lens' Record Record2
 subtypeLensGeneric = super
@@ -195,6 +201,9 @@ typeChangingGenericPos = position @1
 
 typeChangingGenericCompose :: Lens (Record3 (Record3 a)) (Record3 (Record3 b)) a b
 typeChangingGenericCompose = field @"fieldA" . field @"fieldA"
+
+typeChangingGenericCompose_ :: Lens (Record3 (Record3 a)) (Record3 (Record3 b)) a b
+typeChangingGenericCompose_ = field_ @"fieldA" . field_ @"fieldA"
 
 sum1PrismB :: Prism Sum1 Sum1 Int Int
 sum1PrismB = _Ctor @"B"
@@ -217,12 +226,15 @@ sum2TypePrismChar = _Typed @Char
 tests :: Test
 tests = TestList $ map mkHUnitTest
   [ $(inspectTest $ 'fieldALensManual          === 'fieldALensName)
+  , $(inspectTest $ 'fieldALensManual          === 'fieldALensName_)
   , $(inspectTest $ 'fieldALensManual          === 'fieldALensType)
   , $(inspectTest $ 'fieldALensManual          === 'fieldALensPos)
+  , $(inspectTest $ 'fieldALensManual          === 'fieldALensPos_)
   , $(inspectTest $ 'subtypeLensManual         === 'subtypeLensGeneric)
   , $(inspectTest $ 'typeChangingManual        === 'typeChangingGeneric)
   , $(inspectTest $ 'typeChangingManual        === 'typeChangingGenericPos)
   , $(inspectTest $ 'typeChangingManualCompose === 'typeChangingGenericCompose)
+  , $(inspectTest $ 'typeChangingManualCompose === 'typeChangingGenericCompose_)
   , $(inspectTest $ 'sum1PrismManual           === 'sum1PrismB)
   , $(inspectTest $ 'subtypePrismManual        === 'subtypePrismGeneric)
   , $(inspectTest $ 'sum2PrismManualChar       === 'sum2TypePrismChar)
