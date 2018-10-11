@@ -1,3 +1,4 @@
+{-# LANGUAGE TupleSections #-}
 {-# LANGUAGE GADTs                     #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
 {-# LANGUAGE Rank2Types                #-}
@@ -25,6 +26,8 @@ import Data.Profunctor.Unsafe ((#.), (.#))
 import GHC.Generics           ((:*:)(..), (:+:)(..), Generic(..), M1(..), K1(..), Rep)
 import Data.Coerce
 import Data.Generics.Internal.GenericN (Rec (..))
+
+import qualified Data.Generics.Internal.VL.Iso as VL
 
 type Iso s t a b
   = forall p. (Profunctor p) => p a b -> p s t
@@ -73,6 +76,10 @@ fromIso l = withIso l $ \ sa bt -> iso bt sa
 iso :: (s -> a) -> (b -> t) -> Iso s t a b
 iso = dimap
 {-# INLINE iso #-}
+
+iso2isovl :: Iso s t a b -> VL.Iso s t a b
+iso2isovl _iso = withIso _iso VL.iso
+{-# INLINE iso2isovl #-}
 
 withIso :: Iso s t a b -> ((s -> a) -> (b -> t) -> r) -> r
 withIso ai k = case ai (Exchange id id) of
