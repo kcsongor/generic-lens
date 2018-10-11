@@ -1,8 +1,9 @@
 ## 1.1.0.0
 - Fix regression in type inference for polymorphic optics
-- Add `HasField0`, `HasPosition0`, `AsConstructor0`, `HasField_`, `HasPositon_`, and `AsConstructor_` (#55) (Lysxia)
-- `types` now supports Data.Word and Data.Int (#63) (Lysxia)
+- Add `HasField0`, `HasPosition0`, `AsConstructor0`, `HasField_`, `HasPositon_`, and `AsConstructor_` (Lysxia)
+- `types` now supports Data.Word and Data.Int (Lysxia)
 - Add `Wrapped` iso for newtypes (Isaac Elliott)
+- Expose internals through Data.GenericLens.Internal
 
 ## 1.0.0.2
 - Fix compile-time performance regression

@@ -32,6 +32,8 @@ module Data.Generics.Product.Types
     --  $example
     HasTypes
   , types
+
+  , Interesting
   ) where
 
 import Data.Kind
