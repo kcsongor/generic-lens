@@ -1,3 +1,5 @@
+{-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE TypeApplications #-}
 {-# language ConstraintKinds #-}
 {-# language DataKinds #-}
 {-# language FlexibleContexts #-}
@@ -23,47 +25,23 @@
 -----------------------------------------------------------------------------
 
 module Data.Generics.Wrapped
-  ( Wrapped(..)
+  ( Wrapped (..)
+  , wrappedTo
+  , wrappedFrom
   , _Unwrapped
   , _Wrapped
   )
 where
 
+import Control.Applicative    (Const(..))
 import Data.Generics.Internal.Profunctor.Iso
-import Data.Generics.Internal.VL.Lens ((^.))
 
 import qualified Data.Generics.Internal.VL.Iso as VL
+import Data.Generics.Internal.Families.Changing ( UnifyHead )
 
 import Data.Kind (Constraint)
 import GHC.Generics
 import GHC.TypeLits
-
-class GWrapped a b | a -> b where
-  gWrapped :: Iso' (a x) b
-
-instance GWrapped a b => GWrapped (M1 i k a) b where
-  gWrapped = mIso.gWrapped
-
-instance GWrapped (K1 i c) c where
-  gWrapped = kIso
-
--- | @since 1.1.0.0
-class Wrapped a b | a -> b where
-  {-# minimal wrappedIso | wrappedTo, wrappedFrom #-}
-  -- | @since 1.1.0.0
-  wrappedIso :: VL.Iso' a b
-  wrappedIso = VL.iso wrappedTo wrappedFrom
-  {-# INLINE wrappedIso #-}
-
-  -- | @since 1.1.0.0
-  wrappedTo :: a -> b
-  wrappedTo a = a ^. wrappedIso
-  {-# INLINE wrappedTo #-}
-
-  -- | @since 1.1.0.0
-  wrappedFrom :: b -> a
-  wrappedFrom a = a ^. VL.fromIso wrappedIso
-  {-# INLINE wrappedFrom #-}
 
 type family ErrorUnlessOnlyOne a b :: Constraint where
   ErrorUnlessOnlyOne t (M1 i k a) = ErrorUnlessOnlyOne t a
@@ -71,16 +49,56 @@ type family ErrorUnlessOnlyOne a b :: Constraint where
   ErrorUnlessOnlyOne t a =
     TypeError ('ShowType t ':<>: 'Text " is not a single-constructor, single-field datatype")
 
-instance (Generic a, ErrorUnlessOnlyOne a (Rep a), GWrapped (Rep a) b) => Wrapped a b where
+-- | @since 1.1.0.0
+_Unwrapped :: Wrapped s t a b => VL.Iso s t a b
+_Unwrapped = wrappedIso
+{-# inline _Unwrapped #-}
+
+-- | @since 1.1.0.0
+_Wrapped :: Wrapped s t a b => VL.Iso b a t s
+_Wrapped = VL.fromIso wrappedIso
+{-# inline _Wrapped #-}
+
+-- TODO: move this into doctets
+
+-- newtype FlippedEither a b = FlippedEither (Either b a)
+--   deriving Generic
+
+-- test :: (a -> c) -> FlippedEither a b -> FlippedEither c b
+-- test f = over wrappedIso (fmap f)
+
+class GWrapped s t a b | s -> a, t -> b, s b -> t, t a -> s where
+  gWrapped :: Iso (s x) (t x) a b
+
+instance GWrapped s t a b => GWrapped (M1 i k s) (M1 i k t) a b where
+  gWrapped = mIso . gWrapped
+
+instance (a ~ c, b ~ d) => GWrapped (K1 i a) (K1 i b) c d where
+  gWrapped = kIso
+
+-- | @since 1.1.0.0
+class Wrapped s t a b | s -> a, t -> b where
+  -- | @since 1.1.0.0
+  wrappedIso :: VL.Iso s t a b
+
+-- | @since 1.1.0.0
+wrappedTo :: forall s t a b. Wrapped s t a b => s -> a
+wrappedTo a = view (wrappedIso @s @t @a @b) a
+  where view l s = getConst (l Const s)
+{-# INLINE wrappedTo #-}
+
+-- | @since 1.1.0.0
+wrappedFrom :: forall s t a b. Wrapped s t a b => b -> t
+wrappedFrom a = view (VL.fromIso (wrappedIso @s @t @a @b)) a
+  where view l s = getConst (l Const s)
+{-# INLINE wrappedFrom #-}
+
+instance
+  ( Generic s
+  , Generic t
+  , GWrapped (Rep s) (Rep t) a b
+  , UnifyHead s t
+  , UnifyHead t s
+  ) => Wrapped s t a b where
   wrappedIso = iso2isovl (repIso . gWrapped)
   {-# INLINE wrappedIso #-}
-
--- | @since 1.1.0.0
-_Unwrapped :: Wrapped a b => VL.Iso' a b
-_Unwrapped = wrappedIso
-{-# INLINE _Unwrapped #-}
-
--- | @since 1.1.0.0
-_Wrapped :: Wrapped a b => VL.Iso' b a
-_Wrapped = VL.fromIso wrappedIso
-{-# INLINE _Wrapped #-}
