@@ -117,8 +117,11 @@ instance
   typed f s = VL.ravel (repLens . glens @(HasTotalTypePSym a)) f s
 
 instance {-# OVERLAPPING #-} HasType a a where
-    typed = id
-    {-# INLINE typed #-}
+    getTyped = id
+    {-# INLINE getTyped #-}
+
+    setTyped a _ = a
+    {-# INLINE setTyped #-}
 
 -- See Note [Uncluttering type signatures]
 instance {-# OVERLAPPING #-} HasType a Void where
