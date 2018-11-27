@@ -198,13 +198,13 @@ subtypeLensGeneric :: Lens' Record Record2
 subtypeLensGeneric = super
 
 typeChangingGeneric :: Lens (Record3 a) (Record3 b) a b
-typeChangingGeneric = field @"fieldA"
+typeChangingGeneric = #fieldA
 
 typeChangingGenericPos :: Lens (Record3 a) (Record3 b) a b
 typeChangingGenericPos = position @1
 
 typeChangingGenericCompose :: Lens (Record3 (Record3 a)) (Record3 (Record3 b)) a b
-typeChangingGenericCompose = field @"fieldA" . field @"fieldA"
+typeChangingGenericCompose = #fieldA . #fieldA
 
 typeChangingGenericCompose_ :: Lens (Record3 (Record3 a)) (Record3 (Record3 b)) a b
 typeChangingGenericCompose_ = field_ @"fieldA" . field_ @"fieldA"
@@ -228,9 +228,9 @@ sum2TypePrismChar :: Prism Sum2 Sum2 Char Char
 sum2TypePrismChar = _Typed @Char
 
 data SumOfProducts =
-    RecA { foo :: Int, valA :: String }
-  | RecB { foo :: Int, valB :: Bool }
-  | RecC { foo :: Int }
+    RecA { _foo :: Int, valA :: String }
+  | RecB { _foo :: Int, valB :: Bool }
+  | RecC { _foo :: Int }
   deriving (Show, Eq, Generic)
 
 tests :: Test
@@ -259,11 +259,11 @@ tests = TestList $ map mkHUnitTest
 --  , $(inspectTest $ 'sum3Param2Manual          === 'sum3Param2Derived)
   ] ++
   -- Tests for overloaded labels
-  [ (valLabel ^. #foo       ) ~=?  3
-  , (valLabel & #foo +~ 10  ) ~=? RecB 13 True
-  , (valLabel ^? #_RecB     ) ~=? Just (3, True)
-  , (valLabel ^? #_RecB . _1) ~=? Just 3
-  , (valLabel ^? #_RecC     ) ~=? Nothing
+  [ (valLabel ^. #_foo        ) ~=?  3
+  , (valLabel &  #_foo +~ 10  ) ~=? RecB 13 True
+  , (valLabel ^? #_RecB       ) ~=? Just (3, True)
+  , (valLabel ^? #_RecB . _1  ) ~=? Just 3
+  , (valLabel ^? #_RecC       ) ~=? Nothing
   ]
   where valLabel = RecB 3 True 
 

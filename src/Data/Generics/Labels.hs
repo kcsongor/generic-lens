@@ -26,9 +26,9 @@
 -- Use at your own risk.
 --------------------------------------------------------------------------------
 
-module Data.Generics.Labels (
-  -- * Orphan IsLabel Instance
-  -- $sec1
+module Data.Generics.Labels
+  ( -- * Orphan IsLabel Instance
+    -- $sec1
     Field(..)
   , Field'
   , Constructor(..)
@@ -106,8 +106,10 @@ instance {-# INCOHERENT #-} AsConstructor name s t a b => Constructor name s t a
 instance {-# INCOHERENT #-} AsConstructor' name s a => Constructor name s s a a where
   constructorPrism = _Ctor' @name
 
+type family BeginsWithCapital (name :: Symbol) :: Bool where
+  BeginsWithCapital name = CmpSymbol "_@" name == 'LT && CmpSymbol "_[" name == 'GT
 
-instance ( (CmpSymbol "_@" name == 'LT && CmpSymbol "_{" name == 'GT) ~ capital
+instance ( capital ~ BeginsWithCapital name
          , IsLabelHelper capital name p f s t a b
          , pafb ~ p a (f b), psft ~ p s (f t)) => IsLabel name (pafb -> psft) where
 #if __GLASGOW_HASKELL__ >= 802
