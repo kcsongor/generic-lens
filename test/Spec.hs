@@ -10,6 +10,7 @@
 {-# LANGUAGE ScopedTypeVariables             #-}
 {-# LANGUAGE TypeApplications                #-}
 {-# LANGUAGE TemplateHaskell                 #-}
+{-# LANGUAGE OverloadedLabels                #-}
 
 module Main where
 
@@ -23,6 +24,9 @@ import System.Exit
 import Data.Generics.Internal.VL.Lens
 import Data.Generics.Internal.VL.Prism
 import Data.Generics.Internal.VL.Traversal
+import Control.Lens (_1, (+~))
+import Data.Function ((&))
+import Data.Generics.Labels ()
 
 -- This is sufficient at we only want to test that they typecheck
 import Test24 ()
@@ -223,6 +227,12 @@ sum2TypePrism = _Typed @Int
 sum2TypePrismChar :: Prism Sum2 Sum2 Char Char
 sum2TypePrismChar = _Typed @Char
 
+data SumOfProducts =
+    RecA { foo :: Int, valA :: String }
+  | RecB { foo :: Int, valB :: Bool }
+  | RecC { foo :: Int }
+  deriving (Show, Eq, Generic)
+
 tests :: Test
 tests = TestList $ map mkHUnitTest
   [ $(inspectTest $ 'fieldALensManual          === 'fieldALensName)
@@ -247,6 +257,14 @@ tests = TestList $ map mkHUnitTest
   -- TODO [1.0.0.0]: these tests pass with the new implementation
 --  , $(inspectTest $ 'sum3Param1Manual          === 'sum3Param1Derived)
 --  , $(inspectTest $ 'sum3Param2Manual          === 'sum3Param2Derived)
+  ] ++
+  -- Tests for overloaded labels
+  [ (valLabel ^. #foo       ) ~=?  3
+  , (valLabel & #foo +~ 10  ) ~=? RecB 13 True
+  , (valLabel ^? #_RecB     ) ~=? Just (3, True)
+  , (valLabel ^? #_RecB . _1) ~=? Just 3
+  , (valLabel ^? #_RecC     ) ~=? Nothing
   ]
+  where valLabel = RecB 3 True 
 
 -- TODO: add test for traversals over multiple types

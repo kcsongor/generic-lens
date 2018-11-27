@@ -34,6 +34,7 @@ library
                     , Data.Generics.Product.Types
                     , Data.Generics.Product.Constraints
                     , Data.Generics.Product.HList
+                    , Data.Generics.Labels
                     , Data.Generics.Internal.GenericN
 
                     , Data.Generics.Sum

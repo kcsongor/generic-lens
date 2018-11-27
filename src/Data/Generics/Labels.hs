@@ -13,13 +13,12 @@
 {-# LANGUAGE UndecidableInstances   #-}
 {-# OPTIONS_GHC -Wno-orphans        #-}
 
-
 --------------------------------------------------------------------------------
 -- |
 -- Module      : Data.Generics.Labels
 -- Copyright   : (C) 2018 Csongor Kiss
--- Maintainer  : Csongor Kiss <kiss.csongor.kiss@gmail.com>
 -- License     : BSD3
+-- Maintainer  : Csongor Kiss <kiss.csongor.kiss@gmail.com>
 -- Stability   : experimental
 -- Portability : non-portable
 --
@@ -47,7 +46,6 @@ import Data.Type.Equality (type (==))
 
 import GHC.OverloadedLabels
 import GHC.TypeLits
-
 
 -- $sec1
 -- An instance for creating lenses and prisms with @#identifiers@ from the
