@@ -2,6 +2,7 @@
 {-# OPTIONS_GHC -dsuppress-all #-}
 
 {-# LANGUAGE AllowAmbiguousTypes             #-}
+{-# LANGUAGE CPP                             #-}
 {-# LANGUAGE DataKinds                       #-}
 {-# LANGUAGE DeriveGeneric                   #-}
 {-# LANGUAGE DuplicateRecordFields           #-}
@@ -261,9 +262,11 @@ tests = TestList $ map mkHUnitTest
   -- Tests for overloaded labels
   [ (valLabel ^. #_foo        ) ~=?  3
   , (valLabel &  #_foo +~ 10  ) ~=? RecB 13 True
+#if __GLASGOW_HASKELL__ >= 802
   , (valLabel ^? #_RecB       ) ~=? Just (3, True)
   , (valLabel ^? #_RecB . _1  ) ~=? Just 3
   , (valLabel ^? #_RecC       ) ~=? Nothing
+#endif
   ]
   where valLabel = RecB 3 True 
 

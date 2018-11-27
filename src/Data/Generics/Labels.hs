@@ -132,6 +132,11 @@ class IsLabelHelper capital name p f s t a b where
 instance (Functor f, Field name s t a b) => IsLabelHelper 'False name (->) f s t a b where
   labelOutput = fieldLens @name
 
+#if __GLASGOW_HASKELL__ >= 802
 instance ( Applicative f, Choice p, Constructor name s t a b
          , name' ~ AppendSymbol "_" name) => IsLabelHelper 'True name' p f s t a b where
   labelOutput = constructorPrism @name
+#else
+instance (TypeError ('Text "Labels for Prisms require at least GHC 8.2"), Choice p) => IsLabelHelper 'True name' p f s t a b where
+  labelOutput = undefined
+#endif
