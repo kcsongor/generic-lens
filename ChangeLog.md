@@ -4,6 +4,7 @@
 - `types` now supports Data.Word and Data.Int (Lysxia)
 - Add `Wrapped` iso for newtypes (Isaac Elliott)
 - Expose internals through Data.GenericLens.Internal
+- Add labels for prisms (Daniel Winograd-Cort)
 
 ## 1.0.0.2
 - Fix compile-time performance regression
