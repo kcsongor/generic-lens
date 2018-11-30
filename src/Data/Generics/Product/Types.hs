@@ -33,7 +33,14 @@ module Data.Generics.Product.Types
     HasTypes
   , types
 
-  , Interesting
+  , HasTypesUsing
+  , typesUsing
+
+  , HasTypes'
+  , types'
+
+  , Children
+  , ChDefault
   ) where
 
 import Data.Kind
@@ -57,129 +64,173 @@ class HasTypes s a where
   {-# INLINE types_ #-}
 
 instance
-  ( HasTypes' (Interesting s a) s a
+  ( HasTypesUsing ChDefault s a
   ) => HasTypes s a where
-  types_ = types' @(Interesting s a)
+  types_ = typesUsing @ChDefault
   {-# INLINE types_ #-}
 
-class HasTypes' (t :: Bool) s a where
+class HasTypesUsing (ch :: Type) s a where
+  typesUsing :: Traversal' s a
+
+instance
+  ( HasTypes1 ch (Interesting ch a s) s a
+  ) => HasTypesUsing ch s a where
+  typesUsing = types1 @ch @(Interesting ch a s)
+  {-# INLINE typesUsing #-}
+
+class HasTypes0 (ch :: Type) s a where
+  types0 :: Traversal' s a
+
+instance {-# OVERLAPPING #-} HasTypes0 ch a a where
+  types0 = id
+
+instance
+  ( HasTypes1 ch (Interesting ch a s) s a
+  ) => HasTypes0 ch s a where
+  types0 = types1 @ch @(Interesting ch a s)
+
+class HasTypes1 (ch :: Type) (t :: Bool) s a where
+  types1 :: Traversal' s a
+
+instance HasTypes' ch s a => HasTypes1 ch 'True s a where
+  types1 = types' @ch
+
+instance HasTypes1 ch 'False s a where
+  types1 _ = pure
+  --{-# INLINE types1 #-}
+
+class HasTypes' (ch :: Type) s a where
   types' :: Traversal' s a
 
 instance
-  ( GHasTypes (Rep s) a
+  ( GHasTypes ch (Rep s) a
   , Generic s
-  ) => HasTypes' 'True s a where
-  types' f s = to <$> gtypes_ f (from s)
+  ) => HasTypes' ch s a where
+  types' f s = to <$> gtypes_ @ch f (from s)
   --{-# INLINE types' #-}
-
-instance HasTypes' 'False s a where
-  types' _ = pure
-  --{-# INLINE types' #-}
-
-instance {-# OVERLAPPING #-} HasTypes Bool a
-instance {-# OVERLAPPING #-} HasTypes Char a
-instance {-# OVERLAPPING #-} HasTypes Double a
-instance {-# OVERLAPPING #-} HasTypes Float a
-instance {-# OVERLAPPING #-} HasTypes Integer a
-instance {-# OVERLAPPING #-} HasTypes Ordering a
-instance {-# OVERLAPPING #-} HasTypes Int a
-instance {-# OVERLAPPING #-} HasTypes Int8 a
-instance {-# OVERLAPPING #-} HasTypes Int16 a
-instance {-# OVERLAPPING #-} HasTypes Int32 a
-instance {-# OVERLAPPING #-} HasTypes Int64 a
-instance {-# OVERLAPPING #-} HasTypes Word a
-instance {-# OVERLAPPING #-} HasTypes Word8 a
-instance {-# OVERLAPPING #-} HasTypes Word16 a
-instance {-# OVERLAPPING #-} HasTypes Word32 a
-instance {-# OVERLAPPING #-} HasTypes Word64 a
 
 --------------------------------------------------------------------------------
 
-class GHasTypes s a where
+class GHasTypes ch s a where
   gtypes_ :: Traversal' (s x) a
 
 instance
-  ( GHasTypes l a
-  , GHasTypes r a
-  ) => GHasTypes (l :*: r) a where
-  gtypes_ f (l :*: r) = (:*:) <$> gtypes_ f l <*> gtypes_ f r
+  ( GHasTypes ch l a
+  , GHasTypes ch r a
+  ) => GHasTypes ch (l :*: r) a where
+  gtypes_ f (l :*: r) = (:*:) <$> gtypes_ @ch f l <*> gtypes_ @ch f r
   {-# INLINE gtypes_ #-}
 
 instance
-  ( GHasTypes l a
-  , GHasTypes r a
-  ) => GHasTypes (l :+: r) a where
-  gtypes_ f (L1 l) = L1 <$> gtypes_ f l
-  gtypes_ f (R1 r) = R1 <$> gtypes_ f r
+  ( GHasTypes ch l a
+  , GHasTypes ch r a
+  ) => GHasTypes ch (l :+: r) a where
+  gtypes_ f (L1 l) = L1 <$> gtypes_ @ch f l
+  gtypes_ f (R1 r) = R1 <$> gtypes_ @ch f r
   {-# INLINE gtypes_ #-}
 
-instance (GHasTypes s a) => GHasTypes (M1 m meta s) a where
-  gtypes_ f (M1 s) = M1 <$> gtypes_ f s
+instance (GHasTypes ch s a) => GHasTypes ch (M1 m meta s) a where
+  gtypes_ f (M1 s) = M1 <$> gtypes_ @ch f s
   {-# INLINE gtypes_ #-}
 
-instance {-# OVERLAPPING #-} GHasTypes (Rec0 a) a where
-  gtypes_ f (K1 x) = K1 <$> f x
+instance HasTypes0 ch b a => GHasTypes ch (Rec0 b) a where
+  gtypes_ f (K1 x) = K1 <$> types0 @ch @b @a f x
   {-# INLINE gtypes_ #-}
 
-instance HasTypes b a => GHasTypes (Rec0 b) a where
-  gtypes_ f (K1 x) = K1 <$> types_ @_ @a f x
-  {-# INLINE gtypes_ #-}
-
-instance GHasTypes U1 a where
+instance GHasTypes ch U1 a where
   gtypes_ _ _ = pure U1
   {-# INLINE gtypes_ #-}
 
-instance GHasTypes V1 a where
+instance GHasTypes ch V1 a where
   gtypes_ _ = pure
   {-# INLINE gtypes_ #-}
 
-type Interesting f a = Snd (Interesting' (Rep f) a '[f])
+type family ChildrenGeneric (f :: k -> Type) (cs :: [Type]) :: [Type] where
+  ChildrenGeneric (M1 _ _ f) cs = ChildrenGeneric f cs
+  ChildrenGeneric (l :*: r) cs = ChildrenGeneric l (ChildrenGeneric r cs)
+  ChildrenGeneric (l :+: r) cs = ChildrenGeneric l (ChildrenGeneric r cs)
+  ChildrenGeneric (Rec0 a) cs = a ': cs
+  ChildrenGeneric _ cs = cs
 
-type family Interesting' f (a :: Type) (seen :: [Type]) :: ([Type], Bool) where
-  Interesting' (M1 _ m f) t seen
-    = Interesting' f t seen
-  -- The result of the left branch is passed on to the right branch in order to avoid duplicate work
-  Interesting' (l :*: r) t seen
-    = InterestingOr (Interesting' l t seen) r t
-  Interesting' (l :+: r) t seen
-    = InterestingOr (Interesting' l t seen) r t
-  Interesting' (Rec0 t) t seen
-    = '(seen, 'True)
-  Interesting' (Rec0 Char)     _ seen = '(seen ,'False)
-  Interesting' (Rec0 Double)   _ seen = '(seen ,'False)
-  Interesting' (Rec0 Float)    _ seen = '(seen ,'False)
-  Interesting' (Rec0 Integer)  _ seen = '(seen ,'False)
-  Interesting' (Rec0 Int)      _ seen = '(seen ,'False)
-  Interesting' (Rec0 Int8)     _ seen = '(seen ,'False)
-  Interesting' (Rec0 Int16)    _ seen = '(seen ,'False)
-  Interesting' (Rec0 Int32)    _ seen = '(seen ,'False)
-  Interesting' (Rec0 Int64)    _ seen = '(seen ,'False)
-  Interesting' (Rec0 Word)     _ seen = '(seen ,'False)
-  Interesting' (Rec0 Word8)    _ seen = '(seen ,'False)
-  Interesting' (Rec0 Word16)   _ seen = '(seen ,'False)
-  Interesting' (Rec0 Word32)   _ seen = '(seen ,'False)
-  Interesting' (Rec0 Word64)   _ seen = '(seen ,'False)
-  Interesting' (Rec0 r) t seen
-    = InterestingUnless (Elem r seen) (Rep r) t r seen
-  Interesting' _ _ seen
-    = '(seen, 'False)
+-- | The children of a type are the types of its fields.
+-- The 'Children' type family maps a type @a@ to its set of children.
+--
+-- This type family is parameterized by a symbol @ch@ (that can be declared as
+-- an empty data type).
+-- The symbol 'ChDefault' provides a default definition. You can create new
+-- symbols to override the set of children of abstract, non-generic types.
+--
+-- The following example declares a @Custom@ symbol to redefine 'Children'
+-- for some abstract types from the @time@ library.
+--
+-- @
+-- data Custom
+-- type instance 'Children' Custom a = ChildrenCustom a
+--
+-- type family ChildrenCustom (a :: Type) where
+--   ChildrenCustom DiffTime        = '[]
+--   ChildrenCustom NominalDiffTime = '[]
+--   -- Add more custom mappings here.
+--
+--   ChildrenCustom a = Children ChDefault a
+-- @
+--
+-- To use this definition, replace 'types' with @'typesUsing' \@Custom@.
+type family Children (ch :: Type) (a :: Type) :: [Type]
+
+-- | The default definition of 'Children'.
+-- Primitive types from core libraries have no children, and other types are
+-- assumed to be 'Generic'.
+data ChDefault
+type instance Children ChDefault a = ChildrenDefault a
+
+type family ChildrenDefault (a :: Type) :: [Type] where
+  ChildrenDefault Char    = '[]
+  ChildrenDefault Double  = '[]
+  ChildrenDefault Float   = '[]
+  ChildrenDefault Integer = '[]
+  ChildrenDefault Int     = '[]
+  ChildrenDefault Int8    = '[]
+  ChildrenDefault Int16   = '[]
+  ChildrenDefault Int32   = '[]
+  ChildrenDefault Int64   = '[]
+  ChildrenDefault Word    = '[]
+  ChildrenDefault Word8   = '[]
+  ChildrenDefault Word16  = '[]
+  ChildrenDefault Word32  = '[]
+  ChildrenDefault Word64  = '[]
+  ChildrenDefault a       = ChildrenGeneric (Rep a) '[]
+
+type Interesting (ch :: Type) (a :: Type) (t :: Type)
+  = IsNothing (Interesting' ch a '[t] (Children ch t))
+
+type family Interesting' (ch :: Type) (a :: Type) (seen :: [Type]) (ts :: [Type]) :: Maybe [Type] where
+  Interesting' ch _ seen '[] = 'Just seen
+  Interesting' ch a seen (t ': ts) =
+    InterestingOr ch a (InterestingUnless ch a seen t (Elem t seen)) ts
 
 -- Short circuit
--- Note: we only insert 'r' to the seen list if it's not already there (which is precisely when `s` is 'False)
-type family InterestingUnless (s :: Bool) f (a :: Type) (r :: Type) (seen :: [Type]) :: ([Type], Bool) where
-  InterestingUnless 'True _ _ _ seen = '(seen, 'False)
-  InterestingUnless 'False f a r seen = Interesting' f a (r ': seen)
+-- Note: we only insert 't' to the seen list if it's not already there (which is precisely when `s` is 'False)
+type family InterestingUnless
+    (ch :: Type) (a :: Type) (seen :: [Type]) (t :: Type) (alreadySeen :: Bool) ::
+    Maybe [Type] where
+  InterestingUnless ch a seen a _ = 'Nothing
+  InterestingUnless ch a seen t 'True = 'Just seen
+  InterestingUnless ch a seen t 'False = Interesting' ch a (t ': seen) (Children ch t)
 
 -- Short circuit
-type family InterestingOr (b :: ([Type], Bool)) r t :: ([Type], Bool) where
-  InterestingOr '(seen, 'True) _ _ = '(seen, 'True)
-  InterestingOr '(seen, 'False) r t = Interesting' r t seen
+type family InterestingOr
+    (ch :: Type) (a :: Type) (seen' :: Maybe [Type]) (ts :: [Type]) ::
+    Maybe [Type] where
+  InterestingOr ch a 'Nothing _ = 'Nothing
+  InterestingOr ch a ('Just seen) ts = Interesting' ch a seen ts
 
 type family Elem a as where
   Elem a (a ': _) = 'True
   Elem a (_ ': as) = Elem a as
   Elem a '[] = 'False
 
-type family Snd a where
-  Snd '(_, b) = b
+type family IsNothing a where
+  IsNothing ('Just _) = 'False
+  IsNothing 'Nothing = 'True
 
