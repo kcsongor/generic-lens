@@ -16,8 +16,8 @@
 -- |
 -- Module      : Data.Generics.Product.Param
 -- Copyright   : (C) 2018 Csongor Kiss
--- Maintainer  : Csongor Kiss <kiss.csongor.kiss@gmail.com>
 -- License     : BSD3
+-- Maintainer  : Csongor Kiss <kiss.csongor.kiss@gmail.com>
 -- Stability   : experimental
 -- Portability : non-portable
 --

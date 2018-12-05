@@ -8,9 +8,7 @@
 module Main where
 
 import Control.Lens
-import           Data.Maybe (maybeToList)
 import Data.Generics.Product
-import Data.Generics.Sum
 import GHC.Generics (Generic)
 
 -- $setup
@@ -147,4 +145,5 @@ data Numbers = Numbers Int Float Double
 -- |
 -- >>> constraints' @Num (\x -> pure (x + 20)) numbers
 -- Numbers 30 40.0 50.0
+numbers :: Numbers
 numbers = Numbers 10 20.0 30.0
