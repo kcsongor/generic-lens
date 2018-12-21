@@ -7,3 +7,6 @@ cabal.sandbox.config
 *.hi
 *.o
 core-html
+*~
+*.org
+cabal.project.local

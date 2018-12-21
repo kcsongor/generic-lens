@@ -33,6 +33,8 @@ import Data.Generics.Labels ()
 import Test24 ()
 import Test25 ()
 
+import CustomChildren (customTypesTest)
+
 main :: IO ()
 main = do
   res <- runTestTT tests
@@ -267,6 +269,7 @@ tests = TestList $ map mkHUnitTest
   , (valLabel ^? #_RecB . _1  ) ~=? Just 3
   , (valLabel ^? #_RecC       ) ~=? Nothing
 #endif
+  , customTypesTest
   ]
   where valLabel = RecB 3 True 
 
