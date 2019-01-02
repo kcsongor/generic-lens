@@ -2,7 +2,7 @@
 - Add `HasTypesUsing` and `HasTypesCustom` for custom traversals (Lysxia)
 
 ### Breaking API changes
-- 'HasType' now includes a reflexive case (Matt Parsons) so that every type 'contains' itself
+- `HasType` now includes a reflexive case so that every type 'contains' itself (Matt Parsons)
 
 ## 1.1.0.0
 - Fix regression in type inference for polymorphic optics
