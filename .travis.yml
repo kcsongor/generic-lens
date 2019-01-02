@@ -73,7 +73,8 @@ script:
   - mv "."/dist/generic-lens-*.tar.gz ${DISTDIR}/
   - cd ${DISTDIR}
   - find . -maxdepth 1 -name '*.tar.gz' -exec tar -xvf '{}' \;
-  - "printf 'packages: generic-lens-*/*.cabal' > cabal.project"
+  - "echo 'packages: generic-lens-*/*.cabal' > cabal.project"
+  - "echo 'write-ghc-environment-files: always' >> cabal.project"
   # this builds all libraries and executables (without tests/benchmarks)
   - cabal new-build -w ${HC} --disable-tests --disable-benchmarks all
 
