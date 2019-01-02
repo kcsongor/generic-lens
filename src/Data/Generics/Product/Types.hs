@@ -77,7 +77,7 @@ import Data.Generics.Internal.VL.Traversal
 
 -- | Traverse all types in the given structure.
 --
--- For example, to update all 'String's in a @WTree (Maybe Int) Int@, we can write
+-- For example, to update all 'String's in a @WTree (Maybe String) String@, we can write
 -- 
 -- >>> myTree = WithWeight (Fork (Leaf (Just "hello")) (Leaf Nothing)) "world"
 -- >>> over (types @String) (++ "!") myTree
