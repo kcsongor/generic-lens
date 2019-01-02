@@ -1,3 +1,6 @@
+## 1.2.0.0
+- Add `HasTypesUsing` and `HasTypesCustom` for custom traversals (Lysxia)
+
 ## 1.1.0.0
 - Fix regression in type inference for polymorphic optics
 - Add `HasField0`, `HasPosition0`, `AsConstructor0`, `HasField_`, `HasPositon_`, and `AsConstructor_` (Lysxia)
