@@ -47,6 +47,7 @@ import Data.Kind    (Constraint, Type)
 import GHC.Generics
 import GHC.TypeLits (Symbol, ErrorMessage(..), TypeError)
 import Data.Generics.Internal.Profunctor.Lens as P
+import Data.Generics.Internal.Errors
 
 -- $setup
 -- == /Running example:/
@@ -152,23 +153,25 @@ instance
   ( Generic s
   , ErrorUnless field s (CollectField field (Rep s))
   , GLens' (HasTotalFieldPSym field) (Rep s) a
+  , Defined (Rep s)
+    (NoGeneric s '[ 'Text "arising from a generic lens focusing on the "
+                    ':<>: QuoteType field ':<>: 'Text " field of type " ':<>: QuoteType a
+                  , 'Text "in " ':<>: QuoteType s])
+    (() :: Constraint)
   ) => HasField' field s a where
-  field' f s = VL.ravel (repLens . glens @(HasTotalFieldPSym field)) f s
+  field' f s = field0 @field f s
 
 class (~~) (a :: k) (b :: k) | a -> b, b -> a
 instance (a ~ b) => (~~) a b
 
 instance  -- see Note [Changing type parameters]
-  ( Generic s
-  , Generic t
-  , ErrorUnless field s (CollectField field (Rep s))
-  , HasTotalFieldP field (Rep s) ~~ 'Just a
+  ( HasTotalFieldP field (Rep s) ~~ 'Just a
   , HasTotalFieldP field (Rep t) ~~ 'Just b
   , HasTotalFieldP field (Rep (Indexed s)) ~~ 'Just a'
   , HasTotalFieldP field (Rep (Indexed t)) ~~ 'Just b'
   , t ~~ Infer s a' b
   , s ~~ Infer t b' a
-  , GLens  (HasTotalFieldPSym field) (Rep s) (Rep t) a b
+  , HasField0 field s t a b
   ) => HasField field s t a b where
   field f s = field0 @field f s
 
@@ -177,14 +180,11 @@ instance {-# OVERLAPPING #-} HasField f (Void1 a) (Void1 b) a b where
   field = undefined
 
 instance
-  ( Generic s
-  , Generic t
-  , ErrorUnless field s (CollectField field (Rep s))
-  , HasTotalFieldP field (Rep s) ~~ 'Just a
+  ( HasTotalFieldP field (Rep s) ~~ 'Just a
   , HasTotalFieldP field (Rep t) ~~ 'Just b
   , UnifyHead s t
   , UnifyHead t s
-  , GLens  (HasTotalFieldPSym field) (Rep s) (Rep t) a b
+  , HasField0 field s t a b
   ) => HasField_ field s t a b where
   field_ f s = field0 @field f s
 
@@ -195,8 +195,15 @@ instance
   ( Generic s
   , Generic t
   , GLens  (HasTotalFieldPSym field) (Rep s) (Rep t) a b
+  , ErrorUnless field s (CollectField field (Rep s))
+  , Defined (Rep s)
+    (NoGeneric s '[ 'Text "arising from a generic lens focusing on the "
+                    ':<>: QuoteType field ':<>: 'Text " field of type " ':<>: QuoteType a
+                  , 'Text "in " ':<>: QuoteType s])
+    (() :: Constraint)
   ) => HasField0 field s t a b where
   field0 = VL.ravel (repLens . glens @(HasTotalFieldPSym field))
+  {-# INLINE field0 #-}
 
 type family ErrorUnless (field :: Symbol) (s :: Type) (stat :: TypeStat) :: Constraint where
   ErrorUnless field s ('TypeStat _ _ '[])

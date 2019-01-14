@@ -40,6 +40,7 @@ import Data.Kind    (Constraint, Type)
 import GHC.Generics (Generic (Rep))
 import GHC.TypeLits (TypeError, ErrorMessage (..))
 import Data.Generics.Internal.Profunctor.Lens
+import Data.Generics.Internal.Errors
 
 -- $setup
 -- == /Running example:/
@@ -111,6 +112,9 @@ class HasType a s where
 instance
   ( Generic s
   , ErrorUnlessOne a s (CollectTotalType a (Rep s))
+  , Defined (Rep s)
+    (NoGeneric s '[ 'Text "arising from a generic lens focusing on a field of type " ':<>: QuoteType a])
+    (() :: Constraint)
   , GLens (HasTotalTypePSym a) (Rep s) (Rep s) a a
   ) => HasType a s where
 
