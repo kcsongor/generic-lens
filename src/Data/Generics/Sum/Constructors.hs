@@ -45,6 +45,7 @@ import GHC.TypeLits (Symbol, TypeError, ErrorMessage (..))
 import Data.Generics.Internal.VL.Prism
 import Data.Generics.Internal.Profunctor.Iso
 import Data.Generics.Internal.Profunctor.Prism (prismPRavel)
+import Data.Generics.Internal.Errors
 
 -- $setup
 -- == /Running example:/
@@ -70,7 +71,7 @@ import Data.Generics.Internal.Profunctor.Prism (prismPRavel)
 --   , age    :: Age
 --   , fieldA :: a
 --   }
---   deriving (Generic, Show)
+--   deriving Show
 -- type Name = String
 -- type Age  = Int
 -- dog, cat, duck :: Animal Int
@@ -128,20 +129,24 @@ instance
   ( Generic s
   , ErrorUnless ctor s (HasCtorP ctor (Rep s))
   , GAsConstructor' ctor (Rep s) a
+  , Defined (Rep s)
+    (NoGeneric s '[ 'Text "arising from a generic prism focusing on the "
+                    ':<>: QuoteType ctor ':<>: 'Text " constructor of type " ':<>: QuoteType a
+                  , 'Text "in " ':<>: QuoteType s])
+    (() :: Constraint)
   ) => AsConstructor' ctor s a where
   _Ctor' eta = prismRavel (prismPRavel (repIso . _GCtor @ctor)) eta
   {-# INLINE[2] _Ctor' #-}
 
 instance
-  ( Generic s
-  , Generic t
-  , ErrorUnless ctor s (HasCtorP ctor (Rep s))
+  ( ErrorUnless ctor s (HasCtorP ctor (Rep s))
   , GAsConstructor' ctor (Rep s) a -- TODO: add a test similar to #62 for prisms
   , GAsConstructor' ctor (Rep (Indexed s)) a'
   , GAsConstructor ctor (Rep s) (Rep t) a b
   , t ~ Infer s a' b
   , GAsConstructor' ctor (Rep (Indexed t)) b'
   , s ~ Infer t b' a
+  , AsConstructor0 ctor s t a b
   ) => AsConstructor ctor s t a b where
 
   _Ctor = _Ctor0 @ctor
@@ -152,15 +157,14 @@ instance {-# OVERLAPPING #-} AsConstructor ctor (Void1 a) (Void1 b) a b where
   _Ctor = undefined
 
 instance
-  ( Generic s
-  , Generic t
-  , ErrorUnless ctor s (HasCtorP ctor (Rep s))
+  ( ErrorUnless ctor s (HasCtorP ctor (Rep s))
   , GAsConstructor' ctor (Rep s) a -- TODO: add a test similar to #62 for prisms
   , GAsConstructor' ctor (Rep (Indexed s)) a'
   , GAsConstructor ctor (Rep s) (Rep t) a b
   , GAsConstructor' ctor (Rep (Indexed t)) b'
   , UnifyHead s t
   , UnifyHead t s
+  , AsConstructor0 ctor s t a b
   ) => AsConstructor_ ctor s t a b where
 
   _Ctor_ = _Ctor0 @ctor
@@ -173,6 +177,11 @@ instance
   ( Generic s
   , Generic t
   , GAsConstructor ctor (Rep s) (Rep t) a b
+  , Defined (Rep s)
+    (NoGeneric s '[ 'Text "arising from a generic prism focusing on the "
+                    ':<>: QuoteType ctor ':<>: 'Text " constructor of type " ':<>: QuoteType a
+                  , 'Text "in " ':<>: QuoteType s])
+    (() :: Constraint)
   ) => AsConstructor0 ctor s t a b where
   _Ctor0 = prismRavel (prismPRavel (repIso . _GCtor @ctor))
   {-# INLINE[2] _Ctor0 #-}
