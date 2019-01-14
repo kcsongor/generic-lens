@@ -47,6 +47,7 @@ import Data.Generics.Internal.Void
 import Data.Generics.Internal.Families
 import Data.Generics.Product.Internal.Positions
 import Data.Generics.Product.Internal.GLens
+import Data.Generics.Internal.Errors
 
 import Data.Kind      (Constraint, Type)
 import Data.Type.Bool (type (&&))
@@ -114,9 +115,15 @@ class HasPosition' (i :: Nat) s a | s i -> a where
 class HasPosition0 (i :: Nat) s t a b where
   position0 :: VL.Lens s t a b
 
+-- |
+-- >>> getPosition @2 human
+-- 50
 getPosition :: forall i s a. HasPosition' i s a => s -> a
 getPosition s = s ^. position' @i
 
+-- |
+-- >>> setPosition @2 60 human
+-- Human {name = "Tunyasz", age = 60, address = "London"}
 setPosition :: forall i s a. HasPosition' i s a => a -> s -> s
 setPosition = VL.set (position' @i)
 
@@ -126,6 +133,12 @@ instance
   , cs ~ CRep s
   , Coercible (Rep s) cs
   , GLens' (HasTotalPositionPSym i) cs a
+  , Defined (Rep s)
+    (NoGeneric s '[ 'Text "arising from a generic lens focusing on the field at"
+                  , 'Text "position " ':<>: QuoteType i ':<>: 'Text " of type " ':<>: QuoteType a
+                    ':<>: 'Text " in " ':<>: QuoteType s
+                  ])
+    (() :: Constraint)
   ) => HasPosition' i s a where
   position' f s = VL.ravel (repLens . coerced @cs @cs . glens @(HasTotalPositionPSym i)) f s
   {-# INLINE position' #-}
@@ -136,10 +149,7 @@ class (~~) (a :: k) (b :: k) | a -> b, b -> a
 instance (a ~ b) => (~~) a b
 
 instance  -- see Note [Changing type parameters]
-  ( Generic s
-  , Generic t
-  , ErrorUnless i s (0 <? i && i <=? Size (Rep s))
-  , GLens (HasTotalPositionPSym i) (CRep s) (CRep t) a b
+  ( ErrorUnless i s (0 <? i && i <=? Size (Rep s))
   , HasTotalPositionP i (CRep s) ~~ 'Just a
   , HasTotalPositionP i (CRep t) ~~ 'Just b
   , HasTotalPositionP i (CRep (Indexed s)) ~~ 'Just a'
@@ -148,6 +158,7 @@ instance  -- see Note [Changing type parameters]
   , s ~~ Infer t b' a
   , Coercible (CRep s) (Rep s)
   , Coercible (CRep t) (Rep t)
+  , HasPosition0 i s t a b
   ) => HasPosition i s t a b where
 
   position = position0 @i
@@ -166,14 +177,12 @@ instance {-# OVERLAPPING #-} HasPosition f (Void1 a) (Void1 b) a b where
   position = undefined
 
 instance
-  ( Generic s
-  , Generic t
-  , ErrorUnless i s (0 <? i && i <=? Size (Rep s))
-  , GLens (HasTotalPositionPSym i) (CRep s) (CRep t) a b
+  ( ErrorUnless i s (0 <? i && i <=? Size (Rep s))
   , UnifyHead s t
   , UnifyHead t s
   , Coercible (CRep s) (Rep s)
   , Coercible (CRep t) (Rep t)
+  , HasPosition0 i s t a b
   ) => HasPosition_ i s t a b where
 
   position_ = position0 @i
@@ -188,6 +197,12 @@ instance
   , GLens (HasTotalPositionPSym i) (CRep s) (CRep t) a b
   , Coercible (CRep s) (Rep s)
   , Coercible (CRep t) (Rep t)
+  , Defined (Rep s)
+    (NoGeneric s '[ 'Text "arising from a generic lens focusing on the field at"
+                  , 'Text "position " ':<>: QuoteType i ':<>: 'Text " of type " ':<>: QuoteType a
+                    ':<>: 'Text " in " ':<>: QuoteType s
+                  ])
+    (() :: Constraint)
   ) => HasPosition0 i s t a b where
   position0 = VL.ravel (repLens . coerced @(CRep s) @(CRep t) . glens @(HasTotalPositionPSym i))
   {-# INLINE position0 #-}
