@@ -60,9 +60,9 @@ install:
       (cd "."; autoreconf -i);
     fi
   - rm -f cabal.project.freeze
-  - cabal new-build -w ${HC} ${TEST} ${BENCH} --project-file="cabal.project" --dep -j2 all
-  - cabal new-build -w ${HC} --disable-tests --disable-benchmarks --project-file="cabal.project" --dep -j2 all
-  - rm -rf "."/.ghc.environment.* "."/dist
+  - cabal build -w ${HC} ${TEST} ${BENCH} --project-file="cabal.project" --dep -j2 all
+  - cabal build -w ${HC} --disable-tests --disable-benchmarks --project-file="cabal.project" --dep -j2 all
+  - rm -rf "."/.ghc.environment.* "."/dist-newstyle
   - DISTDIR=$(mktemp -d /tmp/dist-test.XXXX)
 
 # Here starts the actual work to be performed for the package under test;
@@ -70,26 +70,26 @@ install:
 script:
   # test that source-distributions can be generated
   - (cd "."; cabal sdist)
-  - mv "."/dist/generic-lens-*.tar.gz ${DISTDIR}/
+  - mv "."/dist-newstyle/sdist/generic-lens-*.tar.gz ${DISTDIR}/
   - cd ${DISTDIR}
   - find . -maxdepth 1 -name '*.tar.gz' -exec tar -xvf '{}' \;
   - "echo 'packages: generic-lens-*/*.cabal' > cabal.project"
   - "echo 'write-ghc-environment-files: always' >> cabal.project"
   # this builds all libraries and executables (without tests/benchmarks)
-  - cabal new-build -w ${HC} --disable-tests --disable-benchmarks all
+  - cabal build -w ${HC} --disable-tests --disable-benchmarks all
 
   # Build with installed constraints for packages in global-db
   - if $INSTALLED; then
-      echo cabal new-build -w ${HC} --disable-tests --disable-benchmarks $(${HCPKG} list --global --simple-output --names-only | sed 's/\([a-zA-Z0-9-]\{1,\}\) */--constraint="\1 installed" /g') all | sh;
+      echo cabal build -w ${HC} --disable-tests --disable-benchmarks $(${HCPKG} list --global --simple-output --names-only | sed 's/\([a-zA-Z0-9-]\{1,\}\) */--constraint="\1 installed" /g') all | sh;
     else echo "Not building with installed constraints"; fi
 
   # build & run tests, build benchmarks
-  - cabal new-build -w ${HC} ${TEST} ${BENCH} all
-  - if [ "x$TEST" = "x--enable-tests" ]; then cabal new-test -w ${HC} ${TEST} all; fi
+  - cabal build -w ${HC} ${TEST} ${BENCH} all
+  - if [ "x$TEST" = "x--enable-tests" ]; then cabal test -w ${HC} ${TEST} all; fi
 
   # haddock
   - rm -rf ./dist-newstyle
-  - if $HADDOCK; then cabal new-haddock -w ${HC} --disable-tests --disable-benchmarks all; else echo "Skipping haddock generation";fi
+  - if $HADDOCK; then cabal haddock -w ${HC} --disable-tests --disable-benchmarks all; else echo "Skipping haddock generation";fi
 
 # REGENDATA ["generic-lens.cabal"]
 # EOF
