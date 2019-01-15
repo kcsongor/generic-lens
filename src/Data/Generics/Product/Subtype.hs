@@ -41,6 +41,7 @@ import GHC.Generics (Generic (Rep, to, from) )
 import GHC.TypeLits (Symbol, TypeError, ErrorMessage (..))
 import Data.Kind (Type, Constraint)
 import Data.Generics.Internal.Profunctor.Lens hiding (set)
+import Data.Generics.Internal.Errors
 
 -- $setup
 -- == /Running example:/
@@ -114,6 +115,16 @@ instance
   , GSmash (Rep a) (Rep b)
   , GUpcast (Rep a) (Rep b)
   , ErrorUnless b a (CollectFieldsOrdered (Rep b) \\ CollectFieldsOrdered (Rep a))
+  , Defined (Rep a)
+    (NoGeneric a '[ 'Text "arising from a generic lens focusing on " ':<>: QuoteType b
+                  , 'Text "as a supertype of " ':<>: QuoteType a
+                  ])
+    (() :: Constraint)
+  , Defined (Rep b)
+    (NoGeneric b '[ 'Text "arising from a generic lens focusing on " ':<>: QuoteType b
+                  , 'Text "as a supertype of " ':<>: QuoteType a
+                  ])
+    (() :: Constraint)
   ) => Subtype b a where
     smash p b = to $ gsmash (from p) (from b)
     upcast    = to . gupcast . from
