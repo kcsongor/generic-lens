@@ -16,12 +16,12 @@
 -- |
 -- Module      : Data.Generics.Product.Param
 -- Copyright   : (C) 2018 Csongor Kiss
--- Maintainer  : Csongor Kiss <kiss.csongor.kiss@gmail.com>
 -- License     : BSD3
+-- Maintainer  : Csongor Kiss <kiss.csongor.kiss@gmail.com>
 -- Stability   : experimental
 -- Portability : non-portable
 --
--- Derive traversal over type parameters
+-- Derive traversals over type parameters
 --
 --------------------------------------------------------------------------------
 
@@ -39,6 +39,7 @@ import GHC.Generics
 import Data.Kind
 import Data.Generics.Internal.VL.Iso
 import Data.Generics.Internal.GenericN
+import Data.Generics.Internal.Errors
 
 class HasParam (p :: Nat) s t a b | p t a -> s, p s b -> t, p s -> a, p t -> b where
   param :: Applicative g => (a -> g b) -> s -> g t
@@ -47,6 +48,12 @@ instance
   ( GenericN s
   , GenericN t
   -- TODO: merge the old 'Changing' code with 'GenericN'
+  , Defined (Rep s)
+    (NoGeneric s
+      '[ 'Text "arising from a generic traversal of the type parameter at position " ':<>: QuoteType n
+       , 'Text "of type " ':<>: QuoteType a ':<>: 'Text " in " ':<>: QuoteType s
+       ])
+    (() :: Constraint)
   , s ~ Infer t (P n b 'PTag) a
   , t ~ Infer s (P n a 'PTag) b
   , Error ((ArgCount s) <=? n) n (ArgCount s) s

@@ -18,6 +18,7 @@ module Data.GenericLens.Internal
   , module Data.Generics.Internal.Families.Collect
   , module Data.Generics.Internal.Families.Has
   , module Data.Generics.Internal.Void
+  , module Data.Generics.Internal.Errors
 
   , module Data.Generics.Sum.Internal.Constructors
   , module Data.Generics.Sum.Internal.Typed
@@ -35,6 +36,7 @@ import Data.Generics.Internal.Families.Changing
 import Data.Generics.Internal.Families.Collect
 import Data.Generics.Internal.Families.Has
 import Data.Generics.Internal.Void
+import Data.Generics.Internal.Errors
 
 import Data.Generics.Sum.Internal.Constructors
 import Data.Generics.Sum.Internal.Typed

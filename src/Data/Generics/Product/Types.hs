@@ -50,7 +50,9 @@ import Data.Int (Int8, Int16, Int32, Int64)
 import Data.Word (Word, Word8, Word16, Word32, Word64)
 
 import GHC.Generics
+import GHC.TypeLits
 import Data.Generics.Internal.VL.Traversal
+import Data.Generics.Internal.Errors
 
 -- $setup
 -- == /Running example:/
@@ -131,7 +133,9 @@ instance {-# OVERLAPPING #-} HasTypesUsing ch s Void where
 -- >>> myTree = WithWeight (Fork (Leaf (Opaque "foo")) (Leaf (Opaque "bar"))) False
 -- >>> over (types @String) (++ "!") myTree
 -- ...
--- ... No instance for (HasTypesOpt
+-- ... | No instance for ‘Generic Opaque’
+-- ... |   arising from a generic traversal.
+-- ... |   Either derive the instance, or define a custom traversal using ‘HasTypesCustom’
 -- ...
 --
 -- In these cases, we can define a custom traversal strategy to override the
@@ -204,6 +208,13 @@ class HasTypesCustom (ch :: Type) s a where
 instance {-# OVERLAPPABLE #-}
   ( GHasTypes ch (Rep s) a
   , Generic s
+  -- if there's no Generic instance here, it means we got through the
+  -- Children check by a user-defined custom strategy.
+  -- Therefore, we can ignore the missing Generic instance, and
+  -- instead report a missing HasTypesCustom instance
+  , Defined (Rep s)
+    (PrettyError '[ 'Text "No instance " ':<>: QuoteType (HasTypesCustom ch s a)])
+    (() :: Constraint)
   ) => HasTypesCustom ch s a where
   typesCustom f s = to <$> gtypes_ @ch f (from s)
   --{-# INLINE types' #-}
@@ -230,7 +241,13 @@ type family ChildrenDefault (a :: Type) :: [Type] where
   ChildrenDefault Word16  = '[]
   ChildrenDefault Word32  = '[]
   ChildrenDefault Word64  = '[]
-  ChildrenDefault a       = ChildrenGeneric (Rep a) '[]
+  ChildrenDefault a
+   = Defined (Rep a)
+    (NoGeneric a
+      '[ 'Text "arising from a generic traversal."
+       , 'Text "Either derive the instance, or define a custom traversal using " ':<>: QuoteType HasTypesCustom
+       ])
+    (ChildrenGeneric (Rep a) '[])
 
 type family ChildrenGeneric (f :: k -> Type) (cs :: [Type]) :: [Type] where
   ChildrenGeneric (M1 _ _ f) cs = ChildrenGeneric f cs
@@ -303,7 +320,16 @@ instance GHasTypes ch V1 a where
   {-# INLINE gtypes_ #-}
 
 type Interesting (ch :: Type) (a :: Type) (t :: Type)
-  = IsNothing (Interesting' ch a '[t] (Children ch t))
+  = Defined_list (Children ch t) (NoChildren ch t)
+    (IsNothing (Interesting' ch a '[t] (Children ch t)))
+
+type family NoChildren (ch :: Type) (a :: Type) :: Constraint where
+  NoChildren ch a = PrettyError
+                    '[ 'Text "No type family instance for " ':<>: QuoteType (Children ch a)
+                     , 'Text "arising from a traversal over " ':<>: QuoteType a
+                     , 'Text "with custom strategy " ':<>: QuoteType ch
+                     ]
+                    
 
 type family Interesting' (ch :: Type) (a :: Type) (seen :: [Type]) (ts :: [Type]) :: Maybe [Type] where
   Interesting' ch _ seen '[] = 'Just seen
@@ -317,7 +343,9 @@ type family InterestingUnless
     Maybe [Type] where
   InterestingUnless ch a seen a _ = 'Nothing
   InterestingUnless ch a seen t 'True = 'Just seen
-  InterestingUnless ch a seen t 'False = Interesting' ch a (t ': seen) (Children ch t)
+  InterestingUnless ch a seen t 'False
+    = Defined_list (Children ch t) (NoChildren ch t)
+      (Interesting' ch a (t ': seen) (Children ch t))
 
 -- Short circuit
 type family InterestingOr

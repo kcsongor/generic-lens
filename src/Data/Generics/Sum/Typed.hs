@@ -34,6 +34,7 @@ import Data.Kind
 import GHC.Generics
 import GHC.TypeLits (TypeError, ErrorMessage (..), Symbol)
 import Data.Generics.Sum.Internal.Typed
+import Data.Generics.Internal.Errors
 
 import Data.Generics.Internal.Families
 import Data.Generics.Internal.Void
@@ -109,6 +110,9 @@ instance
   , as ~ TupleToList a
   , ListTuple a as
   , GAsType (Rep s) as
+  , Defined (Rep s)
+    (NoGeneric s '[ 'Text "arising from a generic prism focusing on a constructor of type " ':<>: QuoteType a])
+    (() :: Constraint)
   ) => AsType a s where
 
   _Typed eta = prismRavel (prismPRavel (repIso . _GTyped @_ @as . tupled)) eta
