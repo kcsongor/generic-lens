@@ -111,11 +111,31 @@ instance {-# OVERLAPPABLE #-}
   ) => GHasParam p (Rec si s) (Rec ti t) a b where
   gparam f (Rec (K1 x)) = Rec . K1 <$> gparamRec @(LookupParam si p) f x
 
-class GHasParamRec (param :: Maybe Nat) s t a b | param t a b -> s, param s a b -> t where
+class GHasParamRec (params :: [Nat]) s t a b | params t a b -> s, params s a b -> t where
   gparamRec :: forall g.  Applicative g => (a -> g b) -> s -> g t
 
-instance GHasParamRec 'Nothing a a c d where
+instance GHasParamRec '[] a a c d where
   gparamRec _ = pure
 
-instance (HasParam n s t a b) => GHasParamRec ('Just n) s t a b where
+instance (HasParam n s t a b) => GHasParamRec '[n] s t a b where
   gparamRec = param @n
+
+instance (HasParam m s t c d , HasParam n c d a b) => GHasParamRec (n ': m ': '[]) s t a b  where
+  gparamRec = param @m . param @n
+
+-- Can't get this to work for arbitrary nesting of params
+-- instance (GHasParamRec ns s t e f , HasParam n c d a b) => GHasParamRec (n ': m ': ns) s t a b  where
+--   gparamRec = gparamRec @ns . param @n
+--
+--     • Illegal instance declaration for
+--         ‘GHasParamRec (n : m : ns) s t a b’
+--         The liberal coverage condition fails in class ‘GHasParamRec’
+--           for functional dependency: ‘params t a b -> s’
+--         Reason: lhs types ‘n : m : ns’, ‘t’, ‘a’, ‘b’
+--           do not jointly determine rhs type ‘s’
+--         Un-determined variable: s
+--     • In the instance declaration for
+--         ‘GHasParamRec (n : m : ns) s t a b’
+--     |
+-- 127 | instance (GHasParamRec ns s t e f , HasParam n c d a b) => GHasParamRec (n ': m ': ns) s t a b  where
+--     |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
