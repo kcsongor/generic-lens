@@ -1,4 +1,5 @@
 {-# LANGUAGE TypeInType #-}
+{-# LANGUAGE UnsaturatedTypeFamilies #-}
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE AllowAmbiguousTypes    #-}
@@ -132,7 +133,7 @@ instance
   , ErrorUnless i s (0 <? i && i <=? Size (Rep s))
   , cs ~ CRep s
   , Coercible (Rep s) cs
-  , GLens' (HasTotalPositionPSym i) cs a
+  , GLens' (HasTotalPositionP i) cs a
   , Defined (Rep s)
     (NoGeneric s '[ 'Text "arising from a generic lens focusing on the field at"
                   , 'Text "position " ':<>: QuoteType i ':<>: 'Text " of type " ':<>: QuoteType a
@@ -140,7 +141,7 @@ instance
                   ])
     (() :: Constraint)
   ) => HasPosition' i s a where
-  position' f s = VL.ravel (repLens . coerced @cs @cs . glens @(HasTotalPositionPSym i)) f s
+  position' f s = VL.ravel (repLens . coerced @cs @cs . glens @(HasTotalPositionP i)) f s
   {-# INLINE position' #-}
 
 -- this is to 'hide' the equality constraints which interfere with inlining
@@ -194,7 +195,7 @@ instance {-# OVERLAPPING #-} HasPosition_ f (Void1 a) (Void1 b) a b where
 instance
   ( Generic s
   , Generic t
-  , GLens (HasTotalPositionPSym i) (CRep s) (CRep t) a b
+  , GLens (HasTotalPositionP i) (CRep s) (CRep t) a b
   , Coercible (CRep s) (Rep s)
   , Coercible (CRep t) (Rep t)
   , Defined (Rep s)
@@ -204,7 +205,7 @@ instance
                   ])
     (() :: Constraint)
   ) => HasPosition0 i s t a b where
-  position0 = VL.ravel (repLens . coerced @(CRep s) @(CRep t) . glens @(HasTotalPositionPSym i))
+  position0 = VL.ravel (repLens . coerced @(CRep s) @(CRep t) . glens @(HasTotalPositionP i))
   {-# INLINE position0 #-}
 
 type family ErrorUnless (i :: Nat) (s :: Type) (hasP :: Bool) :: Constraint where
@@ -218,6 +219,3 @@ type family ErrorUnless (i :: Nat) (s :: Type) (hasP :: Bool) :: Constraint wher
 
   ErrorUnless _ _ 'True
     = ()
-
-data HasTotalPositionPSym  :: Nat -> (TyFun (Type -> Type) (Maybe Type))
-type instance Eval (HasTotalPositionPSym t) tt = HasTotalPositionP t tt

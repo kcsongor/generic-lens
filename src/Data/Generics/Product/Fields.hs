@@ -1,4 +1,5 @@
 {-# LANGUAGE AllowAmbiguousTypes     #-}
+{-# LANGUAGE UnsaturatedTypeFamilies #-}
 {-# LANGUAGE CPP                     #-}
 {-# LANGUAGE ConstraintKinds         #-}
 {-# LANGUAGE DataKinds               #-}
@@ -152,7 +153,7 @@ setField = VL.set (field' @f)
 instance
   ( Generic s
   , ErrorUnless field s (CollectField field (Rep s))
-  , GLens' (HasTotalFieldPSym field) (Rep s) a
+  , GLens' (HasTotalFieldP field) (Rep s) a
   , Defined (Rep s)
     (NoGeneric s '[ 'Text "arising from a generic lens focusing on the "
                     ':<>: QuoteType field ':<>: 'Text " field of type " ':<>: QuoteType a
@@ -194,7 +195,7 @@ instance {-# OVERLAPPING #-} HasField_ f (Void1 a) (Void1 b) a b where
 instance
   ( Generic s
   , Generic t
-  , GLens  (HasTotalFieldPSym field) (Rep s) (Rep t) a b
+  , GLens  (HasTotalFieldP field) (Rep s) (Rep t) a b
   , ErrorUnless field s (CollectField field (Rep s))
   , Defined (Rep s)
     (NoGeneric s '[ 'Text "arising from a generic lens focusing on the "
@@ -202,7 +203,7 @@ instance
                   , 'Text "in " ':<>: QuoteType s])
     (() :: Constraint)
   ) => HasField0 field s t a b where
-  field0 = VL.ravel (repLens . glens @(HasTotalFieldPSym field))
+  field0 = VL.ravel (repLens . glens @(HasTotalFieldP field))
   {-# INLINE field0 #-}
 
 type family ErrorUnless (field :: Symbol) (s :: Type) (stat :: TypeStat) :: Constraint where
@@ -226,6 +227,3 @@ type family ErrorUnless (field :: Symbol) (s :: Type) (stat :: TypeStat) :: Cons
 
   ErrorUnless _ _ ('TypeStat '[] '[] _)
     = ()
-
-data HasTotalFieldPSym :: Symbol -> (TyFun (Type -> Type) (Maybe Type))
-type instance Eval (HasTotalFieldPSym sym) tt = HasTotalFieldP sym tt

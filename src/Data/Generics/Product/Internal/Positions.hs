@@ -39,8 +39,11 @@ import Data.Type.Bool (If, Not)
 import GHC.Generics
 import GHC.TypeLits   (type (<=?), type (+), Nat)
 
+type family KindOf (a :: k) :: Type where
+  KindOf (a :: k) = k
+
 -- | Alias for the kind of the generic rep
-type G = Type -> Type
+type G = KindOf Maybe
 
 --------------------------------------------------------------------------------
 
