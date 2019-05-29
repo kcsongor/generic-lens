@@ -116,10 +116,10 @@ instance
   , Defined (Rep s)
     (NoGeneric s '[ 'Text "arising from a generic lens focusing on a field of type " ':<>: QuoteType a])
     (() :: Constraint)
-  , GLens (HasTotalTypeP a) (Rep s) (Rep s) a a
+  , GLens (HasTotal a) (Rep s) (Rep s) a a
   ) => HasType a s where
 
-  typed f s = VL.ravel (repLens . glens @(HasTotalTypeP a)) f s
+  typed f s = VL.ravel (repLens . glens @(HasTotal a)) f s
 
 instance {-# OVERLAPPING #-} HasType a a where
     getTyped = id

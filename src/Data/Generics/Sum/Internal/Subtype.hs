@@ -10,6 +10,7 @@
 {-# LANGUAGE TypeOperators         #-}
 {-# LANGUAGE TypeSynonymInstances  #-}
 {-# LANGUAGE UndecidableInstances  #-}
+{-# LANGUAGE UnsaturatedTypeFamilies  #-}
 
 -----------------------------------------------------------------------------
 -- |

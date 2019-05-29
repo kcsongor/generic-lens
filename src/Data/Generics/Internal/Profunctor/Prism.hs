@@ -24,7 +24,6 @@ module Data.Generics.Internal.Profunctor.Prism where
 import Data.Bifunctor         (bimap)
 import Data.Profunctor        (Choice(..), Profunctor(..))
 import Data.Tagged
-import Data.Profunctor.Unsafe ((#.), (.#))
 import GHC.Generics
 import Data.Coerce
 

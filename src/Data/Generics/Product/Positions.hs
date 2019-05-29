@@ -133,7 +133,7 @@ instance
   , ErrorUnless i s (0 <? i && i <=? Size (Rep s))
   , cs ~ CRep s
   , Coercible (Rep s) cs
-  , GLens' (HasTotalPositionP i) cs a
+  , GLens' (HasTotal i) cs a
   , Defined (Rep s)
     (NoGeneric s '[ 'Text "arising from a generic lens focusing on the field at"
                   , 'Text "position " ':<>: QuoteType i ':<>: 'Text " of type " ':<>: QuoteType a
@@ -141,7 +141,7 @@ instance
                   ])
     (() :: Constraint)
   ) => HasPosition' i s a where
-  position' f s = VL.ravel (repLens . coerced @cs @cs . glens @(HasTotalPositionP i)) f s
+  position' f s = VL.ravel (repLens . coerced @cs @cs . glens @(HasTotal i)) f s
   {-# INLINE position' #-}
 
 -- this is to 'hide' the equality constraints which interfere with inlining
@@ -151,10 +151,10 @@ instance (a ~ b) => (~~) a b
 
 instance  -- see Note [Changing type parameters]
   ( ErrorUnless i s (0 <? i && i <=? Size (Rep s))
-  , HasTotalPositionP i (CRep s) ~~ 'Just a
-  , HasTotalPositionP i (CRep t) ~~ 'Just b
-  , HasTotalPositionP i (CRep (Indexed s)) ~~ 'Just a'
-  , HasTotalPositionP i (CRep (Indexed t)) ~~ 'Just b'
+  , HasTotal i (CRep s) ~~ 'Just a
+  , HasTotal i (CRep t) ~~ 'Just b
+  , HasTotal i (CRep (Indexed s)) ~~ 'Just a'
+  , HasTotal i (CRep (Indexed t)) ~~ 'Just b'
   , t ~~ Infer s a' b
   , s ~~ Infer t b' a
   , Coercible (CRep s) (Rep s)
@@ -195,7 +195,7 @@ instance {-# OVERLAPPING #-} HasPosition_ f (Void1 a) (Void1 b) a b where
 instance
   ( Generic s
   , Generic t
-  , GLens (HasTotalPositionP i) (CRep s) (CRep t) a b
+  , GLens (HasTotal i) (CRep s) (CRep t) a b
   , Coercible (CRep s) (Rep s)
   , Coercible (CRep t) (Rep t)
   , Defined (Rep s)
@@ -205,7 +205,7 @@ instance
                   ])
     (() :: Constraint)
   ) => HasPosition0 i s t a b where
-  position0 = VL.ravel (repLens . coerced @(CRep s) @(CRep t) . glens @(HasTotalPositionP i))
+  position0 = VL.ravel (repLens . coerced @(CRep s) @(CRep t) . glens @(HasTotal i))
   {-# INLINE position0 #-}
 
 type family ErrorUnless (i :: Nat) (s :: Type) (hasP :: Bool) :: Constraint where

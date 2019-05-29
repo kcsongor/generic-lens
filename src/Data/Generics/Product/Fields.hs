@@ -153,7 +153,7 @@ setField = VL.set (field' @f)
 instance
   ( Generic s
   , ErrorUnless field s (CollectField field (Rep s))
-  , GLens' (HasTotalFieldP field) (Rep s) a
+  , GLens' (HasTotal field) (Rep s) a
   , Defined (Rep s)
     (NoGeneric s '[ 'Text "arising from a generic lens focusing on the "
                     ':<>: QuoteType field ':<>: 'Text " field of type " ':<>: QuoteType a
@@ -166,10 +166,10 @@ class (~~) (a :: k) (b :: k) | a -> b, b -> a
 instance (a ~ b) => (~~) a b
 
 instance  -- see Note [Changing type parameters]
-  ( HasTotalFieldP field (Rep s) ~~ 'Just a
-  , HasTotalFieldP field (Rep t) ~~ 'Just b
-  , HasTotalFieldP field (Rep (Indexed s)) ~~ 'Just a'
-  , HasTotalFieldP field (Rep (Indexed t)) ~~ 'Just b'
+  ( HasTotal field (Rep s) ~~ 'Just a
+  , HasTotal field (Rep t) ~~ 'Just b
+  , HasTotal field (Rep (Indexed s)) ~~ 'Just a'
+  , HasTotal field (Rep (Indexed t)) ~~ 'Just b'
   , t ~~ Infer s a' b
   , s ~~ Infer t b' a
   , HasField0 field s t a b
@@ -181,8 +181,8 @@ instance {-# OVERLAPPING #-} HasField f (Void1 a) (Void1 b) a b where
   field = undefined
 
 instance
-  ( HasTotalFieldP field (Rep s) ~~ 'Just a
-  , HasTotalFieldP field (Rep t) ~~ 'Just b
+  ( HasTotal field (Rep s) ~~ 'Just a
+  , HasTotal field (Rep t) ~~ 'Just b
   , UnifyHead s t
   , UnifyHead t s
   , HasField0 field s t a b
@@ -195,7 +195,7 @@ instance {-# OVERLAPPING #-} HasField_ f (Void1 a) (Void1 b) a b where
 instance
   ( Generic s
   , Generic t
-  , GLens  (HasTotalFieldP field) (Rep s) (Rep t) a b
+  , GLens  (HasTotal field) (Rep s) (Rep t) a b
   , ErrorUnless field s (CollectField field (Rep s))
   , Defined (Rep s)
     (NoGeneric s '[ 'Text "arising from a generic lens focusing on the "
@@ -203,7 +203,7 @@ instance
                   , 'Text "in " ':<>: QuoteType s])
     (() :: Constraint)
   ) => HasField0 field s t a b where
-  field0 = VL.ravel (repLens . glens @(HasTotalFieldP field))
+  field0 = VL.ravel (repLens . glens @(HasTotal field))
   {-# INLINE field0 #-}
 
 type family ErrorUnless (field :: Symbol) (s :: Type) (stat :: TypeStat) :: Constraint where

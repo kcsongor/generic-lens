@@ -22,7 +22,6 @@
 module Data.Generics.Internal.Profunctor.Iso where
 
 import Data.Profunctor        (Profunctor(..))
-import Data.Profunctor.Unsafe ((#.), (.#))
 import GHC.Generics           ((:*:)(..), (:+:)(..), Generic(..), M1(..), K1(..), Rep)
 import Data.Coerce
 import Data.Generics.Internal.GenericN (Rec (..))

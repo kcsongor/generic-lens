@@ -1,3 +1,4 @@
+{-# LANGUAGE UnsaturatedTypeFamilies #-}
 {-# LANGUAGE DataKinds            #-}
 {-# LANGUAGE PolyKinds            #-}
 {-# LANGUAGE TypeFamilies         #-}
@@ -27,8 +28,7 @@ import Data.Type.Bool     (If)
 import Data.Type.Equality (type (==))
 import GHC.Generics
 import GHC.TypeLits       (Symbol, CmpSymbol)
-
-import Data.Generics.Product.Internal.HList (type (++))
+import Type.Prelude       (type (++))
 import Data.Generics.Internal.Families.Has (GTypes)
 
 data TypeStat

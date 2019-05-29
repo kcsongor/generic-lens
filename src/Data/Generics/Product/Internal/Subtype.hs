@@ -49,10 +49,10 @@ instance (GUpcast sub a, GUpcast sub b) => GUpcast sub (a :*: b) where
   gupcast rep = gupcast rep :*: gupcast rep
 
 instance
-  GLens' (HasTotalFieldP field) sub t
+  GLens' (HasTotal field) sub t
   => GUpcast sub (S1 ('MetaSel ('Just field) p f b) (Rec0 t)) where
 
-  gupcast r = M1 (K1 (view (glens @(HasTotalFieldP field)) r))
+  gupcast r = M1 (K1 (view (glens @(HasTotal field)) r))
 
 instance GUpcast sub sup => GUpcast sub (C1 c sup) where
   gupcast = M1 . gupcast
@@ -71,10 +71,10 @@ instance (GSmash a sup, GSmash b sup) => GSmash (a :*: b) sup where
 
 instance
   ( leaf ~ (S1 ('MetaSel ('Just field) p f b) t)
-  , GSmashLeaf leaf sup (HasTotalFieldP field sup)
+  , GSmashLeaf leaf sup (HasTotal field sup)
   ) => GSmash (S1 ('MetaSel ('Just field) p f b) t) sup where
 
-  gsmash = gsmashLeaf @_ @_ @(HasTotalFieldP field sup)
+  gsmash = gsmashLeaf @_ @_ @(HasTotal field sup)
 
 instance GSmash sub sup => GSmash (C1 c sub) sup where
   gsmash sup (M1 sub) = M1 (gsmash sup sub)
@@ -86,9 +86,9 @@ class GSmashLeaf sub sup (w :: Maybe Type) where
   gsmashLeaf :: sup p -> sub p -> sub p
 
 instance
-  GLens' (HasTotalFieldP field) sup t
+  GLens' (HasTotal field) sup t
   => GSmashLeaf (S1 ('MetaSel ('Just field) p f b) (Rec0 t)) sup ('Just t) where
-  gsmashLeaf sup _ = M1 (K1 (view (glens @(HasTotalFieldP field)) sup))
+  gsmashLeaf sup _ = M1 (K1 (view (glens @(HasTotal field)) sup))
 
 instance GSmashLeaf (S1 ('MetaSel ('Just field) p f b) (Rec0 t)) sup 'Nothing where
   gsmashLeaf _ = id

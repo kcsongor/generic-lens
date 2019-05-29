@@ -10,6 +10,7 @@
 {-# LANGUAGE TypeFamilies           #-}
 {-# LANGUAGE TypeOperators          #-}
 {-# LANGUAGE UndecidableInstances   #-}
+{-# LANGUAGE UnsaturatedTypeFamilies   #-}
 
 -----------------------------------------------------------------------------
 -- |

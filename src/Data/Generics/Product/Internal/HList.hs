@@ -34,7 +34,6 @@ module Data.Generics.Product.Internal.HList
   ( GIsList(..)
   , IndexList (..)
   , HList (..)
-  , type (++)
   , Elem
   , ListTuple (..)
   , TupleToList

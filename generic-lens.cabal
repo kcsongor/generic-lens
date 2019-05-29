@@ -71,6 +71,7 @@ library
                     , Data.Generics.Product.Internal.HList
 
   build-depends:      base        >= 4.9 && <= 5.0
+                    , typelevel-prelude
                     -- , profunctors >= 5.0 && <= 6.0
                     -- , tagged      >= 0.8 && <= 0.9
 

@@ -1,2 +1,7 @@
 packages: generic-lens.cabal
 write-ghc-environment-files: always
+
+source-repository-package
+    type: git
+    location: https://github.com/kcsongor/typelevel-prelude
+    tag: cb2eb1682b6911c984c4a400b08e6258af409cb4
