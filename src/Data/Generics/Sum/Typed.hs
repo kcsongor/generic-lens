@@ -119,14 +119,10 @@ instance
   {-# INLINE[2] _Typed #-}
 
 -- See Note [Uncluttering type signatures]
-instance {-# OVERLAPPING #-} AsType a Void where
-  _Typed = undefined
-  injectTyped = undefined
-  projectTyped = undefined
-instance {-# OVERLAPPING #-} AsType Void a where
-  _Typed = undefined
-  injectTyped = undefined
-  projectTyped = undefined
+instance AsType Void a where
+  _Typed = prism absurd Left
+  injectTyped = absurd
+  projectTyped = const Nothing
 
 type family ErrorUnlessOne (a :: Type) (s :: Type) (ctors :: [Symbol]) :: Constraint where
   ErrorUnlessOne _ _ '[_]

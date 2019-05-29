@@ -1,4 +1,4 @@
-{-# LANGUAGE PolyKinds #-}
+{-# LANGUAGE PolyKinds, EmptyCase #-}
 module Data.Generics.Internal.Void where
 
 {-
@@ -17,3 +17,12 @@ module Data.Generics.Internal.Void where
 data Void
 data Void1 a
 data Void2 a b
+
+absurd :: Void -> x
+absurd v = case v of
+
+absurd1 :: Void1 a -> x
+absurd1 v = case v of
+
+absurd2 :: Void2 a b -> x
+absurd2 v = case v of
