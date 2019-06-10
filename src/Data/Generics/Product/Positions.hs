@@ -172,7 +172,10 @@ coerced :: forall s t s' t' x a b. (Coercible t t', Coercible s s')
 coerced = coerce
 {-# INLINE coerced #-}
 
--- See Note [Uncluttering type signatures]
+-- | See Note [Uncluttering type signatures]
+-- >>> :t position
+-- position
+--   :: (HasPosition i s t a b, Functor f) => (a -> f b) -> s -> f t
 instance {-# OVERLAPPING #-} HasPosition f (Void1 a) (Void1 b) a b where
   position = undefined
 

@@ -127,7 +127,11 @@ instance {-# OVERLAPPING #-} HasType a a where
     setTyped a _ = a
     {-# INLINE setTyped #-}
 
--- See Note [Uncluttering type signatures]
+-- | See Note [Uncluttering type signatures]
+-- >>> :t typed
+-- typed :: (HasType a s, Functor f) => (a -> f a) -> s -> f s
+--
+-- Note that this might not longer be needed given the above 'HasType a a' instance.
 instance {-# OVERLAPPING #-} HasType a Void where
   typed = undefined
 

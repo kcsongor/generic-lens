@@ -152,7 +152,12 @@ instance
   _Ctor = _Ctor0 @ctor
   {-# INLINE[2] _Ctor #-}
 
--- See Note [Uncluttering type signatures]
+-- | See Note [Uncluttering type signatures]
+-- >>> :t _Ctor
+-- _Ctor
+--   :: (AsConstructor ctor s t a b, Data.Profunctor.Choice.Choice p,
+--       Applicative f) =>
+--      p a (f b) -> p s (f t)
 instance {-# OVERLAPPING #-} AsConstructor ctor (Void1 a) (Void1 b) a b where
   _Ctor = undefined
 

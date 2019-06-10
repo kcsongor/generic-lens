@@ -114,8 +114,8 @@ instance
   {-# INLINE[2] _Sub #-}
 
 -- | Reflexive case
---  >>> _Sub # dog4 :: Animal
---  MkDog {name = "Snowy", age = 4}
+--  >>> _Sub # dog :: Animal
+--  Dog (MkDog {name = "Shep", age = 3})
 instance {-# OVERLAPPING #-} AsSubtype a a where
   _Sub = id
   {-# INLINE[2] _Sub #-}

@@ -118,11 +118,22 @@ instance
   _Typed eta = prismRavel (prismPRavel (repIso . _GTyped @_ @as . tupled)) eta
   {-# INLINE[2] _Typed #-}
 
--- See Note [Uncluttering type signatures]
+-- | See Note [Uncluttering type signatures]
+-- >>> :t _Typed
+-- _Typed
+--   :: (AsType a s, Data.Profunctor.Choice.Choice p, Applicative f) =>
+-- ...
 instance {-# OVERLAPPING #-} AsType a Void where
   _Typed = undefined
   injectTyped = undefined
   projectTyped = undefined
+
+-- | See Note [Uncluttering type signatures]
+-- >>> :t _Typed @Int
+-- _Typed @Int
+--   :: (AsType Int s, Data.Profunctor.Choice.Choice p,
+--       Applicative f) =>
+-- ...
 instance {-# OVERLAPPING #-} AsType Void a where
   _Typed = undefined
   injectTyped = undefined

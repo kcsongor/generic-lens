@@ -175,7 +175,10 @@ instance  -- see Note [Changing type parameters]
   ) => HasField field s t a b where
   field f s = field0 @field f s
 
--- -- See Note [Uncluttering type signatures]
+-- | See Note [Uncluttering type signatures]
+-- >>> :t field
+-- field
+--   :: (HasField field s t a b, Functor f) => (a -> f b) -> s -> f t
 instance {-# OVERLAPPING #-} HasField f (Void1 a) (Void1 b) a b where
   field = undefined
 
