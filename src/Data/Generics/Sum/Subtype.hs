@@ -113,10 +113,29 @@ instance
   _Sub f = prismRavel (repIso . _GSub . fromIso repIso) f
   {-# INLINE[2] _Sub #-}
 
--- See Note [Uncluttering type signatures]
+-- | Reflexive case
+--  >>> _Sub # dog4 :: Animal
+--  MkDog {name = "Snowy", age = 4}
+instance {-# OVERLAPPING #-} AsSubtype a a where
+  _Sub = id
+  {-# INLINE[2] _Sub #-}
+
+-- | See Note [Uncluttering type signatures]
+-- >>> :t _Sub
+-- _Sub
+--   :: (AsSubtype sub sup, Data.Profunctor.Choice.Choice p,
+--       Applicative f) =>
+--      p sub (f sub) -> p sup (f sup)
 instance {-# OVERLAPPING #-} AsSubtype a Void where
   injectSub = undefined
   projectSub = undefined
+
+-- | See Note [Uncluttering type signatures]
+-- >>> :t _Sub @Int
+-- _Sub @Int
+--   :: (AsSubtype Int sup, Data.Profunctor.Choice.Choice p,
+--       Applicative f) =>
+--      p Int (f Int) -> p sup (f sup)
 instance {-# OVERLAPPING #-} AsSubtype Void a where
   injectSub = undefined
   projectSub = undefined
