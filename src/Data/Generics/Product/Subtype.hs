@@ -129,6 +129,9 @@ instance
     smash p b = to $ gsmash (from p) (from b)
     upcast    = to . gupcast . from
 
+instance {-# OVERLAPPING #-} Subtype a a where
+  super = id
+
 -- See Note [Uncluttering type signatures]
 instance {-# OVERLAPPING #-} Subtype a Void where
   super = undefined
