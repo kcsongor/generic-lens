@@ -4,6 +4,7 @@
 
 ### Breaking API changes
 - `HasType` now includes a reflexive case so that every type 'contains' itself (Matt Parsons)
+- `AsSubtype` and `Subtype` now include a reflexive case so that every type is a subtype of itself
 
 ## 1.1.0.0
 - Fix regression in type inference for polymorphic optics
