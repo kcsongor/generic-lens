@@ -48,6 +48,7 @@ module Data.Generics.Product.Types
 import Data.Kind
 import Data.Int (Int8, Int16, Int32, Int64)
 import Data.Word (Word, Word8, Word16, Word32, Word64)
+import qualified Data.Text as T
 
 import GHC.Generics
 import GHC.TypeLits
@@ -241,6 +242,7 @@ type family ChildrenDefault (a :: Type) :: [Type] where
   ChildrenDefault Word16  = '[]
   ChildrenDefault Word32  = '[]
   ChildrenDefault Word64  = '[]
+  ChildrenDefault T.Text  = '[]
   ChildrenDefault a
    = Defined (Rep a)
     (NoGeneric a

@@ -1,6 +1,7 @@
 ## 1.2.0.0
 - Add `HasTypesUsing` and `HasTypesCustom` for custom traversals (Lysxia)
 - Improve type errors when no Generic instance is defined
+- `types` now supports Text by default
 
 ### Breaking API changes
 - `HasType` now includes a reflexive case so that every type 'contains' itself (Matt Parsons)
