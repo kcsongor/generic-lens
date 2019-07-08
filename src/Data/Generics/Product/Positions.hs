@@ -19,7 +19,7 @@
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Data.Generics.Product.Positions
--- Copyright   :  (C) 2018 Csongor Kiss
+-- Copyright   :  (C) 2019 Csongor Kiss
 -- License     :  BSD3
 -- Maintainer  :  Csongor Kiss <kiss.csongor.kiss@gmail.com>
 -- Stability   :  experimental
@@ -173,9 +173,15 @@ coerced = coerce
 {-# INLINE coerced #-}
 
 -- | See Note [Uncluttering type signatures]
+#if __GLASGOW_HASKELL__ < 804
 -- >>> :t position
 -- position
 --   :: (HasPosition i s t a b, Functor f) => (a -> f b) -> s -> f t
+#else
+-- >>> :t position
+-- position
+--   :: (Functor f, HasPosition i s t a b) => (a -> f b) -> s -> f t
+#endif
 instance {-# OVERLAPPING #-} HasPosition f (Void1 a) (Void1 b) a b where
   position = undefined
 

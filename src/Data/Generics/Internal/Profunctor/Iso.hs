@@ -1,3 +1,4 @@
+{-# OPTIONS_HADDOCK hide #-}
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE GADTs                     #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
@@ -10,7 +11,7 @@
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Data.Generics.Internal.Profunctor.Iso
--- Copyright   :  (C) 2018 Csongor Kiss
+-- Copyright   :  (C) 2019 Csongor Kiss
 -- License     :  BSD3
 -- Maintainer  :  Csongor Kiss <kiss.csongor.kiss@gmail.com>
 -- Stability   :  experimental

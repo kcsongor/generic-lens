@@ -1,7 +1,7 @@
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Data.GenericLens.Internal
--- Copyright   :  (C) 2018 Csongor Kiss
+-- Copyright   :  (C) 2019 Csongor Kiss
 -- License     :  BSD3
 -- Maintainer  :  Csongor Kiss <kiss.csongor.kiss@gmail.com>
 -- Stability   :  experimental
@@ -29,6 +29,14 @@ module Data.GenericLens.Internal
   , module Data.Generics.Product.Internal.Subtype
   , module Data.Generics.Product.Internal.Constraints
   , module Data.Generics.Product.Internal.HList
+
+  , module Data.Generics.Internal.GenericN
+
+  -- * van Laarhoven optics
+  , module Data.Generics.Internal.VL.Iso
+  , module Data.Generics.Internal.VL.Lens
+  , module Data.Generics.Internal.VL.Prism
+  , module Data.Generics.Internal.VL.Traversal
   ) where
 
 import Data.Generics.Internal.Families
@@ -47,3 +55,10 @@ import Data.Generics.Product.Internal.GLens
 import Data.Generics.Product.Internal.Subtype
 import Data.Generics.Product.Internal.Constraints
 import Data.Generics.Product.Internal.HList
+
+import Data.Generics.Internal.GenericN
+
+import Data.Generics.Internal.VL.Iso
+import Data.Generics.Internal.VL.Lens
+import Data.Generics.Internal.VL.Prism
+import Data.Generics.Internal.VL.Traversal

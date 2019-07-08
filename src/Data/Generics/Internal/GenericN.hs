@@ -1,3 +1,4 @@
+{-# OPTIONS_HADDOCK hide          #-}
 {-# LANGUAGE DataKinds            #-}
 {-# LANGUAGE FlexibleContexts     #-}
 {-# LANGUAGE FlexibleInstances    #-}
@@ -11,9 +12,9 @@
 --------------------------------------------------------------------------------
 -- |
 -- Module      : Data.Generics.Internal.GenericN
--- Copyright   : (C) 2018 Csongor Kiss
--- Maintainer  : Csongor Kiss <kiss.csongor.kiss@gmail.com>
+-- Copyright   : (C) 2019 Csongor Kiss
 -- License     : BSD3
+-- Maintainer  : Csongor Kiss <kiss.csongor.kiss@gmail.com>
 -- Stability   : experimental
 -- Portability : non-portable
 --

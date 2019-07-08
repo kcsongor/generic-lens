@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE AllowAmbiguousTypes       #-}
 {-# LANGUAGE DataKinds                 #-}
 {-# LANGUAGE FlexibleContexts          #-}
@@ -15,7 +16,7 @@
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Data.Generics.Product.Subtype
--- Copyright   :  (C) 2018 Csongor Kiss
+-- Copyright   :  (C) 2019 Csongor Kiss
 -- License     :  BSD3
 -- Maintainer  :  Csongor Kiss <kiss.csongor.kiss@gmail.com>
 -- Stability   :  experimental
@@ -114,34 +115,52 @@ instance
   , Generic b
   , GSmash (Rep a) (Rep b)
   , GUpcast (Rep a) (Rep b)
-  , ErrorUnless b a (CollectFieldsOrdered (Rep b) \\ CollectFieldsOrdered (Rep a))
-  , Defined (Rep a)
-    (NoGeneric a '[ 'Text "arising from a generic lens focusing on " ':<>: QuoteType b
-                  , 'Text "as a supertype of " ':<>: QuoteType a
-                  ])
-    (() :: Constraint)
-  , Defined (Rep b)
-    (NoGeneric b '[ 'Text "arising from a generic lens focusing on " ':<>: QuoteType b
-                  , 'Text "as a supertype of " ':<>: QuoteType a
-                  ])
-    (() :: Constraint)
+  , CustomError a b
   ) => Subtype b a where
     smash p b = to $ gsmash (from p) (from b)
     upcast    = to . gupcast . from
+
+type family CustomError a b :: Constraint where
+  CustomError a b =
+    ( ErrorUnless b a (CollectFieldsOrdered (Rep b) \\ CollectFieldsOrdered (Rep a))
+    , Defined (Rep a)
+      (NoGeneric a '[ 'Text "arising from a generic lens focusing on " ':<>: QuoteType b
+                    , 'Text "as a supertype of " ':<>: QuoteType a
+                    ])
+      (() :: Constraint)
+    , Defined (Rep b)
+      (NoGeneric b '[ 'Text "arising from a generic lens focusing on " ':<>: QuoteType b
+                    , 'Text "as a supertype of " ':<>: QuoteType a
+                    ])
+      (() :: Constraint)
+    )
 
 instance {-# OVERLAPPING #-} Subtype a a where
   super = id
 
 -- | See Note [Uncluttering type signatures]
+#if __GLASGOW_HASKELL__ < 804
 -- >>> :t super
 -- super
 --   :: (Subtype sup sub, Functor f) => (sup -> f sup) -> sub -> f sub
+#else
+-- >>> :t super
+-- super
+--   :: (Functor f, Subtype sup sub) => (sup -> f sup) -> sub -> f sub
+#endif
 instance {-# OVERLAPPING #-} Subtype a Void where
   super = undefined
+
 -- | See Note [Uncluttering type signatures]
+#if __GLASGOW_HASKELL__ < 804
 -- >>> :t super @Int
 -- super @Int
 --   :: (Subtype Int sub, Functor f) => (Int -> f Int) -> sub -> f sub
+#else
+-- >>> :t super @Int
+-- super @Int
+--   :: (Functor f, Subtype Int sub) => (Int -> f Int) -> sub -> f sub
+#endif
 instance {-# OVERLAPPING #-} Subtype Void a where
   super = undefined
 

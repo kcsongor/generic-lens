@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE AllowAmbiguousTypes   #-}
 {-# LANGUAGE DataKinds             #-}
 {-# LANGUAGE FlexibleContexts      #-}
@@ -14,7 +15,7 @@
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Data.Generics.Product.Typed
--- Copyright   :  (C) 2018 Csongor Kiss
+-- Copyright   :  (C) 2019 Csongor Kiss
 -- License     :  BSD3
 -- Maintainer  :  Csongor Kiss <kiss.csongor.kiss@gmail.com>
 -- Stability   :  experimental
@@ -128,8 +129,13 @@ instance {-# OVERLAPPING #-} HasType a a where
     {-# INLINE setTyped #-}
 
 -- | See Note [Uncluttering type signatures]
+#if __GLASGOW_HASKELL__ < 804
 -- >>> :t typed
 -- typed :: (HasType a s, Functor f) => (a -> f a) -> s -> f s
+#else
+-- >>> :t typed
+-- typed :: (Functor f, HasType a s) => (a -> f a) -> s -> f s
+#endif
 --
 -- Note that this might not longer be needed given the above 'HasType a a' instance.
 instance {-# OVERLAPPING #-} HasType a Void where

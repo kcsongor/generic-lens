@@ -1,3 +1,4 @@
+{-# OPTIONS_HADDOCK hide #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE ConstraintKinds           #-}
 {-# LANGUAGE GADTs                     #-}
@@ -11,7 +12,7 @@
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Data.Generics.Internal.VL.Traversal
--- Copyright   :  (C) 2018 Csongor Kiss
+-- Copyright   :  (C) 2019 Csongor Kiss
 -- License     :  BSD3
 -- Maintainer  :  Csongor Kiss <kiss.csongor.kiss@gmail.com>
 -- Stability   :  experimental

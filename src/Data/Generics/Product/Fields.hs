@@ -16,7 +16,7 @@
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Data.Generics.Product.Fields
--- Copyright   :  (C) 2018 Csongor Kiss
+-- Copyright   :  (C) 2019 Csongor Kiss
 -- License     :  BSD3
 -- Maintainer  :  Csongor Kiss <kiss.csongor.kiss@gmail.com>
 -- Stability   :  experimental
@@ -176,9 +176,15 @@ instance  -- see Note [Changing type parameters]
   field f s = field0 @field f s
 
 -- | See Note [Uncluttering type signatures]
+#if __GLASGOW_HASKELL__ < 804
 -- >>> :t field
 -- field
 --   :: (HasField field s t a b, Functor f) => (a -> f b) -> s -> f t
+#else
+-- >>> :t field
+-- field
+--   :: (Functor f, HasField field s t a b) => (a -> f b) -> s -> f t
+#endif
 instance {-# OVERLAPPING #-} HasField f (Void1 a) (Void1 b) a b where
   field = undefined
 

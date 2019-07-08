@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE AllowAmbiguousTypes    #-}
 {-# LANGUAGE DataKinds              #-}
@@ -13,7 +14,7 @@
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Data.Generics.Sum.Typed
--- Copyright   :  (C) 2018 Csongor Kiss
+-- Copyright   :  (C) 2019 Csongor Kiss
 -- License     :  BSD3
 -- Maintainer  :  Csongor Kiss <kiss.csongor.kiss@gmail.com>
 -- Stability   :  experimental
@@ -119,21 +120,36 @@ instance
   {-# INLINE[2] _Typed #-}
 
 -- | See Note [Uncluttering type signatures]
+#if __GLASGOW_HASKELL__ < 804
+-- >>> :t _Typed
+-- _Typed
+--   :: (Applicative f, Data.Profunctor.Choice.Choice p, AsType a s) =>
+--      p a (f a) -> p s (f s)
+#else
 -- >>> :t _Typed
 -- _Typed
 --   :: (AsType a s, Data.Profunctor.Choice.Choice p, Applicative f) =>
--- ...
+--      p a (f a) -> p s (f s)
+#endif
 instance {-# OVERLAPPING #-} AsType a Void where
   _Typed = undefined
   injectTyped = undefined
   projectTyped = undefined
 
 -- | See Note [Uncluttering type signatures]
+#if __GLASGOW_HASKELL__ < 804
+-- >>> :t _Typed @Int
+-- _Typed @Int
+--   :: (Applicative f, Data.Profunctor.Choice.Choice p,
+--       AsType Int s) =>
+--      p Int (f Int) -> p s (f s)
+#else
 -- >>> :t _Typed @Int
 -- _Typed @Int
 --   :: (AsType Int s, Data.Profunctor.Choice.Choice p,
 --       Applicative f) =>
--- ...
+--      p Int (f Int) -> p s (f s)
+#endif
 instance {-# OVERLAPPING #-} AsType Void a where
   _Typed = undefined
   injectTyped = undefined
