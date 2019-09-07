@@ -32,11 +32,11 @@ module Data.GenericLens.Internal
 
   , module Data.Generics.Internal.GenericN
 
-  -- * van Laarhoven optics
-  , module Data.Generics.Internal.VL.Iso
-  , module Data.Generics.Internal.VL.Lens
-  , module Data.Generics.Internal.VL.Prism
-  , module Data.Generics.Internal.VL.Traversal
+  -- -- * van Laarhoven optics
+  -- , module Data.Generics.Internal.VL.Iso
+  -- , module Data.Generics.Internal.VL.Lens
+  -- , module Data.Generics.Internal.VL.Prism
+  -- , module Data.Generics.Internal.VL.Traversal
   ) where
 
 import Data.Generics.Internal.Families
@@ -58,7 +58,7 @@ import Data.Generics.Product.Internal.HList
 
 import Data.Generics.Internal.GenericN
 
-import Data.Generics.Internal.VL.Iso
-import Data.Generics.Internal.VL.Lens
-import Data.Generics.Internal.VL.Prism
-import Data.Generics.Internal.VL.Traversal
+-- import Data.Generics.Internal.VL.Iso
+-- import Data.Generics.Internal.VL.Lens
+-- import Data.Generics.Internal.VL.Prism
+-- import Data.Generics.Internal.VL.Traversal

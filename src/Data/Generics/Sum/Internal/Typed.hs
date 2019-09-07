@@ -29,7 +29,7 @@ module Data.Generics.Sum.Internal.Typed
 
 import Data.Kind
 import GHC.Generics
-import Data.Tagged
+import Optics.Internal.Tagged
 
 import Data.Generics.Internal.Families
 import Data.Generics.Product.Internal.HList
@@ -43,7 +43,7 @@ class GAsType (f :: Type -> Type) (as :: [Type]) where
 -- If we don't create it, the opportunity for specialisation is only
 -- created after specialisation happens, I think a late specialisation pass
 -- would pick up this case.
-{-# SPECIALISE _GTyped  :: (Tagged b b -> Tagged t t) #-}
+{-# SPECIALISE _GTyped  :: (Tagged i b b -> Tagged i t t) #-}
 
 
 instance

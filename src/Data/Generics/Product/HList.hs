@@ -27,8 +27,8 @@ module Data.Generics.Product.HList
 import Data.Generics.Product.Internal.HList
 import Data.Kind
 import GHC.Generics
-import Data.Generics.Internal.VL.Iso (Iso)
-import Data.Generics.Internal.Profunctor.Iso (repIso, iso2isovl)
+-- import Data.Generics.Internal.VL.Iso (Iso)
+import Data.Generics.Internal.Profunctor.Iso (repIso, Iso)
 
 class IsList
   (f :: Type)
@@ -42,5 +42,5 @@ instance
   , Generic g
   , GIsList (Rep f) (Rep g) as bs
   ) => IsList f g as bs where
-  list = iso2isovl (repIso . glist)
+  list = {-iso2isovl-} (repIso . glist)
   {-# INLINE list #-}

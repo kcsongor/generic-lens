@@ -22,18 +22,27 @@
 -----------------------------------------------------------------------------
 module Data.Generics.Internal.Profunctor.Iso where
 
-import Data.Profunctor        (Profunctor(..))
-import Data.Profunctor.Unsafe ((#.), (.#))
+import Optics.Internal.Profunctor (Profunctor(..))
+import Optics.Internal.Concrete (Exchange(..))
 import GHC.Generics           ((:*:)(..), (:+:)(..), Generic(..), M1(..), K1(..), Rep)
-import Data.Coerce
 import Data.Generics.Internal.GenericN (Rec (..))
 
-import qualified Data.Generics.Internal.VL.Iso as VL
+import Optics.Internal.Profunctor
+
+-- import qualified Data.Generics.Internal.VL.Iso as VL
 
 type Iso s t a b
-  = forall p. (Profunctor p) => p a b -> p s t
+  = forall i p. (Profunctor p) => p i a b -> p i s t
 
 type Iso' s a = Iso s s a a
+
+view :: Iso s t a b -> s -> a
+view o = views o id
+{-# INLINE view #-}
+
+views :: Iso s t a b -> (a -> r) -> s -> r
+views o = \f -> runForget $ o (Forget f)
+{-# INLINE views #-}
 
 -- | A type and its generic representation are isomorphic
 repIso :: (Generic a, Generic b) => Iso a b (Rep a x) (Rep b x)
@@ -41,7 +50,7 @@ repIso = iso from to
 
 -- | 'M1' is just a wrapper around `f p`
 --mIso :: Iso' (M1 i c f p) (f p)
-mIso :: Iso (M1 i c f p) (M1 i c g p) (f p) (g p)
+mIso :: Iso (M1 m c f p) (M1 m c g p) (f p) (g p)
 mIso = iso unM1 M1
 {-# INLINE mIso #-}
 
@@ -78,9 +87,9 @@ iso :: (s -> a) -> (b -> t) -> Iso s t a b
 iso = dimap
 {-# INLINE iso #-}
 
-iso2isovl :: Iso s t a b -> VL.Iso s t a b
-iso2isovl _iso = withIso _iso VL.iso
-{-# INLINE iso2isovl #-}
+-- iso2isovl :: Iso s t a b -> VL.Iso s t a b
+-- iso2isovl _iso = withIso _iso VL.iso
+-- {-# INLINE iso2isovl #-}
 
 withIso :: Iso s t a b -> ((s -> a) -> (b -> t) -> r) -> r
 withIso ai k = case ai (Exchange id id) of
@@ -90,22 +99,3 @@ pairing :: Iso s t a b -> Iso s' t' a' b' -> Iso (s, s') (t, t') (a, a') (b, b')
 pairing f g = withIso f $ \ sa bt -> withIso g $ \s'a' b't' ->
   iso (bmap sa s'a') (bmap bt b't')
   where bmap f' g' (a, b) = (f' a, g' b)
-
-data Exchange a b s t = Exchange (s -> a) (b -> t)
-
-instance Functor (Exchange a b s) where
-  fmap f (Exchange sa bt) = Exchange sa (f . bt)
-  {-# INLINE fmap #-}
-
-instance Profunctor (Exchange a b) where
-  dimap f g (Exchange sa bt) = Exchange (sa . f) (g . bt)
-  {-# INLINE dimap #-}
-  lmap f (Exchange sa bt) = Exchange (sa . f) bt
-  {-# INLINE lmap #-}
-  rmap f (Exchange sa bt) = Exchange sa (f . bt)
-  {-# INLINE rmap #-}
-  ( #. ) _ = coerce
-  {-# INLINE ( #. ) #-}
-  ( .# ) p _ = coerce p
-  {-# INLINE ( .# ) #-}
-

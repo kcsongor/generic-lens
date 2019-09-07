@@ -40,9 +40,9 @@ import Data.Generics.Internal.Errors
 import Data.Generics.Internal.Families
 import Data.Generics.Internal.Void
 import Data.Generics.Product.Internal.HList
-import Data.Generics.Internal.VL.Prism
+-- import Data.Generics.Internal.VL.Prism
 import Data.Generics.Internal.Profunctor.Iso
-import Data.Generics.Internal.Profunctor.Prism (prismPRavel)
+import Data.Generics.Internal.Profunctor.Prism
 
 -- $setup
 -- >>> :set -XTypeApplications
@@ -116,7 +116,7 @@ instance
     (() :: Constraint)
   ) => AsType a s where
 
-  _Typed eta = prismRavel (prismPRavel (repIso . _GTyped @_ @as . tupled)) eta
+  _Typed = prismPRavel (repIso . _GTyped @_ @as . tupled)
   {-# INLINE[2] _Typed #-}
 
 -- | See Note [Uncluttering type signatures]

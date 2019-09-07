@@ -29,7 +29,8 @@ module Data.Generics.Product.Any
     HasAny (..)
   ) where
 
-import Data.Generics.Internal.VL.Lens
+-- import Data.Generics.Internal.VL.Lens
+import Data.Generics.Internal.Profunctor.Lens
 import Data.Generics.Product.Fields
 import Data.Generics.Product.Positions
 import Data.Generics.Product.Typed

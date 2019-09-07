@@ -37,7 +37,7 @@ import Data.Generics.Internal.VL.Traversal
 
 import GHC.Generics
 import Data.Kind
-import Data.Generics.Internal.VL.Iso
+-- import Data.Generics.Internal.VL.Iso
 import Data.Generics.Internal.GenericN
 import Data.Generics.Internal.Errors
 
@@ -102,7 +102,7 @@ instance GHasParam p s t a b => GHasParam p (M1 m meta s) (M1 m meta t) a b wher
 
 -- the parameter we're looking for
 instance GHasParam p (Rec (param p) a) (Rec (param p) b) a b where
-  gparam = recIso
+  gparam f (Rec (K1 x)) = Rec . K1 <$> f x
 
 -- other recursion
 instance {-# OVERLAPPABLE #-}

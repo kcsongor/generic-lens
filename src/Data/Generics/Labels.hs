@@ -37,10 +37,12 @@ module Data.Generics.Labels
 
 import Data.Generics.Product
 import Data.Generics.Sum
-import Data.Generics.Internal.VL.Lens  (Lens)
-import Data.Generics.Internal.VL.Prism (Prism)
+-- import Data.Generics.Internal.VL.Lens  (Lens)
+-- import Data.Generics.Internal.VL.Prism (Prism)
+import Data.Generics.Internal.Profunctor.Lens  (Lens)
+import Data.Generics.Internal.Profunctor.Prism (Prism)
 
-import Data.Profunctor    (Choice)
+import Optics.Internal.Profunctor    (Choice)
 import Data.Type.Bool     (type (&&))
 import Data.Type.Equality (type (==))
 
@@ -81,7 +83,7 @@ import GHC.TypeLits
 -- seamlessly used in the 'IsLabel' instance even when dealing with data types
 -- that don't have 'Field' instances (like data instances).
 class Field name s t a b | s name -> a, t name -> b, s name b -> t, t name a -> s where
-  fieldLens :: Lens s t a b
+  fieldLens :: Lens i s t a b
 
 type Field' name s a = Field name s s a a
 

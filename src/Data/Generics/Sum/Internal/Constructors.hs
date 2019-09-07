@@ -31,12 +31,12 @@ module Data.Generics.Sum.Internal.Constructors
 
 import Data.Generics.Internal.Families
 import Data.Generics.Product.Internal.HList
-import Data.Profunctor (Profunctor(..))
+import Optics.Internal.Profunctor (Profunctor(..))
 
 import GHC.Generics
 import GHC.TypeLits (Symbol)
 import Data.Generics.Internal.Profunctor.Lens
-import Data.Generics.Internal.Profunctor.Iso
+import Data.Generics.Internal.Profunctor.Iso hiding (view)
 import Data.Generics.Internal.Profunctor.Prism
 
 -- |As 'AsConstructor' but over generic representations as defined by

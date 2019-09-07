@@ -33,10 +33,9 @@ module Data.Generics.Wrapped
   )
 where
 
-import Control.Applicative    (Const(..))
 import Data.Generics.Internal.Profunctor.Iso
 
-import qualified Data.Generics.Internal.VL.Iso as VL
+-- import qualified Data.Generics.Internal.VL.Iso as VL
 import Data.Generics.Internal.Families.Changing ( UnifyHead )
 
 import Data.Kind (Constraint)
@@ -50,13 +49,13 @@ type family ErrorUnlessOnlyOne a b :: Constraint where
     TypeError ('ShowType t ':<>: 'Text " is not a single-constructor, single-field datatype")
 
 -- | @since 1.1.0.0
-_Unwrapped :: Wrapped s t a b => VL.Iso s t a b
+_Unwrapped :: Wrapped s t a b => Iso s t a b
 _Unwrapped = wrappedIso
 {-# inline _Unwrapped #-}
 
 -- | @since 1.1.0.0
-_Wrapped :: Wrapped s t a b => VL.Iso b a t s
-_Wrapped = VL.fromIso wrappedIso
+_Wrapped :: Wrapped s t a b => Iso b a t s
+_Wrapped = fromIso wrappedIso
 {-# inline _Wrapped #-}
 
 -- TODO: move this into doctets
@@ -79,20 +78,18 @@ instance (a ~ c, b ~ d) => GWrapped (K1 i a) (K1 i b) c d where
 -- | @since 1.1.0.0
 class Wrapped s t a b | s -> a, t -> b where
   -- | @since 1.1.0.0
-  wrappedIso :: VL.Iso s t a b
+  wrappedIso :: Iso s t a b
 
 -- | @since 1.1.0.0
 wrappedTo :: forall s t a b. Wrapped s t a b => s -> a
 wrappedTo a = view (wrappedIso @s @t @a @b) a
-  where view l s = getConst (l Const s)
 {-# INLINE wrappedTo #-}
 
 -- | @since 1.1.0.0
 wrappedFrom :: forall s t a b. Wrapped s t a b => b -> t
-wrappedFrom a = view (VL.fromIso (wrappedIso @s @t @a @b)) a
-  where view l s = getConst (l Const s)
+wrappedFrom a = view (fromIso (wrappedIso @s @t @a @b)) a
 {-# INLINE wrappedFrom #-}
-
+  
 instance
   ( Generic s
   , Generic t
@@ -100,5 +97,5 @@ instance
   , UnifyHead s t
   , UnifyHead t s
   ) => Wrapped s t a b where
-  wrappedIso = iso2isovl (repIso . gWrapped)
+  wrappedIso = {-iso2isovl-} (repIso . gWrapped)
   {-# INLINE wrappedIso #-}
