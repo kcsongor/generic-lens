@@ -47,7 +47,7 @@ import GHC.TypeLits
 
 import Data.Kind    (Type)
 import GHC.Generics
-import Data.Profunctor
+import Optics.Internal.Profunctor
 import Data.Generics.Internal.Profunctor.Lens
 import Data.Generics.Internal.Profunctor.Iso
 
@@ -147,14 +147,14 @@ consing :: Iso (a, HList as) (b, HList bs) (HList (a ': as)) (HList (b ': bs))
 consing = iso (\(x, xs) -> x :> xs) (\(x :> xs) -> (x, xs))
 
 --------------------------------------------------------------------------------
-class IndexList (i :: Nat) as bs a b | i as -> a, i bs -> b, i as b -> bs, i bs a -> as where
+class IndexList (n :: Nat) as bs a b | n as -> a, n bs -> b, n as b -> bs, n bs a -> as where
   point :: Lens (HList as) (HList bs) a b
 
 instance {-# OVERLAPPING #-}
   ( as ~ (a ': as')
   , bs ~ (b ': as')
   ) => IndexList 0 as bs a b where
-  point = lens (\(x :> xs) -> (xs, x)) (\(xs, x') -> x' :> xs)
+  point = lens' (\(x :> xs) -> (xs, x)) (\(xs, x') -> x' :> xs)
   {-# INLINE point #-}
 
 instance

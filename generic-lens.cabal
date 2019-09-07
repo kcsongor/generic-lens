@@ -34,7 +34,7 @@ library
                     , Data.Generics.Product.Types
                     , Data.Generics.Product.Constraints
                     , Data.Generics.Product.HList
-                    , Data.Generics.Labels
+                    -- , Data.Generics.Labels
                     , Data.Generics.Internal.GenericN
 
                     , Data.Generics.Sum
@@ -45,10 +45,10 @@ library
                     , Data.Generics.Internal.Profunctor.Lens
                     , Data.Generics.Internal.Profunctor.Prism
                     , Data.Generics.Internal.Profunctor.Iso
-                    , Data.Generics.Internal.VL.Lens
+                    -- , Data.Generics.Internal.VL.Lens
                     , Data.Generics.Internal.VL.Traversal
-                    , Data.Generics.Internal.VL.Prism
-                    , Data.Generics.Internal.VL.Iso
+                    -- , Data.Generics.Internal.VL.Prism
+                    -- , Data.Generics.Internal.VL.Iso
 
                     , Data.GenericLens.Internal
 
@@ -71,8 +71,9 @@ library
                     , Data.Generics.Product.Internal.HList
 
   build-depends:      base        >= 4.9 && < 5.0
-                    , profunctors >= 5.0 && < 6.0
-                    , tagged      >= 0.8 && < 1
+                    , optics-core >= 0.1 && < 0.2
+                    -- , profunctors >= 5.0 && < 6.0
+                    -- , tagged      >= 0.8 && < 1
                     , text        >= 1.2 && < 1.3
 
   hs-source-dirs:     src

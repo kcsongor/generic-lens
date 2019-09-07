@@ -33,8 +33,9 @@ import Data.Generics.Internal.Void
 import Data.Generics.Sum.Internal.Subtype
 
 import GHC.Generics (Generic (Rep))
-import Data.Generics.Internal.VL.Prism
+-- import Data.Generics.Internal.VL.Prism
 import Data.Generics.Internal.Profunctor.Iso
+import Data.Generics.Internal.Profunctor.Prism
 
 -- $setup
 -- == /Running example:/
@@ -111,7 +112,7 @@ instance
   , GAsSubtype (Rep sub) (Rep sup)
   ) => AsSubtype sub sup where
 
-  _Sub f = prismRavel (repIso . _GSub . fromIso repIso) f
+  _Sub = repIso . _GSub . fromIso repIso
   {-# INLINE[2] _Sub #-}
 
 -- | Reflexive case

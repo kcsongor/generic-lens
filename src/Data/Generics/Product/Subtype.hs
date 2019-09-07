@@ -34,14 +34,14 @@ module Data.Generics.Product.Subtype
   ) where
 
 import Data.Generics.Internal.Families
-import Data.Generics.Internal.VL.Lens as VL
+-- import Data.Generics.Internal.VL.Lens as VL
 import Data.Generics.Internal.Void
 import Data.Generics.Product.Internal.Subtype
 
 import GHC.Generics (Generic (Rep, to, from) )
 import GHC.TypeLits (Symbol, TypeError, ErrorMessage (..))
 import Data.Kind (Type, Constraint)
-import Data.Generics.Internal.Profunctor.Lens hiding (set)
+import Data.Generics.Internal.Profunctor.Lens
 import Data.Generics.Internal.Errors
 
 -- $setup
@@ -83,9 +83,9 @@ class Subtype sup sub where
   --
   -- >>> set (super @Animal) (Animal "dog" 10) human
   -- Human {name = "dog", age = 10, address = "London"}
-  super  :: VL.Lens sub sub sup sup
+  super  :: Lens sub sub sup sup
   super
-    = VL.lens upcast (uncurry smash . swap)
+    = lens upcast (flip smash)
 
   -- |Cast the more specific subtype to the more general supertype
   --
@@ -99,14 +99,14 @@ class Subtype sup sub where
   -- ... address
   -- ...
   upcast :: sub -> sup
-  upcast s = s ^. super @sup
+  upcast s = view (super @sup) s
 
   -- |Plug a smaller structure into a larger one
   --
   -- >>> smash (Animal "dog" 10) human
   -- Human {name = "dog", age = 10, address = "London"}
   smash  :: sup -> sub -> sub
-  smash = VL.set (super @sup)
+  smash = set (super @sup)
 
   {-# MINIMAL super | smash, upcast #-}
 
