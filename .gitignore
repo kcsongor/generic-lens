@@ -10,3 +10,4 @@ core-html
 *~
 *.org
 cabal.project.local
+*_flymake.hs

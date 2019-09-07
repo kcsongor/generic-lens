@@ -50,9 +50,6 @@ import GHC.TypeLits (Symbol, ErrorMessage(..), TypeError)
 import Data.Generics.Internal.Profunctor.Lens as P
 import Data.Generics.Internal.Errors
 
-import qualified Optics.Lens as Optics
-import qualified Optics.Internal.Optic as Optics
-
 -- $setup
 -- == /Running example:/
 --
@@ -115,7 +112,7 @@ class HasField (field :: Symbol) s t a b | s field -> a, t field -> b, s field b
   --  ... The offending constructors are:
   --  ... HumanNoAddress
   --  ...
-  field :: Optics.Lens s t a b
+  field :: Lens s t a b
 
 -- |Records that have a field with a given name.
 --
@@ -180,7 +177,7 @@ instance  -- see Note [Changing type parameters]
   , s ~~ Infer t b' a
   , HasField0 field s t a b
   ) => HasField field s t a b where
-  field = Optics.Optic (field0 @field)
+  field = field0 @field
 
 -- | See Note [Uncluttering type signatures]
 #if __GLASGOW_HASKELL__ < 804
