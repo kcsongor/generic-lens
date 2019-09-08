@@ -62,27 +62,27 @@ source-repository head
   type:               git
   location:           https://github.com/kcsongor/generic-lens
 
-test-suite generic-lens-examples
+test-suite generic-optics-examples
   type:               exitcode-stdio-1.0
   hs-source-dirs:     examples
   main-is:            Biscuits.hs
 
   build-depends:      base          >= 4.9 && <= 5.0
-                    , generic-lens
+                    , generic-optics
                     , lens
                     , profunctors
                     , HUnit
 
   default-language:   Haskell2010
 
-test-suite generic-lens-test
+test-suite generic-optics-test
   type:               exitcode-stdio-1.0
   hs-source-dirs:     test
   main-is:            Spec.hs
   other-modules:      Util Test24 Test25 Test40 Test62 Test63 CustomChildren
 
   build-depends:      base          >= 4.9 && <= 5.0
-                    , generic-lens
+                    , generic-optics
                     , generic-lens-core
                     , lens
                     , profunctors
@@ -95,13 +95,13 @@ test-suite generic-lens-test
     build-depends: dump-core
     ghc-options: -fplugin=DumpCore -fplugin-opt DumpCore:core-html
 
-test-suite generic-lens-bifunctor
+test-suite generic-optics-bifunctor
   type:               exitcode-stdio-1.0
   hs-source-dirs:     test
   main-is:            Bifunctor.hs
 
   build-depends:      base          >= 4.9 && <= 5.0
-                    , generic-lens
+                    , generic-optics
                     , lens
                     , HUnit
 
@@ -111,13 +111,13 @@ test-suite generic-lens-bifunctor
     build-depends: dump-core
     ghc-options: -fplugin=DumpCore -fplugin-opt DumpCore:core-html
 
-test-suite generic-lens-syb-tree
+test-suite generic-optics-syb-tree
   type:               exitcode-stdio-1.0
   hs-source-dirs:     test/syb
   main-is:            Tree.hs
 
   build-depends:      base          >= 4.9 && <= 5.0
-                    , generic-lens
+                    , generic-optics
                     , lens
                     , profunctors
                     , HUnit

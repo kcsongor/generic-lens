@@ -22,12 +22,9 @@
 -----------------------------------------------------------------------------
 module Data.Generics.Internal.Profunctor.Iso where
 
-import Optics.Internal.Profunctor (Profunctor(..))
-import Optics.Internal.Concrete (Exchange(..))
+import Optics.Internal.Profunctor (Profunctor(..), Exchange(..), Forget(..))
 import GHC.Generics           ((:*:)(..), (:+:)(..), Generic(..), M1(..), K1(..), Rep)
 import Data.Generics.Internal.GenericN (Rec (..))
-
-import Optics.Internal.Profunctor
 
 -- import qualified Data.Generics.Internal.VL.Iso as VL
 
