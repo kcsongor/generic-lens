@@ -3,6 +3,7 @@ packages:
   generic-lens/*.cabal
   generic-optics/*.cabal
 
+optional-packages:
   optics-test/*.cabal
 
 write-ghc-environment-files: always
