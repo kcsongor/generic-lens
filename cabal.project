@@ -5,5 +5,7 @@ packages:
 
 optional-packages:
   optics-test/*.cabal
+  optics/indexed-profunctors/*.cabal
+  optics/optics-core/*.cabal
 
 write-ghc-environment-files: always
