@@ -47,12 +47,10 @@ library
                     , Data.Generics.Product.Internal.Positions
                     , Data.Generics.Product.Internal.GLens
                     , Data.Generics.Product.Internal.Subtype
+                    , Data.Generics.Product.Internal.Types
 
                     , Data.Generics.Product.Internal.Constraints
                     , Data.Generics.Product.Internal.HList
-
-                    -- TODO: split this up to internal and user-facing
-                    , Data.Generics.Product.Types
 
   build-depends:      base        >= 4.9 && < 5.0
                     , indexed-profunctors >= 0.1 && < 0.2

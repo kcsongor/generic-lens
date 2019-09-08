@@ -15,7 +15,7 @@
 
 -----------------------------------------------------------------------------
 -- |
--- Module      :  Data.Generics.Product.Types
+-- Module      :  Data.Generics.Product.Internal.Types
 -- Copyright   :  (C) 2019 Csongor Kiss
 -- License     :  BSD3
 -- Maintainer  :  Csongor Kiss <kiss.csongor.kiss@gmail.com>
@@ -26,11 +26,11 @@
 --
 -----------------------------------------------------------------------------
 
-module Data.Generics.Product.Types
+module Data.Generics.Product.Internal.Types
   ( -- *Traversals
     --
     -- $setup
-    HasTypes
+    HasTypes (types_)
   , types
 
     -- * Custom traversal strategies

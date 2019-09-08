@@ -6,7 +6,7 @@
 
 module Test25 where
 
-import Control.Lens
+import Optics.Core
 import Data.Generics.Product
 import GHC.Generics
 

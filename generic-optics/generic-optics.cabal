@@ -31,7 +31,7 @@ library
                     , Data.Generics.Product.Positions
                     , Data.Generics.Product.Subtype
                     , Data.Generics.Product.Typed
-                    --, Data.Generics.Product.Types TODO
+                    , Data.Generics.Product.Types
                     , Data.Generics.Product.Constraints
                     , Data.Generics.Product.HList
 
@@ -69,8 +69,7 @@ test-suite generic-optics-examples
 
   build-depends:      base          >= 4.9 && <= 5.0
                     , generic-optics
-                    , lens
-                    , profunctors
+                    , optics-core
                     , HUnit
 
   default-language:   Haskell2010
@@ -84,8 +83,7 @@ test-suite generic-optics-test
   build-depends:      base          >= 4.9 && <= 5.0
                     , generic-optics
                     , generic-lens-core
-                    , lens
-                    , profunctors
+                    , optics-core
                     , inspection-testing >= 0.2
                     , HUnit
 
@@ -102,7 +100,7 @@ test-suite generic-optics-bifunctor
 
   build-depends:      base          >= 4.9 && <= 5.0
                     , generic-optics
-                    , lens
+                    , optics-core
                     , HUnit
 
   default-language:   Haskell2010
@@ -118,8 +116,7 @@ test-suite generic-optics-syb-tree
 
   build-depends:      base          >= 4.9 && <= 5.0
                     , generic-optics
-                    , lens
-                    , profunctors
+                    , optics-core
                     , HUnit
 
   default-language:   Haskell2010
