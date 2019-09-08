@@ -1,1 +1,8 @@
-packages: generic-lens.cabal
+packages:
+  generic-lens-core/*.cabal
+  generic-lens/*.cabal
+  generic-optics/*.cabal
+
+  optics-test/*.cabal
+
+write-ghc-environment-files: always
