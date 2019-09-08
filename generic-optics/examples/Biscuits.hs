@@ -7,7 +7,7 @@
 
 module Main where
 
-import Control.Lens
+import Optics.Core
 import           Data.Maybe (maybeToList)
 import Data.Generics.Product
 import Data.Generics.Sum

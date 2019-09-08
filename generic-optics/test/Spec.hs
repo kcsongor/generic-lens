@@ -22,10 +22,7 @@ import Test.Inspection
 import Test.HUnit
 import Util
 import System.Exit
-import Data.Generics.Internal.VL.Lens
-import Data.Generics.Internal.VL.Prism
-import Data.Generics.Internal.VL.Traversal
-import Control.Lens (_1, (+~))
+import Optics.Core
 import Data.Function ((&))
 import Data.Generics.Labels ()
 
@@ -33,7 +30,7 @@ import Data.Generics.Labels ()
 import Test24 ()
 import Test25 ()
 
-import CustomChildren (customTypesTest)
+-- import CustomChildren (customTypesTest)
 
 main :: IO ()
 main = do
@@ -74,7 +71,7 @@ typeChangingManual :: Lens (Record3 a) (Record3 b) a b
 typeChangingManual f (MkRecord3 a b) = (\a' -> MkRecord3 a' b) <$> f a
 
 typeChangingManualCompose :: Lens (Record3 (Record3 a)) (Record3 (Record3 b)) a b
-typeChangingManualCompose = typeChangingManual . typeChangingManual
+typeChangingManualCompose = typeChangingManual % typeChangingManual
 
 newtype L s a = L (Lens' s a)
 
@@ -207,10 +204,10 @@ typeChangingGenericPos :: Lens (Record3 a) (Record3 b) a b
 typeChangingGenericPos = position @1
 
 typeChangingGenericCompose :: Lens (Record3 (Record3 a)) (Record3 (Record3 b)) a b
-typeChangingGenericCompose = #fieldA . #fieldA
+typeChangingGenericCompose = #fieldA % #fieldA
 
 typeChangingGenericCompose_ :: Lens (Record3 (Record3 a)) (Record3 (Record3 b)) a b
-typeChangingGenericCompose_ = field_ @"fieldA" . field_ @"fieldA"
+typeChangingGenericCompose_ = field_ @"fieldA" % field_ @"fieldA"
 
 sum1PrismB :: Prism Sum1 Sum1 Int Int
 sum1PrismB = _Ctor @"B"
@@ -269,7 +266,7 @@ tests = TestList $ map mkHUnitTest
   , (valLabel ^? #_RecB . _1  ) ~=? Just 3
   , (valLabel ^? #_RecC       ) ~=? Nothing
 #endif
-  , customTypesTest
+  -- , customTypesTest
   ]
   where valLabel = RecB 3 True 
 

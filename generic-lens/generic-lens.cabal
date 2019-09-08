@@ -31,7 +31,7 @@ library
                     , Data.Generics.Product.Positions
                     , Data.Generics.Product.Subtype
                     , Data.Generics.Product.Typed
-                    --, Data.Generics.Product.Types TODO
+                    , Data.Generics.Product.Types
                     , Data.Generics.Product.Constraints
                     , Data.Generics.Product.HList
 

@@ -7,57 +7,59 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 
-module CustomChildren
- ( customTypesTest
- ) where
+module CustomChildren where
 
-import GHC.Generics
-import Data.Generics.Product
-import Test.HUnit
-import Data.Generics.Internal.VL.Lens
-import Data.Generics.Labels ()
-import Data.Kind
+-- module CustomChildren
+--  ( customTypesTest
+--  ) where
 
--- Opaque has no Generic instance
-data Opaque = Opaque String
-  deriving (Show, Eq)
+-- import GHC.Generics
+-- import Data.Generics.Product
+-- import Test.HUnit
+-- import Data.Generics.Labels ()
+-- import Data.Kind
+-- import Optics.Core
 
--- Hide does have a Generic instance, but we want to hide its contents
--- from the traversal
-data Hide = Hide String
-  deriving (Show, Generic, Eq)
+-- -- Opaque has no Generic instance
+-- data Opaque = Opaque String
+--   deriving (Show, Eq)
 
--- We first define a symbol for the custom traversal
-data Custom
+-- -- Hide does have a Generic instance, but we want to hide its contents
+-- -- from the traversal
+-- data Hide = Hide String
+--   deriving (Show, Generic, Eq)
 
-type instance Children Custom a = ChildrenCustom a
+-- -- We first define a symbol for the custom traversal
+-- data Custom
 
-type family ChildrenCustom (a :: Type) where
-  ChildrenCustom Opaque = '[String] -- here we state explicitly that Opaque contains a String
-  ChildrenCustom Hide = '[] -- and hide the contents of Hide
-  ChildrenCustom a = Children ChGeneric a -- for the rest, we defer to the generic children
+-- type instance Children Custom a = ChildrenCustom a
 
--- We define the traversal of Opaque like so:
-instance HasTypesCustom Custom Opaque String where
-  typesCustom f (Opaque str) = Opaque <$> f str
+-- type family ChildrenCustom (a :: Type) where
+--   ChildrenCustom Opaque = '[String] -- here we state explicitly that Opaque contains a String
+--   ChildrenCustom Hide = '[] -- and hide the contents of Hide
+--   ChildrenCustom a = Children ChGeneric a -- for the rest, we defer to the generic children
 
-customTypesTest1 :: Test
-customTypesTest1
-  = TestCase (assertEqual "foo" (over (typesUsing @Custom @String) (++ "!") original) expected)
-  where original = (Opaque "foo", Hide "bar")
-        expected = (Opaque "foo!", Hide "bar") -- only Opaque's String gets modified
+-- -- We define the traversal of Opaque like so:
+-- instance HasTypesCustom Custom Opaque String where
+--   typesCustom f (Opaque str) = Opaque <$> f str
 
-customTypesTest2 :: Test
-customTypesTest2
-  = TestCase (assertEqual "foo" (over (typesUsing @Custom @String) (++ "!") original) expected)
-  where original = Opaque "foo"
-        expected = Opaque "foo!"
+-- customTypesTest1 :: Test
+-- customTypesTest1
+--   = TestCase (assertEqual "foo" (over (typesUsing @Custom @String) (++ "!") original) expected)
+--   where original = (Opaque "foo", Hide "bar")
+--         expected = (Opaque "foo!", Hide "bar") -- only Opaque's String gets modified
 
-customTypesTest3 :: Test
-customTypesTest3
-  = TestCase (assertEqual "foo" (over (typesUsing @Custom @String) (++ "!") original) expected)
-  where original = Hide "foo"
-        expected = Hide "foo"
+-- customTypesTest2 :: Test
+-- customTypesTest2
+--   = TestCase (assertEqual "foo" (over (typesUsing @Custom @String) (++ "!") original) expected)
+--   where original = Opaque "foo"
+--         expected = Opaque "foo!"
 
-customTypesTest :: Test
-customTypesTest = TestList [customTypesTest1, customTypesTest2, customTypesTest3]
+-- customTypesTest3 :: Test
+-- customTypesTest3
+--   = TestCase (assertEqual "foo" (over (typesUsing @Custom @String) (++ "!") original) expected)
+--   where original = Hide "foo"
+--         expected = Hide "foo"
+
+-- customTypesTest :: Test
+-- customTypesTest = TestList [customTypesTest1, customTypesTest2, customTypesTest3]

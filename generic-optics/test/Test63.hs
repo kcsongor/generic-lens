@@ -1,7 +1,7 @@
 {-# LANGUAGE DataKinds, DeriveGeneric, TypeApplications #-}
 module Test63 (example) where
 import Data.Generics.Product (types)
-import Data.Generics.Internal.VL.Lens (over)
+import Optics.Core
 import Data.Word (Word32)
 import GHC.Generics (Generic)
 
