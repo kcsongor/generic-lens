@@ -61,7 +61,7 @@ import Data.Generics.Internal.VL.Prism
 -- :}
 
 -- |Sums that have generic prisms.
-class AsAny (sel :: k) a s | s sel k -> a where
+class AsAny sel a s | s sel -> a where
   -- |A prism that projects a sum as identified by some selector. Currently
   --  supported selectors are constructor names and unique types. Compatible
   --  with the lens package's 'Control.Lens.Prism' type.
