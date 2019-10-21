@@ -1,6 +1,9 @@
 {-# OPTIONS_GHC -O -fplugin Test.Inspection.Plugin #-}
 {-# OPTIONS_GHC -dsuppress-all #-}
 
+-- This fixes failing test 'fieldALensManual === 'fieldALensType
+{-# OPTIONS_GHC -funfolding-use-threshold=150 #-}
+
 {-# LANGUAGE AllowAmbiguousTypes             #-}
 {-# LANGUAGE CPP                             #-}
 {-# LANGUAGE DataKinds                       #-}
