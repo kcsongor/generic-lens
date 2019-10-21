@@ -22,7 +22,7 @@
 -----------------------------------------------------------------------------
 module Data.Generics.Internal.Profunctor.Iso where
 
-import Optics.Internal.Profunctor (Profunctor(..), Exchange(..), Forget(..))
+import Data.Profunctor.Indexed (Profunctor(..), Exchange(..), Forget(..))
 import GHC.Generics           ((:*:)(..), (:+:)(..), Generic(..), M1(..), K1(..), Rep)
 import Data.Generics.Internal.GenericN (Rec (..))
 

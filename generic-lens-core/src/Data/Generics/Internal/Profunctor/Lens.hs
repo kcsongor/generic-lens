@@ -22,7 +22,7 @@
 -----------------------------------------------------------------------------
 module Data.Generics.Internal.Profunctor.Lens where
 
-import Optics.Internal.Profunctor        (Profunctor(..), Strong(..), FunArrow (..))
+import Data.Profunctor.Indexed        (Profunctor(..), Strong(..), FunArrow (..))
 import Data.Bifunctor
 import GHC.Generics
 import Data.Generics.Internal.Profunctor.Iso

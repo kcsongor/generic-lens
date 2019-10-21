@@ -29,7 +29,7 @@ module Data.Generics.Sum.Internal.Typed
 
 import Data.Kind
 import GHC.Generics
-import Optics.Internal.Profunctor (Tagged(..))
+import Data.Profunctor.Indexed (Tagged(..))
 
 import Data.Generics.Internal.Families
 import Data.Generics.Product.Internal.HList

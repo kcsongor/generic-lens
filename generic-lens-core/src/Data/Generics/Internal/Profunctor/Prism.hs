@@ -43,7 +43,7 @@ module Data.Generics.Internal.Profunctor.Prism
   ) where
 
 import Data.Bifunctor         (bimap)
-import Optics.Internal.Profunctor (Choice(..), Profunctor(..), Tagged(..), Market(..), (#.), (.#))
+import Data.Profunctor.Indexed (Choice(..), Profunctor(..), Tagged(..), Market(..), (#.), (.#))
 import GHC.Generics
 
 type APrism i s t a b = Market a b i a b -> Market a b i s t

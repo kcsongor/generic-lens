@@ -31,7 +31,7 @@ module Data.Generics.Sum.Internal.Constructors
 
 import Data.Generics.Internal.Families
 import Data.Generics.Product.Internal.HList
-import Optics.Internal.Profunctor (Profunctor(..))
+import Data.Profunctor.Indexed (Profunctor(..))
 
 import GHC.Generics
 import GHC.TypeLits (Symbol)
