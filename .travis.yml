@@ -4,7 +4,7 @@
 #
 # For more information, see https://github.com/haskell-CI/haskell-ci
 #
-# version: 0.5.20190908
+# version: 0.5.20190916
 #
 language: c
 dist: xenial
@@ -105,12 +105,16 @@ install:
   - rm -rf cabal.project cabal.project.local cabal.project.freeze
   - touch cabal.project
   - |
-    echo "packages: ." >> cabal.project
+    echo "packages: generic-lens-core" >> cabal.project
+    echo "packages: generic-lens" >> cabal.project
+    echo "packages: generic-optics" >> cabal.project
   - |
-  - "for pkg in $($HCPKG list --simple-output); do echo $pkg | sed 's/-[^-]*$//' | (grep -vE -- '^(generic-lens)$' || true) | sed 's/^/constraints: /' | sed 's/$/ installed/' >> cabal.project.local; done"
+  - "for pkg in $($HCPKG list --simple-output); do echo $pkg | sed 's/-[^-]*$//' | (grep -vE -- '^(generic-lens|generic-lens-core|generic-optics)$' || true) | sed 's/^/constraints: /' | sed 's/$/ installed/' >> cabal.project.local; done"
   - cat cabal.project || true
   - cat cabal.project.local || true
-  - if [ -f "./configure.ac" ]; then (cd "." && autoreconf -i); fi
+  - if [ -f "generic-lens-core/configure.ac" ]; then (cd "generic-lens-core" && autoreconf -i); fi
+  - if [ -f "generic-lens/configure.ac" ]; then (cd "generic-lens" && autoreconf -i); fi
+  - if [ -f "generic-optics/configure.ac" ]; then (cd "generic-optics" && autoreconf -i); fi
   - ${CABAL} v2-freeze $WITHCOMPILER ${TEST} ${BENCH} | color_cabal_output
   - "cat cabal.project.freeze | sed -E 's/^(constraints: *| *)//' | sed 's/any.//'"
   - rm  cabal.project.freeze
@@ -125,14 +129,18 @@ script:
   - cd ${DISTDIR} || false
   - find . -maxdepth 1 -type f -name '*.tar.gz' -exec tar -xvf '{}' \;
   - find . -maxdepth 1 -type f -name '*.tar.gz' -exec rm       '{}' \;
+  - PKGDIR_generic_lens_core="$(find . -maxdepth 1 -type d -regex '.*/generic-lens-core-[0-9.]*')"
   - PKGDIR_generic_lens="$(find . -maxdepth 1 -type d -regex '.*/generic-lens-[0-9.]*')"
+  - PKGDIR_generic_optics="$(find . -maxdepth 1 -type d -regex '.*/generic-optics-[0-9.]*')"
   # Generate cabal.project
   - rm -rf cabal.project cabal.project.local cabal.project.freeze
   - touch cabal.project
   - |
+    echo "packages: ${PKGDIR_generic_lens_core}" >> cabal.project
     echo "packages: ${PKGDIR_generic_lens}" >> cabal.project
+    echo "packages: ${PKGDIR_generic_optics}" >> cabal.project
   - |
-  - "for pkg in $($HCPKG list --simple-output); do echo $pkg | sed 's/-[^-]*$//' | (grep -vE -- '^(generic-lens)$' || true) | sed 's/^/constraints: /' | sed 's/$/ installed/' >> cabal.project.local; done"
+  - "for pkg in $($HCPKG list --simple-output); do echo $pkg | sed 's/-[^-]*$//' | (grep -vE -- '^(generic-lens|generic-lens-core|generic-optics)$' || true) | sed 's/^/constraints: /' | sed 's/$/ installed/' >> cabal.project.local; done"
   - cat cabal.project || true
   - cat cabal.project.local || true
   # Building...
@@ -144,7 +152,9 @@ script:
   # Testing...
   - if [ $HCNUMVER -lt 80600 ] ; then ${CABAL} v2-test $WITHCOMPILER ${TEST} ${BENCH} all | color_cabal_output ; fi
   # cabal check...
+  - (cd ${PKGDIR_generic_lens_core} && ${CABAL} -vnormal check)
   - (cd ${PKGDIR_generic_lens} && ${CABAL} -vnormal check)
+  - (cd ${PKGDIR_generic_optics} && ${CABAL} -vnormal check)
   # haddock...
   - ${CABAL} v2-haddock $WITHCOMPILER --with-haddock $HADDOCK ${TEST} ${BENCH} all | color_cabal_output
   # Building without installed constraints for packages in global-db...
