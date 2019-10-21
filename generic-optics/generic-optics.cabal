@@ -40,9 +40,6 @@ library
                     , Data.Generics.Sum.Typed
                     , Data.Generics.Sum.Subtype
 
-                    , Data.Generics.Labels
-
-
   other-modules:
 
   build-depends:      base        >= 4.9 && < 5.0

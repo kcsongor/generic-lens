@@ -8,7 +8,7 @@
 module Main where
 
 import Optics.Core
-import           Data.Maybe (maybeToList)
+import Data.Maybe (maybeToList)
 import Data.Generics.Product
 import Data.Generics.Sum
 import GHC.Generics (Generic)
@@ -102,13 +102,13 @@ orders = Orders  [Invoice bourbon "Earl" 1 0 , Invoice bourbon "Johnny" 2 2]
                  [Invoice bourbon "George" 2 (0, 3)]
 
 nameOfItem :: Invoice p -> String
-nameOfItem = view (field @"item" . field @"name")
+nameOfItem = view (field @"item" % field @"name")
 
 thankYou :: Orders -> Orders
 thankYou = over (types @Cost) (\(Cost c) -> Cost (c * 0.85))
 
 thankYouPriority :: Orders -> Orders
-thankYouPriority = over (position @2 . types @Cost) (\(Cost c) -> Cost (c * 0.85))
+thankYouPriority = over (position @2 % types @Cost) (\(Cost c) -> Cost (c * 0.85))
 
 upgrade :: Double -> Invoice Int -> Invoice (Int, Double)
 upgrade bribe invoice = over (param @0) (\i -> (i, bribe)) invoice

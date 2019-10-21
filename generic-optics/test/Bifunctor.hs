@@ -9,7 +9,7 @@
 
 module Main (main) where
 
-import Control.Lens hiding (Bifunctor(..))
+import Optics.Core
 import           Control.Monad (void)
 import Data.Generics.Product
 import GHC.Generics

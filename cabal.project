@@ -3,6 +3,8 @@ packages:
   generic-lens/*.cabal
   generic-optics/*.cabal
 
+tests: True
+
 optional-packages:
   optics-test/*.cabal
   optics/indexed-profunctors/*.cabal

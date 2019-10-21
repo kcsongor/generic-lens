@@ -33,7 +33,7 @@ module Data.Generics.Product.Param
 import GHC.TypeLits
 import Data.Generics.Internal.Void
 import Data.Generics.Internal.Families.Changing
-import Data.Generics.Internal.VL.Traversal
+import Data.Generics.Internal.VL.Traversal (confusing)
 
 import GHC.Generics
 import Data.Kind
@@ -41,8 +41,10 @@ import Data.Kind
 import Data.Generics.Internal.GenericN
 import Data.Generics.Internal.Errors
 
+import Optics.Core (Traversal, traversalVL, traverseOf)
+
 class HasParam (p :: Nat) s t a b | p t a -> s, p s b -> t, p s -> a, p t -> b where
-  param :: Applicative g => (a -> g b) -> s -> g t
+  param :: Traversal s t a b
 
 instance
   ( GenericN s
@@ -62,7 +64,7 @@ instance
   , GHasParam n (RepN s) (RepN t) a b
   ) => HasParam n s t a b where
 
-  param = confusing (\f s -> toN <$> gparam @n f (fromN s))
+  param = traversalVL $ confusing (\f s -> toN <$> gparam @n f (fromN s))
   {-# INLINE param #-}
 
 type family Error (b :: Bool) (expected :: Nat) (actual :: Nat) (s :: Type) :: Constraint where
@@ -118,4 +120,4 @@ instance GHasParamRec 'Nothing a a c d where
   gparamRec _ = pure
 
 instance (HasParam n s t a b) => GHasParamRec ('Just n) s t a b where
-  gparamRec = param @n
+  gparamRec = traverseOf (param @n)

@@ -10,7 +10,7 @@ Example adapted from SYB
 
 module Main (main) where
 
-import Control.Lens
+import Optics.Core
 import Control.Monad (void)
 import Data.Generics.Product
 import GHC.Generics
