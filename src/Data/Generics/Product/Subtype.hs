@@ -16,7 +16,7 @@
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Data.Generics.Product.Subtype
--- Copyright   :  (C) 2019 Csongor Kiss
+-- Copyright   :  (C) 2020 Csongor Kiss
 -- License     :  BSD3
 -- Maintainer  :  Csongor Kiss <kiss.csongor.kiss@gmail.com>
 -- Stability   :  experimental
