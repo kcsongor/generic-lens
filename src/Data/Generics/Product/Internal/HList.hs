@@ -47,9 +47,8 @@ import GHC.TypeLits
 
 import Data.Kind    (Type)
 import GHC.Generics
-import Data.Profunctor
-import Data.Generics.Internal.Profunctor.Lens
-import Data.Generics.Internal.Profunctor.Iso
+import Data.Generics.Internal.Optic.Lens as Lens
+import Data.Generics.Internal.Optic.Iso as Iso
 
 data HList (as :: [Type]) where
   Nil :: HList '[]
@@ -101,15 +100,15 @@ instance
   , cs' ~ (as' ++ bs')
   ) => GIsList (l :*: r) (l' :*: r') cs cs' where
 
-  glist = prodIso . pairing glist glist . appending
+  glist = prodIso Iso.% pairing glist glist Iso.% appending
   {-# INLINE glist #-}
 
 instance GIsList f g as bs => GIsList (M1 t meta f) (M1 t meta g) as bs where
-  glist = mIso . glist
+  glist = mIso Iso.% glist
   {-# INLINE glist #-}
 
 instance GIsList (Rec0 a) (Rec0 b) '[a] '[b] where
-  glist = kIso . singleton
+  glist = kIso Iso.% singleton
   {-# INLINE glist #-}
 
 instance GIsList U1 U1 '[] '[] where
@@ -135,10 +134,10 @@ instance
   Appending as bs cs as' bs' cs' -- as ++ bs == cs
   => Appending (a ': as) bs (a ': cs) (a' ': as') bs' (a' ': cs') where
   appending
-    = pairing (fromIso consing) id -- ((a, as), bs)
-    . assoc3                       -- (a, (as, bs))
-    . pairing id appending         -- (a, cs)
-    . consing                      -- (a : cs)
+    = pairing (fromIso consing) refl -- ((a, as), bs)
+    Iso.% assoc3                     -- (a, (as, bs))
+    Iso.% pairing refl appending     -- (a, cs)
+    Iso.% consing                    -- (a : cs)
 
 singleton :: Iso a b (HList '[a]) (HList '[ b])
 singleton = iso (:> Nil) (\(x :> _) -> x)
@@ -154,7 +153,7 @@ instance {-# OVERLAPPING #-}
   ( as ~ (a ': as')
   , bs ~ (b ': as')
   ) => IndexList 0 as bs a b where
-  point = lens (\(x :> xs) -> (xs, x)) (\(xs, x') -> x' :> xs)
+  point = lens (\(x :> _) -> x) (\(_ :> xs) x' -> x' :> xs)
   {-# INLINE point #-}
 
 instance
@@ -162,7 +161,7 @@ instance
   , as ~ (x ': as')
   , bs ~ (x ': bs')
   ) => IndexList n as bs a b where
-  point = fromIso consing . alongside id (point @(n-1)) . second'
+  point = iso2lens (fromIso consing) Lens.% _2 Lens.% (point @(n-1))
   {-# INLINE point #-}
 
 --------------------------------------------------------------------------------
@@ -170,7 +169,7 @@ instance
 
 class ListTuple (tuple :: Type) (as :: [Type]) | as -> tuple where
   type ListToTuple as :: Type
-  tupled :: Iso' (HList as) tuple
+  tupled :: Iso (HList as) (HList as) tuple tuple
   tupled = iso listToTuple tupleToList
 
   tupleToList :: tuple -> HList as

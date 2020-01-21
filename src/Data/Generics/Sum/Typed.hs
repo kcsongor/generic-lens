@@ -40,9 +40,8 @@ import Data.Generics.Internal.Errors
 import Data.Generics.Internal.Families
 import Data.Generics.Internal.Void
 import Data.Generics.Product.Internal.HList
-import Data.Generics.Internal.VL.Prism
-import Data.Generics.Internal.Profunctor.Iso
-import Data.Generics.Internal.Profunctor.Prism (prismPRavel)
+import Data.Generics.Internal.Optic.Iso as Iso
+import Data.Generics.Internal.Optic.Prism as Prism
 
 -- $setup
 -- >>> :set -XTypeApplications
@@ -89,7 +88,7 @@ class AsType a s where
   --  ... Duck
   --  ... Turtle
   --  ...
-  _Typed :: Prism' s a
+  _Typed :: Prism s s a a
   _Typed = prism injectTyped (\i -> maybe (Left i) Right (projectTyped i))
   {-# INLINE[2] _Typed #-}
 
@@ -101,7 +100,7 @@ class AsType a s where
   -- |Project by type.
   projectTyped :: s -> Maybe a
   projectTyped
-    = either (const Nothing) Just . match _Typed
+    = match _Typed
 
   {-# MINIMAL (injectTyped, projectTyped) | _Typed #-}
 
@@ -116,7 +115,8 @@ instance
     (() :: Constraint)
   ) => AsType a s where
 
-  _Typed eta = prismRavel (prismPRavel (repIso . _GTyped @_ @as . tupled)) eta
+  -- _Typed eta = prismRavel (prismPRavel (repIso . _GTyped @_ @as . tupled)) eta
+  _Typed = (iso2prism repIso Prism.% _GTyped @_ @as Prism.% iso2prism tupled)
   {-# INLINE[2] _Typed #-}
 
 -- | See Note [Uncluttering type signatures]

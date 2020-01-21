@@ -10,7 +10,7 @@ author:               Csongor Kiss
 maintainer:           kiss.csongor.kiss@gmail.com
 category:             Generics, Records, Lens
 build-type:           Simple
-cabal-version:        >= 1.10
+cabal-version:        >= 2.0
 Tested-With:          GHC == 8.0.2, GHC == 8.2.2, GHC == 8.4.1, GHC == 8.4.4, GHC == 8.6.5, GHC == 8.8.1
 
 extra-source-files:   ChangeLog.md
@@ -23,6 +23,10 @@ flag dump-core
   default:     False
 
 library
+  signatures:         Data.Generics.Internal.Optic.Signatures.Iso
+                      Data.Generics.Internal.Optic.Signatures.Prism
+                      Data.Generics.Internal.Optic.Signatures.Lens
+
   exposed-modules:    Data.Generics.Wrapped
                     , Data.Generics.Product
                     , Data.Generics.Product.Any
@@ -49,6 +53,8 @@ library
                     , Data.Generics.Internal.VL.Traversal
                     , Data.Generics.Internal.VL.Prism
                     , Data.Generics.Internal.VL.Iso
+
+                    , Data.Generics.Internal.Optic.Iso
 
                     , Data.GenericLens.Internal
 
@@ -86,100 +92,100 @@ source-repository head
   type:               git
   location:           https://github.com/kcsongor/generic-lens
 
-test-suite generic-lens-examples
-  type:               exitcode-stdio-1.0
-  hs-source-dirs:     examples
-  main-is:            Biscuits.hs
+-- test-suite generic-lens-examples
+--   type:               exitcode-stdio-1.0
+--   hs-source-dirs:     examples
+--   main-is:            Biscuits.hs
 
-  build-depends:      base          >= 4.9 && <= 5.0
-                    , generic-lens
-                    , lens
-                    , profunctors
-                    , HUnit
+--   build-depends:      base          >= 4.9 && <= 5.0
+--                     , generic-lens
+--                     , lens
+--                     , profunctors
+--                     , HUnit
 
-  default-language:   Haskell2010
+--   default-language:   Haskell2010
 
-test-suite generic-lens-test
-  type:               exitcode-stdio-1.0
-  hs-source-dirs:     test
-  main-is:            Spec.hs
-  other-modules:      Util Test24 Test25 Test40 Test62 Test63 CustomChildren
+-- test-suite generic-lens-test
+--   type:               exitcode-stdio-1.0
+--   hs-source-dirs:     test
+--   main-is:            Spec.hs
+--   other-modules:      Util Test24 Test25 Test40 Test62 Test63 CustomChildren
 
-  build-depends:      base          >= 4.9 && <= 5.0
-                    , generic-lens
-                    , lens
-                    , profunctors
-                    , inspection-testing >= 0.2
-                    , HUnit
+--   build-depends:      base          >= 4.9 && <= 5.0
+--                     , generic-lens
+--                     , lens
+--                     , profunctors
+--                     , inspection-testing >= 0.2
+--                     , HUnit
 
-  default-language:   Haskell2010
-  ghc-options:        -Wall
-  if flag(dump-core)
-    build-depends: dump-core
-    ghc-options: -fplugin=DumpCore -fplugin-opt DumpCore:core-html
+--   default-language:   Haskell2010
+--   ghc-options:        -Wall
+--   if flag(dump-core)
+--     build-depends: dump-core
+--     ghc-options: -fplugin=DumpCore -fplugin-opt DumpCore:core-html
 
-test-suite generic-lens-bifunctor
-  type:               exitcode-stdio-1.0
-  hs-source-dirs:     test
-  main-is:            Bifunctor.hs
+-- test-suite generic-lens-bifunctor
+--   type:               exitcode-stdio-1.0
+--   hs-source-dirs:     test
+--   main-is:            Bifunctor.hs
 
-  build-depends:      base          >= 4.9 && <= 5.0
-                    , generic-lens
-                    , lens
-                    , HUnit
+--   build-depends:      base          >= 4.9 && <= 5.0
+--                     , generic-lens
+--                     , lens
+--                     , HUnit
 
-  default-language:   Haskell2010
-  ghc-options:        -Wall
-  if flag(dump-core)
-    build-depends: dump-core
-    ghc-options: -fplugin=DumpCore -fplugin-opt DumpCore:core-html
+--   default-language:   Haskell2010
+--   ghc-options:        -Wall
+--   if flag(dump-core)
+--     build-depends: dump-core
+--     ghc-options: -fplugin=DumpCore -fplugin-opt DumpCore:core-html
 
-test-suite generic-lens-syb-tree
-  type:               exitcode-stdio-1.0
-  hs-source-dirs:     test/syb
-  main-is:            Tree.hs
+-- test-suite generic-lens-syb-tree
+--   type:               exitcode-stdio-1.0
+--   hs-source-dirs:     test/syb
+--   main-is:            Tree.hs
 
-  build-depends:      base          >= 4.9 && <= 5.0
-                    , generic-lens
-                    , lens
-                    , profunctors
-                    , HUnit
+--   build-depends:      base          >= 4.9 && <= 5.0
+--                     , generic-lens
+--                     , lens
+--                     , profunctors
+--                     , HUnit
 
-  default-language:   Haskell2010
-  ghc-options:        -Wall
-  if flag(dump-core)
-    build-depends: dump-core
-    ghc-options: -fplugin=DumpCore -fplugin-opt DumpCore:core-html
+--   default-language:   Haskell2010
+--   ghc-options:        -Wall
+--   if flag(dump-core)
+--     build-depends: dump-core
+--     ghc-options: -fplugin=DumpCore -fplugin-opt DumpCore:core-html
 
-test-suite doctests
-  default-language:   Haskell2010
-  type:               exitcode-stdio-1.0
-  ghc-options:        -threaded
-  main-is:            doctest.hs
-  build-depends:      base >4 && <5, doctest
-  hs-source-dirs:     test
+-- test-suite doctests
+--   default-language:   Haskell2010
+--   type:               exitcode-stdio-1.0
+--   ghc-options:        -threaded
+--   main-is:            doctest.hs
+--   build-depends:      base >4 && <5, doctest
+--   hs-source-dirs:     test
 
-test-suite examples-doctests
-  default-language:   Haskell2010
-  type:               exitcode-stdio-1.0
-  ghc-options:        -threaded
-  main-is:            doctest.hs
-  build-depends:      base >4 && <5, doctest
-  hs-source-dirs:     examples
+-- test-suite examples-doctests
+--   default-language:   Haskell2010
+--   type:               exitcode-stdio-1.0
+--   ghc-options:        -threaded
+--   main-is:            doctest.hs
+--   build-depends:      base >4 && <5, doctest
+--   hs-source-dirs:     examples
 
-benchmark generic-lens-bench
-  type:               exitcode-stdio-1.0
-  hs-source-dirs:     benchmarks
-  main-is:            Bench.hs
+-- benchmark generic-lens-bench
+--   type:               exitcode-stdio-1.0
+--   hs-source-dirs:     benchmarks
+--   main-is:            Bench.hs
 
-  build-depends:      generic-lens
+--   build-depends:      generic-lens
 
-                    , base        >= 4.9 && <= 5.0
-                    , QuickCheck
-                    , criterion >= 1.3.0.0
-                    , deepseq
-                    , lens
+--                     , base        >= 4.9 && <= 5.0
+--                     , QuickCheck
+--                     , criterion >= 1.3.0.0
+--                     , deepseq
+--                     , lens
 
-  default-language:   Haskell2010
-  ghc-options:        -Wall
+--   default-language:   Haskell2010
+--   ghc-options:        -Wall
 

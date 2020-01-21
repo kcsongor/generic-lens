@@ -42,9 +42,8 @@ import Data.Generics.Sum.Internal.Constructors
 import Data.Kind    (Constraint, Type)
 import GHC.Generics (Generic (Rep))
 import GHC.TypeLits (Symbol, TypeError, ErrorMessage (..))
-import Data.Generics.Internal.VL.Prism
-import Data.Generics.Internal.Profunctor.Iso
-import Data.Generics.Internal.Profunctor.Prism (prismPRavel)
+import Data.Generics.Internal.Optic.Prism as Prism
+import Data.Generics.Internal.Optic.Iso as Iso
 import Data.Generics.Internal.Errors
 
 -- $setup
@@ -135,7 +134,8 @@ instance
                   , 'Text "in " ':<>: QuoteType s])
     (() :: Constraint)
   ) => AsConstructor' ctor s a where
-  _Ctor' eta = prismRavel (prismPRavel (repIso . _GCtor @ctor)) eta
+  -- _Ctor' eta = prismRavel (prismPRavel (repIso . _GCtor @ctor)) eta
+  _Ctor' = iso2prism repIso Prism.% _GCtor @ctor
   {-# INLINE[2] _Ctor' #-}
 
 instance
@@ -196,7 +196,8 @@ instance
                   , 'Text "in " ':<>: QuoteType s])
     (() :: Constraint)
   ) => AsConstructor0 ctor s t a b where
-  _Ctor0 = prismRavel (prismPRavel (repIso . _GCtor @ctor))
+  -- _Ctor0 = prismRavel (prismPRavel (repIso . _GCtor @ctor))
+  _Ctor0 = iso2prism repIso Prism.% _GCtor @ctor
   {-# INLINE[2] _Ctor0 #-}
 
 type family ErrorUnless (ctor :: Symbol) (s :: Type) (contains :: Bool) :: Constraint where

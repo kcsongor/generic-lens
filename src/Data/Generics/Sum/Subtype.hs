@@ -33,8 +33,8 @@ import Data.Generics.Internal.Void
 import Data.Generics.Sum.Internal.Subtype
 
 import GHC.Generics (Generic (Rep))
-import Data.Generics.Internal.VL.Prism
-import Data.Generics.Internal.Profunctor.Iso
+import Data.Generics.Internal.Optic.Prism as Prism
+import Data.Generics.Internal.Optic.Iso as Iso
 
 -- $setup
 -- == /Running example:/
@@ -89,7 +89,7 @@ class AsSubtype sub sup where
   --
   --  >>> duck ^? _Sub :: Maybe FourLeggedAnimal
   --  Nothing
-  _Sub :: Prism' sup sub
+  _Sub :: Prism sup sup sub sub
   _Sub = prism injectSub (\i -> maybe (Left i) Right (projectSub i))
   {-# INLINE[2] _Sub #-}
 
@@ -101,7 +101,7 @@ class AsSubtype sub sup where
   -- |Projects a subtype from a supertype (downcast).
   projectSub :: sup -> Maybe sub
   projectSub
-    = either (const Nothing) Just . match (_Sub @sub @sup)
+    = match (_Sub @sub @sup)
 
   {-# MINIMAL (injectSub, projectSub) | _Sub #-}
 
@@ -111,14 +111,15 @@ instance
   , GAsSubtype (Rep sub) (Rep sup)
   ) => AsSubtype sub sup where
 
-  _Sub f = prismRavel (repIso . _GSub . fromIso repIso) f
+  -- _Sub f = prismRavel (repIso . _GSub . fromIso repIso) f
+  _Sub = iso2prism repIso Prism.% _GSub Prism.% iso2prism (fromIso repIso)
   {-# INLINE[2] _Sub #-}
 
 -- | Reflexive case
 --  >>> _Sub # dog :: Animal
 --  Dog (MkDog {name = "Shep", age = 3})
 instance {-# OVERLAPPING #-} AsSubtype a a where
-  _Sub = id
+  _Sub = iso2prism refl
   {-# INLINE[2] _Sub #-}
 
 -- | See Note [Uncluttering type signatures]

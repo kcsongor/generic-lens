@@ -37,7 +37,7 @@ import Data.Generics.Product.Internal.GLens
 import Data.Kind (Type)
 import GHC.Generics
 import GHC.TypeLits (Symbol)
-import Data.Generics.Internal.Profunctor.Lens (view)
+import Data.Generics.Internal.Optic.Lens (view)
 
 --------------------------------------------------------------------------------
 -- * Generic upcasting

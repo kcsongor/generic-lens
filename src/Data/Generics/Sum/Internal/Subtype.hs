@@ -33,20 +33,20 @@ import Data.Generics.Sum.Internal.Typed
 
 import Data.Kind
 import GHC.Generics
-import Data.Generics.Internal.Profunctor.Iso
-import Data.Generics.Internal.Profunctor.Prism
+import Data.Generics.Internal.Optic.Iso as Iso
+import Data.Generics.Internal.Optic.Prism as Prism
 import Data.Generics.Internal.Families.Has
 
 -- |As 'AsSubtype' but over generic representations as defined by
 --  "GHC.Generics".
 class GAsSubtype (subf :: Type -> Type) (supf :: Type -> Type) where
-  _GSub :: Prism' (supf x) (subf x)
+  _GSub :: Prism (supf x) (supf x) (subf x) (subf x)
 
 instance
   ( GSplash sub sup
   , GDowncast sub sup
   ) => GAsSubtype sub sup where
-  _GSub f = prism _GSplash _GDowncast f
+  _GSub = prism _GSplash _GDowncast
   {-# INLINE[0] _GSub #-}
 
 --------------------------------------------------------------------------------
@@ -63,7 +63,7 @@ instance
   ( GIsList subf subf as as
   , GAsType supf as
   ) => GSplash (C1 meta subf) supf where
-  _GSplash p = build (_GTyped . fromIso (mIso . glist)) p
+  _GSplash p = build (_GTyped Prism.% iso2prism (fromIso (mIso Iso.% glist))) p
   {-# INLINE[0] _GSplash #-}
 
 instance GSplash sub sup => GSplash (D1 c sub) sup where
@@ -110,6 +110,6 @@ instance
   ( GAsType sub subl
   , GIsList sup sup subl subl
   ) => GDowncastC 'True sub sup where
-  _GDowncastC sup = Right (build (_GTyped . fromIso glist) sup)
+  _GDowncastC sup = Right (build (_GTyped Prism.% iso2prism (fromIso glist)) sup)
   {-# INLINE[0] _GDowncastC #-}
 

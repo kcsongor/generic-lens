@@ -1,0 +1,17 @@
+{-# LANGUAGE RoleAnnotations #-}
+{-# LANGUAGE Rank2Types #-}
+signature Data.Generics.Internal.Optic.Signatures.Lens where
+
+type role Lens representational representational representational representational
+data Lens s t a b
+
+lens :: (s -> a) -> (s -> b -> t) -> Lens s t a b
+
+view :: Lens s s a a -> s -> a
+modify :: Lens s t a b -> (a -> b) -> s -> t
+set :: Lens s t a b -> b -> s -> t
+
+withLensPrim :: Lens s t a b -> ((s -> a) -> (s -> b -> t) -> r) -> r
+
+
+(%) :: Lens s t a b -> Lens a b c d -> Lens s t c d

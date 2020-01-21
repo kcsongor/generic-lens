@@ -1,0 +1,14 @@
+{-# LANGUAGE RoleAnnotations #-}
+signature Data.Generics.Internal.Optic.Signatures.Prism where
+
+
+type role Prism representational representational representational representational
+data Prism s t a b
+
+(%) :: Prism s t a b -> Prism a b c d -> Prism s t c d
+
+prism :: (b -> t) -> (s -> Either t a) -> Prism s t a b
+
+
+build :: Prism s t a b -> b -> t
+match :: Prism s t a b -> s -> Maybe a

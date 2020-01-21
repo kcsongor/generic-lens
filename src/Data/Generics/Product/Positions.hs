@@ -42,7 +42,8 @@ module Data.Generics.Product.Positions
   , setPosition
   ) where
 
-import Data.Generics.Internal.VL.Lens as VL
+import Data.Generics.Internal.Optic.Lens as Lens
+import Data.Generics.Internal.Optic.Iso as Iso
 import Data.Generics.Internal.Void
 import Data.Generics.Internal.Families
 import Data.Generics.Product.Internal.Positions
@@ -53,7 +54,6 @@ import Data.Kind      (Constraint, Type)
 import Data.Type.Bool (type (&&))
 import GHC.Generics
 import GHC.TypeLits   (type (<=?),  Nat, TypeError, ErrorMessage(..))
-import Data.Generics.Internal.Profunctor.Lens as P
 import Data.Coerce
 
 -- $setup
@@ -94,10 +94,10 @@ class HasPosition (i :: Nat) s t a b | s i -> a, t i -> b, s i b -> t, t i a -> 
   --  ...
   --  ... The type Human does not contain a field at position 4
   --  ...
-  position :: VL.Lens s t a b
+  position :: Lens s t a b
 
 class HasPosition_ (i :: Nat) s t a b where
-  position_ :: VL.Lens s t a b
+  position_ :: Lens s t a b
 
 -- |Records that have a field at a given position.
 --
@@ -106,26 +106,26 @@ class HasPosition_ (i :: Nat) s t a b where
 -- 'Data.Generics.Product.Fields.HasField_'.
 -- See 'Data.Generics.Product.Fields.HasField_'.
 class HasPosition' (i :: Nat) s a | s i -> a where
-  position' :: VL.Lens s s a a
+  position' :: Lens s s a a
 
 -- |Records that have a field at a given position.
 --
 -- This class gives the minimal constraints needed to define this lens.
 -- For common uses, see 'HasPosition'.
 class HasPosition0 (i :: Nat) s t a b where
-  position0 :: VL.Lens s t a b
+  position0 :: Lens s t a b
 
 -- |
 -- >>> getPosition @2 human
 -- 50
 getPosition :: forall i s a. HasPosition' i s a => s -> a
-getPosition s = s ^. position' @i
+getPosition s = Lens.view (position' @i) s
 
 -- |
 -- >>> setPosition @2 60 human
 -- Human {name = "Tunyasz", age = 60, address = "London"}
 setPosition :: forall i s a. HasPosition' i s a => a -> s -> s
-setPosition = VL.set (position' @i)
+setPosition = Lens.set (position' @i)
 
 instance
   ( Generic s
@@ -140,7 +140,8 @@ instance
                   ])
     (() :: Constraint)
   ) => HasPosition' i s a where
-  position' f s = VL.ravel (repLens . coerced @cs @cs . glens @(HasTotalPositionPSym i)) f s
+  -- position' f s = VL.ravel (repLens . coerced @cs @cs . glens @(HasTotalPositionPSym i)) f s
+  position' = (iso2lens repIso Lens.% coerced @cs @cs (glens @(HasTotalPositionPSym i)))
   {-# INLINE position' #-}
 
 -- this is to 'hide' the equality constraints which interfere with inlining
@@ -168,7 +169,7 @@ instance  -- see Note [Changing type parameters]
 -- forall x. Coercible (cs x) (Rep s x), but this requires quantified
 -- constraints
 coerced :: forall s t s' t' x a b. (Coercible t t', Coercible s s')
-        => P.ALens a b (s x) (t x) -> P.ALens a b (s' x) (t' x)
+        => Lens (s x) (t x) a b -> Lens (s' x) (t' x) a b
 coerced = coerce
 {-# INLINE coerced #-}
 
@@ -213,7 +214,8 @@ instance
                   ])
     (() :: Constraint)
   ) => HasPosition0 i s t a b where
-  position0 = VL.ravel (repLens . coerced @(CRep s) @(CRep t) . glens @(HasTotalPositionPSym i))
+  -- position0 = VL.ravel (repLens . coerced @(CRep s) @(CRep t) . glens @(HasTotalPositionPSym i))
+  position0 = (iso2lens repIso Lens.% coerced @(CRep s) @(CRep t) (glens @(HasTotalPositionPSym i)))
   {-# INLINE position0 #-}
 
 type family ErrorUnless (i :: Nat) (s :: Type) (hasP :: Bool) :: Constraint where

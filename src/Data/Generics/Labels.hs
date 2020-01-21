@@ -37,8 +37,8 @@ module Data.Generics.Labels
 
 import Data.Generics.Product
 import Data.Generics.Sum
-import Data.Generics.Internal.VL.Lens  (Lens)
-import Data.Generics.Internal.VL.Prism (Prism)
+import Data.Generics.Internal.Optic.Lens  (Lens)
+import Data.Generics.Internal.Optic.Prism (Prism)
 
 import Data.Profunctor    (Choice)
 import Data.Type.Bool     (type (&&))
@@ -130,12 +130,12 @@ class IsLabelHelper capital name p f s t a b where
   labelOutput :: p a (f b) -> p s (f t)
 
 instance (Functor f, Field name s t a b) => IsLabelHelper 'False name (->) f s t a b where
-  labelOutput = fieldLens @name
+  labelOutput = undefined --fieldLens @name
 
 #if __GLASGOW_HASKELL__ >= 802
 instance ( Applicative f, Choice p, Constructor name s t a b
          , name' ~ AppendSymbol "_" name) => IsLabelHelper 'True name' p f s t a b where
-  labelOutput = constructorPrism @name
+  labelOutput = undefined -- constructorPrism @name
 #else
 instance (TypeError ('Text "Labels for Prisms require at least GHC 8.2"), Choice p) => IsLabelHelper 'True name' p f s t a b where
   labelOutput = undefined

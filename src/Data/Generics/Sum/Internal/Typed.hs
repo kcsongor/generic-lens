@@ -33,8 +33,8 @@ import Data.Tagged
 
 import Data.Generics.Internal.Families
 import Data.Generics.Product.Internal.HList
-import Data.Generics.Internal.Profunctor.Iso
-import Data.Generics.Internal.Profunctor.Prism
+import Data.Generics.Internal.Optic.Iso as Iso
+import Data.Generics.Internal.Optic.Prism as Prism
 
 -- |As 'AsType' but over generic representations as defined by "GHC.Generics".
 class GAsType (f :: Type -> Type) (as :: [Type]) where
@@ -49,7 +49,7 @@ class GAsType (f :: Type -> Type) (as :: [Type]) where
 instance
   ( GIsList f f as as
   ) => GAsType (M1 C meta f) as where
-  _GTyped = mIso . glist
+  _GTyped = iso2prism (mIso Iso.% glist)
   {-# INLINE[0] _GTyped #-}
 
 instance GSumAsType (HasPartialTypeP a l) l r a => GAsType (l :+: r) a where
@@ -57,16 +57,16 @@ instance GSumAsType (HasPartialTypeP a l) l r a => GAsType (l :+: r) a where
   {-# INLINE[0] _GTyped #-}
 
 instance GAsType f a => GAsType (M1 D meta f) a where
-  _GTyped = mIso . _GTyped
+  _GTyped = iso2prism mIso Prism.% _GTyped
   {-# INLINE[0] _GTyped #-}
 
 class GSumAsType (contains :: Bool) l r (a :: [Type]) where
   _GSumTyped :: Prism ((l :+: r) x) ((l :+: r) x) (HList a) (HList a)
 
 instance GAsType l a => GSumAsType 'True l r a where
-  _GSumTyped = left . _GTyped
+  _GSumTyped = left Prism.% _GTyped
   {-# INLINE[0] _GSumTyped #-}
 
 instance GAsType r a => GSumAsType 'False l r a where
-  _GSumTyped = right . _GTyped
+  _GSumTyped = right Prism.% _GTyped
   {-# INLINE[0] _GSumTyped #-}

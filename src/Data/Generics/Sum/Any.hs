@@ -30,7 +30,7 @@ module Data.Generics.Sum.Any
 
 import Data.Generics.Sum.Constructors
 import Data.Generics.Sum.Typed
-import Data.Generics.Internal.VL.Prism
+import Data.Generics.Internal.Optic.Prism
 
 -- $setup
 -- == /Running example:/

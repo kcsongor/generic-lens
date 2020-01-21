@@ -33,14 +33,14 @@ module Data.Generics.Product.Typed
   ) where
 
 import Data.Generics.Internal.Families
-import Data.Generics.Internal.VL.Lens as VL
+import Data.Generics.Internal.Optic.Lens as Lens
+import Data.Generics.Internal.Optic.Iso as Iso
 import Data.Generics.Internal.Void
 import Data.Generics.Product.Internal.GLens
 
 import Data.Kind    (Constraint, Type)
 import GHC.Generics (Generic (Rep))
 import GHC.TypeLits (TypeError, ErrorMessage (..))
-import Data.Generics.Internal.Profunctor.Lens
 import Data.Generics.Internal.Errors
 
 -- $setup
@@ -95,18 +95,18 @@ class HasType a s where
   --  ... The offending constructors are:
   --  ... HumanNoTall
   --  ...
-  typed :: VL.Lens s s a a
+  typed :: Lens s s a a
   typed
-    = VL.lens (getTyped @a) (uncurry (setTyped @a) . swap)
+    = lens (getTyped @a) (flip (setTyped @a))
   {-# INLINE typed #-}
 
   -- |Get field at type.
   getTyped :: s -> a
-  getTyped s = s ^. typed @a
+  getTyped s = Lens.view (typed @a) s
 
   -- |Set field at type.
   setTyped :: a -> s -> s
-  setTyped = VL.set (typed @a)
+  setTyped = Lens.set (typed @a)
 
   {-# MINIMAL typed | setTyped, getTyped #-}
 
@@ -119,7 +119,8 @@ instance
   , GLens (HasTotalTypePSym a) (Rep s) (Rep s) a a
   ) => HasType a s where
 
-  typed f s = VL.ravel (repLens . glens @(HasTotalTypePSym a)) f s
+  -- typed f s = VL.ravel (repLens . glens @(HasTotalTypePSym a)) f s
+  typed = (iso2lens repIso Lens.% glens @(HasTotalTypePSym a))
 
 instance {-# OVERLAPPING #-} HasType a a where
     getTyped = id

@@ -1,0 +1,22 @@
+{-# LANGUAGE RoleAnnotations #-}
+signature Data.Generics.Internal.Optic.Signatures.Iso where
+
+import Data.Generics.Internal.Optic.Signatures.Lens (Lens)
+import Data.Generics.Internal.Optic.Signatures.Prism (Prism)
+
+type role Iso representational representational representational representational
+data Iso s t a b
+
+iso :: (s -> a) -> (b -> t) -> Iso s t a b
+withIso :: Iso s t a b -> ((s -> a) -> (b -> t) -> r) -> r
+
+iso2lens  :: Iso s t a b -> Lens s t a b
+iso2prism :: Iso s t a b -> Prism s t a b
+
+view :: Iso s t a b -> s -> a
+set :: Iso s t a b -> b -> t
+
+(%) :: Iso s t a b -> Iso a b c d -> Iso s t c d
+
+
+refl :: Iso a b a b
