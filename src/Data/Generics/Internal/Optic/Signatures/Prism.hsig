@@ -1,7 +1,6 @@
 {-# LANGUAGE RoleAnnotations #-}
 signature Data.Generics.Internal.Optic.Signatures.Prism where
 
-
 type role Prism representational representational representational representational
 data Prism s t a b
 

@@ -34,7 +34,8 @@ module Data.Generics.Product.Subtype
   ) where
 
 import Data.Generics.Internal.Families
-import Data.Generics.Internal.VL.Lens as VL
+import Data.Generics.Internal.Optic.Lens as Lens
+import Data.Generics.Internal.Optic.Iso as Iso
 import Data.Generics.Internal.Void
 import Data.Generics.Product.Internal.Subtype
 
@@ -82,9 +83,9 @@ class Subtype sup sub where
   --
   -- >>> set (super @Animal) (Animal "dog" 10) human
   -- Human {name = "dog", age = 10, address = "London"}
-  super  :: VL.Lens sub sub sup sup
+  super  :: Lens sub sub sup sup
   super
-    = VL.lens upcast (flip smash)
+    = lens upcast (flip smash)
 
   -- |Cast the more specific subtype to the more general supertype
   --
@@ -98,14 +99,14 @@ class Subtype sup sub where
   -- ... address
   -- ...
   upcast :: sub -> sup
-  upcast s = s ^. super @sup
+  upcast s = Lens.view (super @sup) s
 
   -- |Plug a smaller structure into a larger one
   --
   -- >>> smash (Animal "dog" 10) human
   -- Human {name = "dog", age = 10, address = "London"}
   smash  :: sup -> sub -> sub
-  smash = VL.set (super @sup)
+  smash = Lens.set (super @sup)
 
   {-# MINIMAL super | smash, upcast #-}
 
@@ -135,7 +136,7 @@ type family CustomError a b :: Constraint where
     )
 
 instance {-# OVERLAPPING #-} Subtype a a where
-  super = id
+  super = iso2lens refl
 
 -- | See Note [Uncluttering type signatures]
 #if __GLASGOW_HASKELL__ < 804
