@@ -31,6 +31,7 @@ import Data.Generics.Labels ()
 -- This is sufficient at we only want to test that they typecheck
 import Test24 ()
 import Test25 ()
+import Test88 ()
 
 import CustomChildren (customTypesTest)
 

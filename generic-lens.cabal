@@ -104,7 +104,7 @@ test-suite generic-lens-test
   type:               exitcode-stdio-1.0
   hs-source-dirs:     test
   main-is:            Spec.hs
-  other-modules:      Util Test24 Test25 Test40 Test62 Test63 CustomChildren
+  other-modules:      Util Test24 Test88 Test25 Test40 Test62 Test63 CustomChildren
 
   build-depends:      base          >= 4.11 && <= 5.0
                     , generic-lens

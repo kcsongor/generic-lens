@@ -38,7 +38,7 @@ type family ChildrenCustom (a :: Type) where
   ChildrenCustom a = Children ChGeneric a -- for the rest, we defer to the generic children
 
 -- We define the traversal of Opaque like so:
-instance HasTypesCustom Custom Opaque String where
+instance HasTypesCustom Custom Opaque Opaque String String where
   typesCustom f (Opaque str) = Opaque <$> f str
 
 customTypesTest1 :: Test

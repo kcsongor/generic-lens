@@ -1,3 +1,4 @@
+{-# LANGUAGE PolyKinds #-}
 {-# OPTIONS_HADDOCK hide #-}
 {-# LANGUAGE GADTs                     #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
@@ -25,7 +26,7 @@ import Data.Coerce (coerce)
 import Data.Functor.Identity (Identity(..))
 import Data.Profunctor (Profunctor(..))
 import GHC.Generics
-import Data.Generics.Internal.GenericN (Rec (..))
+import Data.Generics.Internal.GenericN (Rec (..), GenericN (..), Param (..))
 
 data Exchange a b s t = Exchange (s -> a) (b -> t)
 
@@ -61,6 +62,12 @@ withIso ai k = case ai (Exchange id Identity) of
 -- | A type and its generic representation are isomorphic
 repIso :: (Generic a, Generic b) => Iso a b (Rep a x) (Rep b x)
 repIso = iso from to
+
+repIsoN :: (GenericN a, GenericN b) => Iso a b (RepN a x) (RepN b x)
+repIsoN = iso fromN toN
+
+paramIso :: Iso (Param n a) (Param n b) a b
+paramIso = iso getStarParam StarParam
 
 -- | 'M1' is just a wrapper around `f p`
 mIso :: Iso (M1 i c f p) (M1 i c g p) (f p) (g p)

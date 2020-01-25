@@ -43,6 +43,8 @@ module Data.Generics.Product.Types
 
   , HasTypesCustom (typesCustom)
 
+  , GHasTypes (..)
+  , typesUsing_
   ) where
 
 import Data.Kind
@@ -51,6 +53,7 @@ import Data.Word (Word, Word8, Word16, Word32, Word64)
 import qualified Data.Text as T
 
 import GHC.Generics
+import Data.Generics.Internal.GenericN
 import GHC.TypeLits
 import Data.Generics.Internal.VL.Traversal
 import Data.Generics.Internal.Errors
@@ -100,7 +103,7 @@ class HasTypes s a where
   {-# INLINE types_ #-}
 
 instance
-  ( HasTypesUsing ChGeneric s a
+  ( HasTypesUsing ChGeneric s s a a
   ) => HasTypes s a where
   types_ = typesUsing_ @ChGeneric
   {-# INLINE types_ #-}
@@ -113,10 +116,10 @@ instance {-# OVERLAPPING #-} HasTypes Void a where
 instance {-# OVERLAPPING #-} HasTypes s Void where
   types_ _ = pure
 
-instance {-# OVERLAPPING #-} HasTypesUsing ch Void a where
+instance {-# OVERLAPPING #-} HasTypesUsing ch Void Void a b where
   typesUsing_ _ = pure
 
-instance {-# OVERLAPPING #-} HasTypesUsing ch s Void where
+instance {-# OVERLAPPING #-} HasTypesUsing ch s s Void Void where
   typesUsing_ _ = pure
 --------------------------------------------------------------------------------
 
@@ -170,22 +173,21 @@ instance {-# OVERLAPPING #-} HasTypesUsing ch s Void where
 type family Children (ch :: Type) (a :: Type) :: [Type]
 
 -- | @since 1.2.0.0
-typesUsing :: forall ch a s. HasTypesUsing ch s a => Traversal' s a
-typesUsing = typesUsing_ @ch @s @a
+typesUsing :: forall ch a s. HasTypesUsing ch s s a a => Traversal' s a
+typesUsing = typesUsing_ @ch @s @s @a
 {-# INLINE typesUsing #-}
 
 -- | @since 1.2.0.0
-class HasTypesUsing (ch :: Type) s a where
-  typesUsing_ :: Traversal' s a
+class HasTypesUsing (ch :: Type) s t a b where
+  typesUsing_ :: Traversal s t a b
 
 instance {-# OVERLAPPABLE #-}
-  ( HasTypesOpt ch (Interesting ch a s) s a
-  ) => HasTypesUsing ch s a where
+  ( HasTypesOpt ch (Interesting ch a s) s t a b
+  ) => HasTypesUsing ch s t a b where
   typesUsing_ = typesOpt @ch @(Interesting ch a s)
   {-# INLINE typesUsing_ #-}
 
--- TODO: should this instance be incoherent?
-instance {-# OVERLAPPABLE #-} HasTypesUsing ch a a where
+instance {-# OVERLAPPABLE #-} HasTypesUsing ch a b a b where
   typesUsing_ = id
 
 -- | By adding instances to this class, we can override the default
@@ -193,30 +195,31 @@ instance {-# OVERLAPPABLE #-} HasTypesUsing ch a a where
 -- For example:
 --
 -- @
--- instance HasTypesCustom Custom Opaque String where
+-- instance HasTypesCustom Custom Opaque Opaque String String where
 --   typesCustom f (Opaque str) = Opaque <$> f str
 -- @
 --
 -- @since 1.2.0.0
-class HasTypesCustom (ch :: Type) s a where
+class HasTypesCustom (ch :: Type) s t a b where
   -- | This function should never be used directly, only to override
   -- the default traversal behaviour. To actually use the custom
   -- traversal strategy, see 'typesUsing'. This is because 'typesUsing' does
   -- additional optimisations, like ensuring that nodes with no relevant members will
   -- not be traversed at runtime.
-  typesCustom :: Traversal' s a
+  typesCustom :: Traversal s t a b
 
 instance {-# OVERLAPPABLE #-}
-  ( GHasTypes ch (Rep s) a
+  ( GHasTypes ch (Rep s) (Rep t) a b
   , Generic s
+  , Generic t
   -- if there's no Generic instance here, it means we got through the
   -- Children check by a user-defined custom strategy.
   -- Therefore, we can ignore the missing Generic instance, and
   -- instead report a missing HasTypesCustom instance
   , Defined (Rep s)
-    (PrettyError '[ 'Text "No instance " ':<>: QuoteType (HasTypesCustom ch s a)])
+    (PrettyError '[ 'Text "No instance " ':<>: QuoteType (HasTypesCustom ch s t a b)])
     (() :: Constraint)
-  ) => HasTypesCustom ch s a where
+  ) => HasTypesCustom ch s t a b where
   typesCustom f s = to <$> gtypes_ @ch f (from s)
   --{-# INLINE types' #-}
 
@@ -243,6 +246,7 @@ type family ChildrenDefault (a :: Type) :: [Type] where
   ChildrenDefault Word32  = '[]
   ChildrenDefault Word64  = '[]
   ChildrenDefault T.Text  = '[]
+  ChildrenDefault (Param n _) = '[]
   ChildrenDefault a
    = Defined (Rep a)
     (NoGeneric a
@@ -263,44 +267,45 @@ type family ChildrenGeneric (f :: k -> Type) (cs :: [Type]) :: [Type] where
 --------------------------------------------------------------------------------
 -- TODO: these should never leak out in error messages
 
-class HasTypesOpt (ch :: Type) (t :: Bool) s a where
-  typesOpt :: Traversal' s a
+class HasTypesOpt (ch :: Type) (p :: Bool) s t a b where
+  typesOpt :: Traversal s t a b
 
-instance HasTypesCustom ch s a => HasTypesOpt ch 'True s a where
+instance HasTypesCustom ch s t a b => HasTypesOpt ch 'True s t a b where
   typesOpt = typesCustom @ch
 
-instance HasTypesOpt ch 'False s a where
+instance HasTypesOpt ch 'False s s a b where
   typesOpt _ = pure
   --{-# INLINE typesOpt #-}
 
 --------------------------------------------------------------------------------
 
-class GHasTypes ch s a where
-  gtypes_ :: Traversal' (s x) a
+class GHasTypes ch s t a b where
+  gtypes_ :: Traversal (s x) (t x) a b
 
 instance
-  ( GHasTypes ch l a
-  , GHasTypes ch r a
-  ) => GHasTypes ch (l :*: r) a where
+  ( GHasTypes ch l l' a b
+  , GHasTypes ch r r' a b
+  ) => GHasTypes ch (l :*: r) (l' :*: r') a b where
   gtypes_ f (l :*: r) = (:*:) <$> gtypes_ @ch f l <*> gtypes_ @ch f r
   {-# INLINE gtypes_ #-}
 
 instance
-  ( GHasTypes ch l a
-  , GHasTypes ch r a
-  ) => GHasTypes ch (l :+: r) a where
+  ( GHasTypes ch l l' a b
+  , GHasTypes ch r r' a b
+  ) => GHasTypes ch (l :+: r) (l' :+: r') a b where
   gtypes_ f (L1 l) = L1 <$> gtypes_ @ch f l
   gtypes_ f (R1 r) = R1 <$> gtypes_ @ch f r
   {-# INLINE gtypes_ #-}
 
-instance (GHasTypes ch s a) => GHasTypes ch (M1 m meta s) a where
+instance (GHasTypes ch s t a b) => GHasTypes ch (M1 m meta s) (M1 m meta t) a b where
   gtypes_ f (M1 s) = M1 <$> gtypes_ @ch f s
   {-# INLINE gtypes_ #-}
 
--- | In the recursive case, we invoke 'HasTypesUsing' again, using the
+-- In the recursive case, we invoke 'HasTypesUsing' again, using the
 -- same strategy
-instance HasTypesUsing ch b a => GHasTypes ch (Rec0 b) a where
-  gtypes_ f (K1 x) = K1 <$> typesUsing_ @ch @b @a f x
+-- This instance is marked INCOHERENT, because
+instance {-# INCOHERENT #-} HasTypesUsing ch s t a b => GHasTypes ch (Rec0 s) (Rec0 t) a b where
+  gtypes_ f (K1 x) = K1 <$> typesUsing_ @ch f x
   {-# INLINE gtypes_ #-}
 
 -- | The default instance for 'HasTypes' acts as a synonym for
@@ -309,15 +314,15 @@ instance HasTypesUsing ch b a => GHasTypes ch (Rec0 b) a where
 -- However, there might be overlapping instances defined for
 -- 'HasTypes' directly, in which case we want to prefer those
 -- instances (even though the custom instances should always be added to 'HasTypesCustom')
-instance {-# OVERLAPPING #-} HasTypes b a => GHasTypes ChGeneric (Rec0 b) a where
+instance {-# OVERLAPPING #-} HasTypes b a => GHasTypes ChGeneric (Rec0 b) (Rec0 b) a a where
   gtypes_ f (K1 x) = K1 <$> types_ @b @a f x
   {-# INLINE gtypes_ #-}
 
-instance GHasTypes ch U1 a where
+instance GHasTypes ch U1 U1 a b where
   gtypes_ _ _ = pure U1
   {-# INLINE gtypes_ #-}
 
-instance GHasTypes ch V1 a where
+instance GHasTypes ch V1 V1 a b where
   gtypes_ _ = pure
   {-# INLINE gtypes_ #-}
 

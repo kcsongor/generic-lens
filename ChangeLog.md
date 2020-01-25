@@ -1,6 +1,8 @@
 ## 2.0.0.0
 - Drop support for GHC < 8.4
 - Better inference for `field'`
+- Param traversal now properly recurses deeply (#88)
+- TODO: HasTypesUsing now takes 4 params
 
 ## 1.2.0.1
 - Give HasAny/AsAny the same VTA behavior on 8.6 and 8.8 (Ryan Scott)
