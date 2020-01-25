@@ -120,6 +120,7 @@ instance
   ) => HasType a s where
 
   typed f s = VL.ravel (repIso . glens @(HasTotalTypePSym a)) f s
+  {-# INLINE typed #-}
 
 instance {-# OVERLAPPING #-} HasType a a where
     getTyped = id

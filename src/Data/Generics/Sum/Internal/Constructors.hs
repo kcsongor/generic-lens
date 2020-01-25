@@ -31,11 +31,9 @@ module Data.Generics.Sum.Internal.Constructors
 
 import Data.Generics.Internal.Families
 import Data.Generics.Product.Internal.HList
-import Data.Profunctor (Profunctor(..))
 
 import GHC.Generics
 import GHC.TypeLits (Symbol)
-import Data.Generics.Internal.Profunctor.Lens
 import Data.Generics.Internal.Profunctor.Iso
 import Data.Generics.Internal.Profunctor.Prism
 
@@ -47,13 +45,11 @@ class GAsConstructor (ctor :: Symbol) s t a b | ctor s -> a, ctor t -> b where
 type GAsConstructor' ctor s a = GAsConstructor ctor s s a a
 
 instance
-  ( GIsList f f as as
-  , GIsList g g bs bs
-  , ListTuple a as
-  , ListTuple b bs
+  ( GIsList f g as bs
+  , ListTuple a b as bs
   ) => GAsConstructor ctor (M1 C ('MetaCons ctor fixity fields) f) (M1 C ('MetaCons ctor fixity fields) g) a b where
 
-  _GCtor = dimap (listToTuple . view glist . unM1) (M1 . view (fromIso glist) . tupleToList)
+  _GCtor = mIso . glist . tupled
   {-# INLINE[0] _GCtor #-}
 
 instance GSumAsConstructor ctor (HasCtorP ctor l) l r l' r' a b => GAsConstructor ctor (l :+: r) (l' :+: r') a b where

@@ -187,7 +187,7 @@ instance
                   , 'Text "in " ':<>: QuoteType s])
     (() :: Constraint)
   ) => AsConstructor0 ctor s t a b where
-  _Ctor0 = prismRavel (prismPRavel (repIso . _GCtor @ctor))
+  _Ctor0 eta = prismRavel (prismPRavel (repIso . _GCtor @ctor)) eta
   {-# INLINE[2] _Ctor0 #-}
 
 type family ErrorUnless (ctor :: Symbol) (s :: Type) (contains :: Bool) :: Constraint where

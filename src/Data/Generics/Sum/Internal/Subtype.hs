@@ -61,9 +61,10 @@ instance (GSplash a sup, GSplash b sup) => GSplash (a :+: b) sup where
 
 instance
   ( GIsList subf subf as as
-  , GAsType supf as
+  , ListTuple as' as' as as
+  , GAsType supf as'
   ) => GSplash (C1 meta subf) supf where
-  _GSplash p = build (_GTyped . fromIso (mIso . glist)) p
+  _GSplash p = build (_GTyped . fromIso (mIso . glist . tupled)) p
   {-# INLINE[0] _GSplash #-}
 
 instance GSplash sub sup => GSplash (D1 c sub) sup where
@@ -107,9 +108,10 @@ instance GDowncastC 'False sub sup where
   {-# INLINE[0] _GDowncastC #-}
 
 instance
-  ( GAsType sub subl
+  ( GAsType sub subl'
   , GIsList sup sup subl subl
+  , ListTuple subl' subl' subl subl
   ) => GDowncastC 'True sub sup where
-  _GDowncastC sup = Right (build (_GTyped . fromIso glist) sup)
+  _GDowncastC sup = Right (build (_GTyped . fromIso (glist . tupled)) sup)
   {-# INLINE[0] _GDowncastC #-}
 

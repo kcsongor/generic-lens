@@ -106,16 +106,14 @@ class AsType a s where
 
 instance
   ( Generic s
-  , ErrorUnlessOne a s (CollectPartialType as (Rep s))
-  , as ~ TupleToList a
-  , ListTuple a as
-  , GAsType (Rep s) as
+  , ErrorUnlessOne a s (CollectPartialType (TupleToList a) (Rep s))
+  , GAsType (Rep s) a
   , Defined (Rep s)
     (NoGeneric s '[ 'Text "arising from a generic prism focusing on a constructor of type " ':<>: QuoteType a])
     (() :: Constraint)
   ) => AsType a s where
 
-  _Typed eta = prismRavel (prismPRavel (repIso . _GTyped @_ @as . tupled)) eta
+  _Typed eta = prismRavel (prismPRavel (repIso . _GTyped)) eta
   {-# INLINE[2] _Typed #-}
 
 -- | See Note [Uncluttering type signatures]
