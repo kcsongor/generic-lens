@@ -1,3 +1,5 @@
+## 2.0.0.0
+
 ## 1.2.0.1
 - Give HasAny/AsAny the same VTA behavior on 8.6 and 8.8 (Ryan Scott)
 
