@@ -147,7 +147,7 @@ instance
   , as ~ (x ': as')
   , bs ~ (x ': bs')
   ) => IndexList n as bs a b where
-  point = fromIso consing . alongside id (point @(n-1)) . second'
+  point = fromIso consing . second' . point @(n-1)
   {-# INLINE point #-}
 
 --------------------------------------------------------------------------------
@@ -196,10 +196,8 @@ instance ListTuple
   where
   tupleToList (a, b, c, d)
     = a :> b :> c :> d:> Nil
-  {-# INLINE tupleToList #-}
   listToTuple (a :> b :> c :> d :> Nil)
     = (a, b, c, d)
-  {-# INLINE listToTuple #-}
 
 instance ListTuple
   (a1, b1, c1, d1, e1) (a2, b2, c2, d2, e2)

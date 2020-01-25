@@ -64,7 +64,7 @@ ravel :: (ALens a b a b -> ALens a b s t)
 ravel l pab = (lens2lensvl $ l idLens) pab
 
 
-lens :: (s -> a) -> ((s, b) -> t) -> Lens s t a b
-lens get _set = \f x -> curry _set x <$> f (get x)
+lens :: (s -> a) -> (s -> b -> t) -> Lens s t a b
+lens get _set = \f x -> _set x <$> f (get x)
 {-# INLINE[0] lens #-}
 

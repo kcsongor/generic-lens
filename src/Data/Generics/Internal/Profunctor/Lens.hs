@@ -75,12 +75,6 @@ second
 fork :: (a -> b) -> (a -> c) -> a -> (b, c)
 fork f g a = (f a, g a)
 
-swap :: (a, b) -> (b, a)
-swap (a, b) = (b, a)
-
-cross :: (a -> b) -> (c -> d) -> (a, c) -> (b, d)
-cross = bimap
-
 --------------------------------------------------------------------------------
 
 data Coyoneda f b = forall a. Coyoneda (a -> b) (f a)
@@ -95,26 +89,8 @@ inj (Coyoneda f a) = fmap f a
 proj :: Functor f => f a -> Coyoneda f a
 proj fa = Coyoneda id fa
 
-newtype Alongside p s t a b = Alongside { getAlongside :: p (s, a) (t, b) }
-
-instance Profunctor p => Profunctor (Alongside p c d) where
-  dimap f g (Alongside pab) = Alongside $ dimap (fmap f) (fmap g) pab
-
-instance Strong p => Strong (Alongside p c d) where
-  second' (Alongside pab) = Alongside . dimap shuffle shuffle . second' $ pab
-   where
-    shuffle (x,(y,z)) = (y,(x,z))
-
 (??) :: Functor f => f (a -> b) -> a -> f b
 fab ?? a = fmap ($ a) fab
-
--- Could implement this using primitives?
-alongside :: Profunctor p =>
-          LensLike (Alongside p s' t') s  t  a  b
-          -> LensLike (Alongside p a b) s' t' a' b'
-          -> LensLike p (s, s') (t, t') (a, a') (b, b')
-alongside l1 l2
-  = dimap swap swap . getAlongside . l1 . Alongside . dimap swap swap . getAlongside . l2 . Alongside
 
 assoc3L :: Lens ((a, b), c) ((a', b'), c') (a, (b, c)) (a', (b', c'))
 assoc3L f = assoc3 f

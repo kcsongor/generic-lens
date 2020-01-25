@@ -63,6 +63,7 @@ library
                     , Data.Generics.Sum.Internal.Typed
                     , Data.Generics.Sum.Internal.Subtype
 
+                    , Data.Generics.Product.Internal.Typed
                     , Data.Generics.Product.Internal.Positions
                     , Data.Generics.Product.Internal.GLens
                     , Data.Generics.Product.Internal.Subtype

@@ -1,15 +1,9 @@
-{-# LANGUAGE AllowAmbiguousTypes   #-}
-{-# LANGUAGE DataKinds             #-}
-{-# LANGUAGE FlexibleContexts      #-}
-{-# LANGUAGE FlexibleInstances     #-}
-{-# LANGUAGE KindSignatures        #-}
+{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE ScopedTypeVariables   #-}
-{-# LANGUAGE TypeApplications      #-}
-{-# LANGUAGE TypeFamilies          #-}
-{-# LANGUAGE TypeInType            #-}
-{-# LANGUAGE TypeOperators         #-}
-{-# LANGUAGE UndecidableInstances  #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -31,17 +25,9 @@ module Data.Generics.Product.Typed
     HasType (..)
   ) where
 
-import Data.Generics.Internal.Families
+import Data.Generics.Product.Internal.Typed (Context, derived)
 import Data.Generics.Internal.VL.Lens as VL
 import Data.Generics.Internal.Void
-import Data.Generics.Product.Internal.GLens
-
-import Data.Kind    (Constraint, Type)
-import GHC.Generics (Generic (Rep))
-import GHC.TypeLits (TypeError, ErrorMessage (..))
-import Data.Generics.Internal.Profunctor.Lens
-import Data.Generics.Internal.Profunctor.Iso
-import Data.Generics.Internal.Errors
 
 -- $setup
 -- == /Running example:/
@@ -97,7 +83,7 @@ class HasType a s where
   --  ...
   typed :: VL.Lens s s a a
   typed
-    = VL.lens (getTyped @a) (uncurry (setTyped @a) . swap)
+    = VL.lens (getTyped @a) (flip (setTyped @a))
   {-# INLINE typed #-}
 
   -- |Get field at type.
@@ -110,16 +96,8 @@ class HasType a s where
 
   {-# MINIMAL typed | setTyped, getTyped #-}
 
-instance
-  ( Generic s
-  , ErrorUnlessOne a s (CollectTotalType a (Rep s))
-  , Defined (Rep s)
-    (NoGeneric s '[ 'Text "arising from a generic lens focusing on a field of type " ':<>: QuoteType a])
-    (() :: Constraint)
-  , GLens (HasTotalTypePSym a) (Rep s) (Rep s) a a
-  ) => HasType a s where
-
-  typed f s = VL.ravel (repIso . glens @(HasTotalTypePSym a)) f s
+instance Context a s => HasType a s where
+  typed f s = VL.ravel derived f s
   {-# INLINE typed #-}
 
 instance {-# OVERLAPPING #-} HasType a a where
@@ -136,39 +114,3 @@ instance {-# OVERLAPPING #-} HasType a a where
 -- Note that this might not longer be needed given the above 'HasType a a' instance.
 instance {-# OVERLAPPING #-} HasType a Void where
   typed = undefined
-
-type family ErrorUnlessOne (a :: Type) (s :: Type) (stat :: TypeStat) :: Constraint where
-  ErrorUnlessOne a s ('TypeStat '[_] '[] '[])
-    = TypeError
-        (     'Text "The type "
-        ':<>: 'ShowType s
-        ':<>: 'Text " does not contain a value of type "
-        ':<>: 'ShowType a
-        )
-
-  ErrorUnlessOne a s ('TypeStat (n ': ns) _ _)
-    = TypeError
-        (     'Text "Not all constructors of the type "
-        ':<>: 'ShowType s
-        ':<>: 'Text " contain a field of type "
-        ':<>: 'ShowType a ':<>: 'Text "."
-        ':$$: 'Text "The offending constructors are:"
-        ':$$: ShowSymbols (n ': ns)
-        )
-
-  ErrorUnlessOne a s ('TypeStat _ (m ': ms) _)
-    = TypeError
-        (     'Text "The type "
-        ':<>: 'ShowType s
-        ':<>: 'Text " contains multiple values of type "
-        ':<>: 'ShowType a ':<>: 'Text "."
-        ':$$: 'Text "The choice of value is thus ambiguous. The offending constructors are:"
-        ':$$: ShowSymbols (m ': ms)
-        )
-
-  ErrorUnlessOne _ _ ('TypeStat '[] '[] _)
-    = ()
-
-data HasTotalTypePSym :: Type -> (TyFun (Type -> Type) (Maybe Type))
-type instance Eval (HasTotalTypePSym t) tt = HasTotalTypeP t tt
-

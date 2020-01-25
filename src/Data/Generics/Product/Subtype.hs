@@ -40,7 +40,6 @@ import Data.Generics.Product.Internal.Subtype
 import GHC.Generics (Generic (Rep, to, from) )
 import GHC.TypeLits (Symbol, TypeError, ErrorMessage (..))
 import Data.Kind (Type, Constraint)
-import Data.Generics.Internal.Profunctor.Lens hiding (set)
 import Data.Generics.Internal.Errors
 
 -- $setup
@@ -84,7 +83,7 @@ class Subtype sup sub where
   -- Human {name = "dog", age = 10, address = "London"}
   super  :: VL.Lens sub sub sup sup
   super
-    = VL.lens upcast (uncurry smash . swap)
+    = VL.lens upcast (flip smash)
 
   -- |Cast the more specific subtype to the more general supertype
   --

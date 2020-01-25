@@ -42,7 +42,7 @@ import Data.Generics.Internal.GenericN
 import Data.Generics.Internal.Errors
 
 class HasParam (p :: Nat) s t a b | p t a -> s, p s b -> t, p s -> a, p t -> b where
-  param :: Applicative g => (a -> g b) -> s -> g t
+  param :: Traversal s t a b
 
 instance
   ( GenericN s
