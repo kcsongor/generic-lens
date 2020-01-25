@@ -1,5 +1,4 @@
 {-# LANGUAGE AllowAmbiguousTypes    #-}
-{-# LANGUAGE CPP                    #-}
 {-# LANGUAGE DataKinds              #-}
 {-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE FunctionalDependencies #-}
@@ -153,19 +152,11 @@ instance
   {-# INLINE[2] _Ctor #-}
 
 -- | See Note [Uncluttering type signatures]
-#if __GLASGOW_HASKELL__ < 804
--- >>> :t _Ctor
--- _Ctor
---   :: (Applicative f, Data.Profunctor.Choice.Choice p,
---       AsConstructor ctor s t a b) =>
---      p a (f b) -> p s (f t)
-#else
 -- >>> :t _Ctor
 -- _Ctor
 --   :: (AsConstructor ctor s t a b, Data.Profunctor.Choice.Choice p,
 --       Applicative f) =>
 --      p a (f b) -> p s (f t)
-#endif
 instance {-# OVERLAPPING #-} AsConstructor ctor (Void1 a) (Void1 b) a b where
   _Ctor = undefined
 

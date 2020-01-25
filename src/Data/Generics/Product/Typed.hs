@@ -1,4 +1,3 @@
-{-# LANGUAGE CPP #-}
 {-# LANGUAGE AllowAmbiguousTypes   #-}
 {-# LANGUAGE DataKinds             #-}
 {-# LANGUAGE FlexibleContexts      #-}
@@ -41,6 +40,7 @@ import Data.Kind    (Constraint, Type)
 import GHC.Generics (Generic (Rep))
 import GHC.TypeLits (TypeError, ErrorMessage (..))
 import Data.Generics.Internal.Profunctor.Lens
+import Data.Generics.Internal.Profunctor.Iso
 import Data.Generics.Internal.Errors
 
 -- $setup
@@ -119,7 +119,7 @@ instance
   , GLens (HasTotalTypePSym a) (Rep s) (Rep s) a a
   ) => HasType a s where
 
-  typed f s = VL.ravel (repLens . glens @(HasTotalTypePSym a)) f s
+  typed f s = VL.ravel (repIso . glens @(HasTotalTypePSym a)) f s
 
 instance {-# OVERLAPPING #-} HasType a a where
     getTyped = id
@@ -129,13 +129,8 @@ instance {-# OVERLAPPING #-} HasType a a where
     {-# INLINE setTyped #-}
 
 -- | See Note [Uncluttering type signatures]
-#if __GLASGOW_HASKELL__ < 804
--- >>> :t typed
--- typed :: (HasType a s, Functor f) => (a -> f a) -> s -> f s
-#else
 -- >>> :t typed
 -- typed :: (Functor f, HasType a s) => (a -> f a) -> s -> f s
-#endif
 --
 -- Note that this might not longer be needed given the above 'HasType a a' instance.
 instance {-# OVERLAPPING #-} HasType a Void where

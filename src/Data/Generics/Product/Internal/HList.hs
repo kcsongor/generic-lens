@@ -1,5 +1,4 @@
 {-# LANGUAGE AllowAmbiguousTypes    #-}
-{-# LANGUAGE CPP                    #-}
 {-# LANGUAGE ConstraintKinds        #-}
 {-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE FunctionalDependencies #-}
@@ -11,11 +10,6 @@
 {-# LANGUAGE TypeInType             #-}
 {-# LANGUAGE TypeOperators          #-}
 {-# LANGUAGE UndecidableInstances   #-}
-
-#if __GLASGOW_HASKELL__ == 802
-{-# OPTIONS_GHC -fno-solve-constant-dicts #-}
-#endif
-
 
 -----------------------------------------------------------------------------
 -- |
@@ -40,9 +34,6 @@ module Data.Generics.Product.Internal.HList
   , TupleToList
   ) where
 
-#if __GLASGOW_HASKELL__ < 804
-import Data.Semigroup
-#endif
 import GHC.TypeLits
 
 import Data.Kind    (Type)
@@ -86,12 +77,6 @@ class GIsList
   (bs :: [Type]) | f -> as, g -> bs, bs f -> g, as g -> f where
 
   glist :: Iso (f x) (g x) (HList as) (HList bs)
-
-  -- We define this reversed version, otherwise uses of `fromIso glist` are not
-  -- properly inlined by GHC 8.0.2.
-  -- This is not actually used.
-  glistR :: Iso (HList bs) (HList as) (g x) (f x)
-  glistR = fromIso glist
 
 instance
   ( GIsList l l' as as'

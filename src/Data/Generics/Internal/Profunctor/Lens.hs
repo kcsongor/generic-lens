@@ -152,20 +152,3 @@ instance Strong (ALens a b) where
       get' (c, a1) = let (c1, a) = get a1 in ((c, c1), a)
       set' ((c, c1), b) = (c, _set (c1, b))
   {-# INLINE second' #-}
-
--- These are specialised versions of the Isos. On GHC 8.0.2, having
--- these functions eta-expanded allows the optimiser to inline these functions.
-mLens :: Lens (M1 i c f p) (M1 i c g p) (f p) (g p)
-mLens f = mIso f
-
-repLens :: (Generic a, Generic b) => Lens a b (Rep a x) (Rep b x)
-repLens f = repIso f
-
-prodL :: Lens ((a :*: b) x) ((a' :*: b') x) (a x, b x) (a' x, b' x)
-prodL f = prodIso f
-
-prodR :: Lens (a' x, b' x) (a x, b x) ((a' :*: b') x) ((a :*: b) x)
-prodR f = fromIso prodIso f
-
-assoc3R :: Lens (a', (b', c')) (a, (b, c)) ((a', b'), c') ((a, b), c)
-assoc3R f = fromIso assoc3 f

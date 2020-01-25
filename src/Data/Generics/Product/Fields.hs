@@ -1,5 +1,4 @@
 {-# LANGUAGE AllowAmbiguousTypes     #-}
-{-# LANGUAGE CPP                     #-}
 {-# LANGUAGE ConstraintKinds         #-}
 {-# LANGUAGE DataKinds               #-}
 {-# LANGUAGE FlexibleInstances       #-}
@@ -46,7 +45,7 @@ import Data.Generics.Product.Internal.GLens
 import Data.Kind    (Constraint, Type)
 import GHC.Generics
 import GHC.TypeLits (Symbol, ErrorMessage(..), TypeError)
-import Data.Generics.Internal.Profunctor.Lens as P
+import Data.Generics.Internal.Profunctor.Iso as P
 import Data.Generics.Internal.Errors
 
 -- $setup
@@ -176,15 +175,9 @@ instance  -- see Note [Changing type parameters]
   field f s = field0 @field f s
 
 -- | See Note [Uncluttering type signatures]
-#if __GLASGOW_HASKELL__ < 804
--- >>> :t field
--- field
---   :: (HasField field s t a b, Functor f) => (a -> f b) -> s -> f t
-#else
 -- >>> :t field
 -- field
 --   :: (Functor f, HasField field s t a b) => (a -> f b) -> s -> f t
-#endif
 instance {-# OVERLAPPING #-} HasField f (Void1 a) (Void1 b) a b where
   field = undefined
 
@@ -214,7 +207,7 @@ instance
                   , 'Text "in " ':<>: QuoteType s])
     (() :: Constraint)
   ) => HasField0 field s t a b where
-  field0 = VL.ravel (repLens . glens @(HasTotalFieldPSym field))
+  field0 = VL.ravel (repIso . glens @(HasTotalFieldPSym field))
   {-# INLINE field0 #-}
 
 type family ErrorUnless (field :: Symbol) (s :: Type) (stat :: TypeStat) :: Constraint where

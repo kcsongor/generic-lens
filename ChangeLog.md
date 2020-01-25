@@ -1,4 +1,5 @@
 ## 2.0.0.0
+- Drop support for GHC < 8.4
 - Better inference for `field'`
 
 ## 1.2.0.1

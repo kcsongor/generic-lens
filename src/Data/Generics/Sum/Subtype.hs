@@ -1,4 +1,3 @@
-{-# LANGUAGE CPP #-}
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MonoLocalBinds        #-}
@@ -122,37 +121,20 @@ instance {-# OVERLAPPING #-} AsSubtype a a where
   {-# INLINE[2] _Sub #-}
 
 -- | See Note [Uncluttering type signatures]
-#if __GLASGOW_HASKELL__ < 804
--- >>> :t _Sub
---_Sub
---  :: (Applicative f, Data.Profunctor.Choice.Choice p,
---      AsSubtype sub sup) =>
---     p sub (f sub) -> p sup (f sup)
--- >>> :t _Sub
-#else
 --_Sub
 --  :: (AsSubtype sub sup, Data.Profunctor.Choice.Choice p,
 --      Applicative f) =>
 --     p sub (f sub) -> p sup (f sup)
-#endif
 instance {-# OVERLAPPING #-} AsSubtype a Void where
   injectSub = undefined
   projectSub = undefined
 
 -- | See Note [Uncluttering type signatures]
-#if __GLASGOW_HASKELL__ < 804
--- >>> :t _Sub @Int
--- _Sub @Int
---   :: (Applicative f, Data.Profunctor.Choice.Choice p,
---       AsSubtype Int sup) =>
---     p Int (f Int) -> p sup (f sup)
-#else
 -- >>> :t _Sub @Int
 -- _Sub @Int
 --   :: (AsSubtype Int sup, Data.Profunctor.Choice.Choice p,
 --       Applicative f) =>
 --      p Int (f Int) -> p sup (f sup)
-#endif
 instance {-# OVERLAPPING #-} AsSubtype Void a where
   injectSub = undefined
   projectSub = undefined

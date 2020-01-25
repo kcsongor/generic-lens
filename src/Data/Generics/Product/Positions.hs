@@ -1,6 +1,5 @@
 {-# LANGUAGE TypeInType #-}
 {-# LANGUAGE PartialTypeSignatures #-}
-{-# LANGUAGE CPP #-}
 {-# LANGUAGE AllowAmbiguousTypes    #-}
 {-# LANGUAGE ConstraintKinds        #-}
 {-# LANGUAGE DataKinds              #-}
@@ -54,6 +53,7 @@ import Data.Type.Bool (type (&&))
 import GHC.Generics
 import GHC.TypeLits   (type (<=?),  Nat, TypeError, ErrorMessage(..))
 import Data.Generics.Internal.Profunctor.Lens as P
+import Data.Generics.Internal.Profunctor.Iso as P
 import Data.Coerce
 
 -- $setup
@@ -140,7 +140,7 @@ instance
                   ])
     (() :: Constraint)
   ) => HasPosition' i s a where
-  position' f s = VL.ravel (repLens . coerced @cs @cs . glens @(HasTotalPositionPSym i)) f s
+  position' f s = VL.ravel (repIso . coerced @cs @cs . glens @(HasTotalPositionPSym i)) f s
   {-# INLINE position' #-}
 
 -- this is to 'hide' the equality constraints which interfere with inlining
@@ -173,15 +173,9 @@ coerced = coerce
 {-# INLINE coerced #-}
 
 -- | See Note [Uncluttering type signatures]
-#if __GLASGOW_HASKELL__ < 804
--- >>> :t position
--- position
---   :: (HasPosition i s t a b, Functor f) => (a -> f b) -> s -> f t
-#else
 -- >>> :t position
 -- position
 --   :: (Functor f, HasPosition i s t a b) => (a -> f b) -> s -> f t
-#endif
 instance {-# OVERLAPPING #-} HasPosition f (Void1 a) (Void1 b) a b where
   position = undefined
 
@@ -213,7 +207,7 @@ instance
                   ])
     (() :: Constraint)
   ) => HasPosition0 i s t a b where
-  position0 = VL.ravel (repLens . coerced @(CRep s) @(CRep t) . glens @(HasTotalPositionPSym i))
+  position0 = VL.ravel (repIso . coerced @(CRep s) @(CRep t) . glens @(HasTotalPositionPSym i))
   {-# INLINE position0 #-}
 
 type family ErrorUnless (i :: Nat) (s :: Type) (hasP :: Bool) :: Constraint where

@@ -1,4 +1,3 @@
-{-# LANGUAGE CPP #-}
 {-# LANGUAGE AllowAmbiguousTypes       #-}
 {-# LANGUAGE DataKinds                 #-}
 {-# LANGUAGE FlexibleContexts          #-}
@@ -139,28 +138,16 @@ instance {-# OVERLAPPING #-} Subtype a a where
   super = id
 
 -- | See Note [Uncluttering type signatures]
-#if __GLASGOW_HASKELL__ < 804
--- >>> :t super
--- super
---   :: (Subtype sup sub, Functor f) => (sup -> f sup) -> sub -> f sub
-#else
 -- >>> :t super
 -- super
 --   :: (Functor f, Subtype sup sub) => (sup -> f sup) -> sub -> f sub
-#endif
 instance {-# OVERLAPPING #-} Subtype a Void where
   super = undefined
 
 -- | See Note [Uncluttering type signatures]
-#if __GLASGOW_HASKELL__ < 804
--- >>> :t super @Int
--- super @Int
---   :: (Subtype Int sub, Functor f) => (Int -> f Int) -> sub -> f sub
-#else
 -- >>> :t super @Int
 -- super @Int
 --   :: (Functor f, Subtype Int sub) => (Int -> f Int) -> sub -> f sub
-#endif
 instance {-# OVERLAPPING #-} Subtype Void a where
   super = undefined
 

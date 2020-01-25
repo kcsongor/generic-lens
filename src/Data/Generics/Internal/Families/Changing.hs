@@ -130,30 +130,6 @@ type family ArgAt (t :: k) (n :: Nat) :: j where
   ArgAt (t a) n = ArgAt t (n - 1)
 
 
--- Note [CPP in instance constraints]
--- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
---
--- In GHC 8.0.2, the calculated size of the expressions is too large for the
--- inliner to consider them under the default -funfolding-use-threshold value
--- (60).
---
--- To reduce the size, the constraints
---
--- ```
--- s' ~ Proxied s
--- t' ~ Proxied t
--- ```
---
--- are written as the following single equality:
---
--- ```
--- '(s', t') ~ '(Proxied s, Proxied t)
--- ```
---
--- However, for some reason, this violates the functional dependencies on 8.2.2.
--- Therefore, when using a newer version of the compiler, the original constraints
--- are used, as the expression size is smaller under 8.2.2.
-
 -- | Ensure that the types @a@ and @b@ are both applications of the same
 -- constructor. The arguments may be different.
 class UnifyHead (a :: k) (b :: k)
