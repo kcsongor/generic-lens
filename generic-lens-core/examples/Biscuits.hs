@@ -140,11 +140,3 @@ treeIncParam = over (param @0) (+ 1)
 
 instance Functor Invoice where
   fmap = over (param @0)
-
-data Numbers = Numbers Int Float Double
-  deriving (Show, Generic)
-
--- |
--- >>> constraints' @Num (\x -> pure (x + 20)) numbers
--- Numbers 30 40.0 50.0
-numbers = Numbers 10 20.0 30.0

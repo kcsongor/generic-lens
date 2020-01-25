@@ -26,7 +26,6 @@ module Data.Generics.Product
   -- *Traversals
   , module Data.Generics.Product.Types
   , module Data.Generics.Product.Param
-  , module Data.Generics.Product.Constraints
   ) where
 
 import Data.Generics.Product.Any
@@ -35,6 +34,5 @@ import Data.Generics.Product.Positions
 import Data.Generics.Product.Subtype
 import Data.Generics.Product.Typed
 import Data.Generics.Product.Types
-import Data.Generics.Product.Constraints
 import Data.Generics.Product.Param
 import Data.Generics.Product.HList

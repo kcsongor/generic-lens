@@ -27,7 +27,6 @@ module Data.GenericLens.Internal
   , module Data.Generics.Product.Internal.Positions
   , module Data.Generics.Product.Internal.GLens
   , module Data.Generics.Product.Internal.Subtype
-  , module Data.Generics.Product.Internal.Constraints
   , module Data.Generics.Product.Internal.HList
 
   , module Data.Generics.Internal.GenericN
@@ -53,7 +52,6 @@ import Data.Generics.Sum.Internal.Subtype
 import Data.Generics.Product.Internal.Positions
 import Data.Generics.Product.Internal.GLens
 import Data.Generics.Product.Internal.Subtype
-import Data.Generics.Product.Internal.Constraints
 import Data.Generics.Product.Internal.HList
 
 import Data.Generics.Internal.GenericN
