@@ -1,3 +1,4 @@
+{-# LANGUAGE QuantifiedConstraints #-}
 {-# LANGUAGE TypeInType #-}
 {-# LANGUAGE AllowAmbiguousTypes    #-}
 {-# LANGUAGE ConstraintKinds        #-}
@@ -31,13 +32,105 @@ module Data.Generics.Product.Internal.Positions
   ( type (<?)
   , Size
   , CRep
+
+  , Context
+  , Context_
+  , Context'
+  , Context0
+  , derived0
+  , derived'
   ) where
 
 import Data.Generics.Internal.Families.Has (Pos)
-import Data.Kind      (Type)
-import Data.Type.Bool (If, Not)
+import Data.Kind      (Type, Constraint)
+import Data.Type.Bool (If, Not, type (&&))
 import GHC.Generics
-import GHC.TypeLits   (type (<=?), type (+), Nat)
+import GHC.TypeLits   (type (<=?), type (+), Nat, TypeError, ErrorMessage(..))
+import Data.Coerce
+  
+import Data.Generics.Internal.Families
+import Data.Generics.Product.Internal.GLens
+import Data.Generics.Internal.Errors
+import Data.Generics.Internal.Profunctor.Lens
+import Data.Generics.Internal.Profunctor.Iso
+
+type Context' (i :: Nat) s a
+  = ( Generic s
+    , ErrorUnless i s (0 <? i && i <=? Size (Rep s))
+    , Coercible (Rep s) (CRep s)
+    , GLens' (HasTotalPositionPSym i) (CRep s) a
+    , Defined (Rep s)
+      (NoGeneric s '[ 'Text "arising from a generic lens focusing on the field at"
+                    , 'Text "position " ':<>: QuoteType i ':<>: 'Text " of type " ':<>: QuoteType a
+                      ':<>: 'Text " in " ':<>: QuoteType s
+                    ])
+      (() :: Constraint)
+    )
+
+class Context (i :: Nat) s t a b | s i -> a, t i -> b, s i b -> t, t i a -> s
+instance
+  ( ErrorUnless i s (0 <? i && i <=? Size (Rep s))
+  , HasTotalPositionP i (CRep s) ~ 'Just a
+  , HasTotalPositionP i (CRep t) ~ 'Just b
+  , HasTotalPositionP i (CRep (Indexed s)) ~ 'Just a'
+  , HasTotalPositionP i (CRep (Indexed t)) ~ 'Just b'
+  , t ~ Infer s a' b
+  , s ~ Infer t b' a
+  ) => Context i s t a b
+
+type Context_ i s t a b = 
+  ( ErrorUnless i s (0 <? i && i <=? Size (Rep s))
+  , UnifyHead s t
+  , UnifyHead t s
+  , Coercible (CRep s) (Rep s)
+  , Coercible (CRep t) (Rep t)
+  )
+
+type Context0 i s t a b
+  = ( Generic s
+    , Generic t
+    , GLens (HasTotalPositionPSym i) (CRep s) (CRep t) a b
+    , Coercible (CRep s) (Rep s)
+    , Coercible (CRep t) (Rep t)
+    , Defined (Rep s)
+      (NoGeneric s '[ 'Text "arising from a generic lens focusing on the field at"
+                    , 'Text "position " ':<>: QuoteType i ':<>: 'Text " of type " ':<>: QuoteType a
+                      ':<>: 'Text " in " ':<>: QuoteType s
+                    ])
+      (() :: Constraint)
+    )
+
+derived0 :: forall i s t a b. Context0 i s t a b => Lens s t a b
+derived0 = ravel (repIso . coerced @(CRep s) @(CRep t) . glens @(HasTotalPositionPSym i))
+
+derived' :: forall i s a. Context' i s a => Lens s s a a
+derived' = ravel (repIso . coerced @(CRep s) @(CRep s) . glens @(HasTotalPositionPSym i))
+
+type family ErrorUnless (i :: Nat) (s :: Type) (hasP :: Bool) :: Constraint where
+  ErrorUnless i s 'False
+    = TypeError
+        (     'Text "The type "
+        ':<>: 'ShowType s
+        ':<>: 'Text " does not contain a field at position "
+        ':<>: 'ShowType i
+        )
+
+  ErrorUnless _ _ 'True
+    = ()
+
+data HasTotalPositionPSym  :: Nat -> (TyFun (Type -> Type) (Maybe Type))
+type instance Eval (HasTotalPositionPSym t) tt = HasTotalPositionP t tt
+
+  
+-- We wouldn't need the universal 'x' here if we could express above that
+-- forall x. Coercible (cs x) (Rep s x), but this requires quantified
+-- constraints
+coerced :: forall s t s' t' x a b. (Coercible t t', Coercible s s')
+        => ALens a b (s x) (t x) -> ALens a b (s' x) (t' x)
+coerced = coerce
+{-# INLINE coerced #-}
+
+--------------------------------------------------------------------------------  
 
 -- | Alias for the kind of the generic rep
 type G = Type -> Type
