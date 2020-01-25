@@ -188,6 +188,8 @@ instance  -- see Note [Changing type parameters]
 instance {-# OVERLAPPING #-} HasField f (Void1 a) (Void1 b) a b where
   field = undefined
 
+instance {-# OVERLAPPING #-} HasField' f (Void1 a) a
+
 instance
   ( HasTotalFieldP field (Rep s) ~~ 'Just a
   , HasTotalFieldP field (Rep t) ~~ 'Just b
