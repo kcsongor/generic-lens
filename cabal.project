@@ -1,2 +1,2 @@
-packages: generic-lens.cabal
+packages: generic-lens-core/generic-lens-core.cabal
 write-ghc-environment-files: always

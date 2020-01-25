@@ -149,6 +149,9 @@ instance Context' field s a => HasField' field s a where
 instance (Context field s t a b , HasField0 field s t a b) => HasField field s t a b where
   field f s = field0 @field f s
 
+instance {-# OVERLAPPING #-} HasField' field s a => HasField field s s a a where
+  field f s = field' @field f s
+
 -- | See Note [Uncluttering type signatures]
 -- >>> :t field
 -- field
