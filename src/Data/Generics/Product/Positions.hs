@@ -175,7 +175,7 @@ coerced = coerce
 -- | See Note [Uncluttering type signatures]
 -- >>> :t position
 -- position
---   :: (Functor f, HasPosition i s t a b) => (a -> f b) -> s -> f t
+--   :: (HasPosition i s t a b, Functor f) => (a -> f b) -> s -> f t
 instance {-# OVERLAPPING #-} HasPosition f (Void1 a) (Void1 b) a b where
   position = undefined
 
