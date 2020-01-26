@@ -89,7 +89,7 @@ import GHC.TypeLits
 -- The traversal is /deep/, which means that not just the immediate
 -- children are visited, but all nested values too.
 types :: forall a s. HasTypes s a => Traversal' s a
-types = types_ @s @a
+types = confusing (types_ @s @a)
 {-# INLINE types #-}
 
 class HasTypes s a where
@@ -144,7 +144,7 @@ instance {-# OVERLAPPING #-} HasTypesUsing ch s s Void Void where
 
 -- | @since 1.2.0.0
 typesUsing :: forall ch a s. HasTypesUsing ch s s a a => Traversal' s a
-typesUsing = typesUsing_ @ch @s @s @a
+typesUsing = confusing (typesUsing_ @ch @s @s @a)
 {-# INLINE typesUsing #-}
 
 -- | @since 1.2.0.0

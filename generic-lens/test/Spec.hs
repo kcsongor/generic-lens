@@ -257,17 +257,17 @@ tests = TestList $ map mkHUnitTest
   , $(inspectTest $ 'sum1PrismManualChar       === 'sum1TypePrismChar)
   , $(inspectTest $ 'sum2PrismManualChar       === 'sum2TypePrismChar)
   , $(inspectTest $ 'sum1PrismManual           === 'sum1TypePrism)
-  --, $(inspectTest $ 'intTraversalManual        === 'intTraversalDerived)
-  --, $(inspectTest $ 'sum3Param0Manual          === 'sum3Param0Derived)
-  -- TODO [1.0.0.0]: these tests pass with the new implementation
---  , $(inspectTest $ 'sum3Param1Manual          === 'sum3Param1Derived)
---  , $(inspectTest $ 'sum3Param2Manual          === 'sum3Param2Derived)
+  , $(inspectTest $ 'intTraversalManual        === 'intTraversalDerived)
+  , $(inspectTest $ 'sum3Param0Manual          === 'sum3Param0Derived)
+  , $(inspectTest $ 'sum3Param1Manual          === 'sum3Param1Derived)
+  , $(inspectTest $ 'sum3Param2Manual          === 'sum3Param2Derived)
   ] ++
   -- Tests for overloaded labels
   [ (valLabel ^. #_foo        ) ~=?  3
   , (valLabel &  #_foo +~ 10  ) ~=? RecB 13 True
-  -- , (valLabel ^? #_RecB       ) ~=? Just (3, True)
   , (valLabel ^? #_RecB . _1  ) ~=? Just 3
+  -- TODO(2.0.0.0): work these out before the release
+  -- , (valLabel ^? #_RecB       ) ~=? Just (3, True)
   -- , (valLabel ^? #_RecC       ) ~=? Nothing
   , customTypesTest
   ]
