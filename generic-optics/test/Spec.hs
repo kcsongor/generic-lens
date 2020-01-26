@@ -1,6 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
-{-# OPTIONS_GHC -O -fplugin Test.Inspection.Plugin #-}
 {-# OPTIONS_GHC -dsuppress-all #-}
+
+{-# OPTIONS_GHC -funfolding-use-threshold=150 #-}
 
 {-# LANGUAGE AllowAmbiguousTypes             #-}
 {-# LANGUAGE CPP                             #-}
@@ -66,11 +67,16 @@ data Record5 = MkRecord5
   , fieldF :: Int
   } deriving Generic
 
-typeChangingManual :: Lens (Record3 a) (Record3 b) a b
-typeChangingManual = lens (\(MkRecord3 a _) -> a) (\(MkRecord3 _ b) a' -> MkRecord3 a' b)
+-- I monomorphised these for now, as for some reason the type
+-- variables got quantified differently in the handwritten code
+-- compared to the generic. Otherwise identical
+typeChangingManualInst :: Lens (Record3 Int) (Record3 Bool) Int Bool
+typeChangingManualInst = lens (\(MkRecord3 a _) -> a) (\(MkRecord3 _ b) a' -> MkRecord3 a' b)
 
-typeChangingManualCompose :: Lens (Record3 (Record3 a)) (Record3 (Record3 b)) a b
-typeChangingManualCompose = typeChangingManual % typeChangingManual
+typeChangingManualCompose :: Lens (Record3 (Record3 Int)) (Record3 (Record3 Bool)) Int Bool
+typeChangingManualCompose
+  = lens (\(MkRecord3 a _) -> a) (\(MkRecord3 _ b) a' -> MkRecord3 a' b)
+  % lens (\(MkRecord3 a _) -> a) (\(MkRecord3 _ b) a' -> MkRecord3 a' b)
 
 newtype L s a = L (Lens' s a)
 
@@ -86,7 +92,8 @@ fieldALensManual =
     lens (\(MkRecord a _) -> a) $ \(MkRecord _ b) x -> MkRecord x b
 
 subtypeLensManual :: Lens' Record Record2
-subtypeLensManual = lens (\(MkRecord a _) -> MkRecord2 a) (\(MkRecord _ b) (MkRecord2 a) -> MkRecord a b)
+subtypeLensManual =
+  lens (\s1 -> MkRecord2 (case s1 of MkRecord a _ -> a)) (\(MkRecord _ b) ds -> MkRecord (case ds of MkRecord2 g1 -> g1) b)
 
 data Sum1 = A Char | B Int | C () | D () deriving (Generic, Show)
 data Sum2 = A2 Char | B2 Int deriving (Generic, Show)
@@ -197,16 +204,16 @@ fieldALensPos_ = position_ @1
 subtypeLensGeneric :: Lens' Record Record2
 subtypeLensGeneric = super
 
-typeChangingGeneric :: Lens (Record3 a) (Record3 b) a b
+typeChangingGeneric :: Lens (Record3 Int) (Record3 Bool) Int Bool
 typeChangingGeneric = field @"fieldA"
 
-typeChangingGenericPos :: Lens (Record3 a) (Record3 b) a b
+typeChangingGenericPos :: Lens (Record3 Int) (Record3 Bool) Int Bool
 typeChangingGenericPos = position @1
 
-typeChangingGenericCompose :: Lens (Record3 (Record3 a)) (Record3 (Record3 b)) a b
+typeChangingGenericCompose :: Lens (Record3 (Record3 Int)) (Record3 (Record3 Bool)) Int Bool
 typeChangingGenericCompose = field @"fieldA" % field @"fieldA"
 
-typeChangingGenericCompose_ :: Lens (Record3 (Record3 a)) (Record3 (Record3 b)) a b
+typeChangingGenericCompose_ :: Lens (Record3 (Record3 Int)) (Record3 (Record3 Bool)) Int Bool
 typeChangingGenericCompose_ = field_ @"fieldA" % field_ @"fieldA"
 
 sum1PrismB :: Prism Sum1 Sum1 Int Int
@@ -241,8 +248,8 @@ tests = TestList $ map mkHUnitTest
   , $(inspectTest $ 'fieldALensManual          === 'fieldALensPos)
   , $(inspectTest $ 'fieldALensManual          === 'fieldALensPos_)
   , $(inspectTest $ 'subtypeLensManual         === 'subtypeLensGeneric)
-  , $(inspectTest $ 'typeChangingManual        === 'typeChangingGeneric)
-  , $(inspectTest $ 'typeChangingManual        === 'typeChangingGenericPos)
+  , $(inspectTest $ 'typeChangingManualInst    === 'typeChangingGeneric)
+  , $(inspectTest $ 'typeChangingManualInst    === 'typeChangingGenericPos)
   , $(inspectTest $ 'typeChangingManualCompose === 'typeChangingGenericCompose)
   , $(inspectTest $ 'typeChangingManualCompose === 'typeChangingGenericCompose_)
   , $(inspectTest $ 'sum1PrismManual           === 'sum1PrismB)
