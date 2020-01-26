@@ -22,7 +22,6 @@
 -----------------------------------------------------------------------------
 module Data.Generics.Internal.Profunctor.Prism where
 
-import Data.Bifunctor         (bimap)
 import Data.Profunctor.Indexed
 import GHC.Generics
 
