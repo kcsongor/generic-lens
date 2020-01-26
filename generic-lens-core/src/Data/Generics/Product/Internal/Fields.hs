@@ -76,6 +76,7 @@ type Context0 field s t a b
 
 derived :: forall field s t a b. Context0 field s t a b => Lens s t a b
 derived = repIso . glens @(HasTotalFieldPSym field)
+{-# INLINE derived #-}
 
 type family ErrorUnless (field :: Symbol) (s :: Type) (stat :: TypeStat) :: Constraint where
   ErrorUnless field s ('TypeStat _ _ '[])

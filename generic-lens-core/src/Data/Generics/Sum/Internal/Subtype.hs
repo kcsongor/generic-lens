@@ -1,3 +1,5 @@
+{-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE AllowAmbiguousTypes   #-}
 {-# LANGUAGE DataKinds             #-}
 {-# LANGUAGE FlexibleContexts      #-}
@@ -25,17 +27,30 @@
 -----------------------------------------------------------------------------
 
 module Data.Generics.Sum.Internal.Subtype
-  ( GAsSubtype (..)
+  ( Context
+  , derived
   ) where
 
 import Data.Generics.Product.Internal.HList
-import Data.Generics.Sum.Internal.Typed
+import Data.Generics.Sum.Internal.Typed (GAsType (..))
 
 import Data.Kind
 import GHC.Generics
 import Data.Generics.Internal.Profunctor.Iso
 import Data.Generics.Internal.Profunctor.Prism
 import Data.Generics.Internal.Families.Has
+
+type Context sub sup
+  = ( Generic sub
+    , Generic sup
+    , GAsSubtype (Rep sub) (Rep sup)
+    )
+
+derived :: Context sub sup => Prism' sup sub
+derived = repIso . _GSub . fromIso repIso
+{-# INLINE derived #-}
+
+--------------------------------------------------------------------------------  
 
 -- |As 'AsSubtype' but over generic representations as defined by
 --  "GHC.Generics".

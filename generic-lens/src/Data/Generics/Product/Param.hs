@@ -32,16 +32,12 @@ module Data.Generics.Product.Param
   , Param (..)
   ) where
 
-import GHC.TypeLits
-import Data.Generics.Internal.Families.Changing
-import Data.Generics.Internal.VL.Traversal
+import Data.Generics.Product.Internal.Param
 
-import GHC.Generics
-import Data.Kind
+import GHC.TypeLits
+import Data.Generics.Internal.VL.Traversal
 import Data.Generics.Internal.VL.Iso
 import Data.Generics.Internal.GenericN
-import Data.Generics.Internal.Errors
-
 import Data.Generics.Product.Types
 import Data.Generics.Internal.Void
 
@@ -49,39 +45,12 @@ class HasParam (p :: Nat) s t a b | p t a -> s, p s b -> t, p s -> a, p t -> b w
   param :: Traversal s t a b
 
 instance
-  ( GenericN s
-  , GenericN t
-  -- TODO: merge the old 'Changing' code with 'GenericN'
-  , Defined (Rep s)
-    (NoGeneric s
-      '[ 'Text "arising from a generic traversal of the type parameter at position " ':<>: QuoteType n
-       , 'Text "of type " ':<>: QuoteType a ':<>: 'Text " in " ':<>: QuoteType s
-       ])
-    (() :: Constraint)
-  , s ~ Infer t (P n b 'PTag) a
-  , t ~ Infer s (P n a 'PTag) b
-  , Error ((ArgCount s) <=? n) n (ArgCount s) s
-  , a ~ ArgAt s n
-  , b ~ ArgAt t n
+  ( Context n s t a b
   , GHasTypes ChGeneric (RepN s) (RepN t) (Param n a) (Param n b)
   ) => HasParam n s t a b where
 
   param = confusing (repIsoN . gtypes_ @ChGeneric . paramIso @n)
   {-# INLINE param #-}
-
-type family Error (b :: Bool) (expected :: Nat) (actual :: Nat) (s :: Type) :: Constraint where
-  Error 'False _ _ _
-    = ()
-
-  Error 'True expected actual typ
-    = TypeError
-        (     'Text "Expected a type with at least "
-        ':<>: 'ShowType (expected + 1)
-        ':<>: 'Text " parameters, but "
-        ':$$: 'ShowType typ
-        ':<>: 'Text " only has "
-        ':<>: 'ShowType actual
-        )
 
 instance {-# OVERLAPPING #-} HasParam p (Void1 a) (Void1 b) a b where
   param = undefined

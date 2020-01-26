@@ -32,15 +32,12 @@ module Data.Generics.Product.Subtype
     Subtype (..)
   ) where
 
-import Data.Generics.Internal.Families
+
 import Data.Generics.Internal.VL.Lens as VL
 import Data.Generics.Internal.Void
 import Data.Generics.Product.Internal.Subtype
 
-import GHC.Generics (Generic (Rep, to, from) )
-import GHC.TypeLits (Symbol, TypeError, ErrorMessage (..))
-import Data.Kind (Type, Constraint)
-import Data.Generics.Internal.Errors
+import GHC.Generics (Generic (to, from) )
 
 -- $setup
 -- == /Running example:/
@@ -84,6 +81,7 @@ class Subtype sup sub where
   super  :: VL.Lens sub sub sup sup
   super
     = VL.lens upcast (flip smash)
+  {-# INLINE super #-}
 
   -- |Cast the more specific subtype to the more general supertype
   --
@@ -98,6 +96,7 @@ class Subtype sup sub where
   -- ...
   upcast :: sub -> sup
   upcast s = s ^. super @sup
+  {-# INLINE upcast #-}
 
   -- |Plug a smaller structure into a larger one
   --
@@ -105,33 +104,13 @@ class Subtype sup sub where
   -- Human {name = "dog", age = 10, address = "London"}
   smash  :: sup -> sub -> sub
   smash = VL.set (super @sup)
+  {-# INLINE smash #-}
 
   {-# MINIMAL super | smash, upcast #-}
 
-instance
-  ( Generic a
-  , Generic b
-  , GSmash (Rep a) (Rep b)
-  , GUpcast (Rep a) (Rep b)
-  , CustomError a b
-  ) => Subtype b a where
+instance Context a b => Subtype b a where
     smash p b = to $ gsmash (from p) (from b)
     upcast    = to . gupcast . from
-
-type family CustomError a b :: Constraint where
-  CustomError a b =
-    ( ErrorUnless b a (CollectFieldsOrdered (Rep b) \\ CollectFieldsOrdered (Rep a))
-    , Defined (Rep a)
-      (NoGeneric a '[ 'Text "arising from a generic lens focusing on " ':<>: QuoteType b
-                    , 'Text "as a supertype of " ':<>: QuoteType a
-                    ])
-      (() :: Constraint)
-    , Defined (Rep b)
-      (NoGeneric b '[ 'Text "arising from a generic lens focusing on " ':<>: QuoteType b
-                    , 'Text "as a supertype of " ':<>: QuoteType a
-                    ])
-      (() :: Constraint)
-    )
 
 instance {-# OVERLAPPING #-} Subtype a a where
   super = id
@@ -149,18 +128,3 @@ instance {-# OVERLAPPING #-} Subtype a Void where
 --   :: (Subtype Int sub, Functor f) => (Int -> f Int) -> sub -> f sub
 instance {-# OVERLAPPING #-} Subtype Void a where
   super = undefined
-
-type family ErrorUnless (sup :: Type) (sub :: Type) (diff :: [Symbol]) :: Constraint where
-  ErrorUnless _ _ '[]
-    = ()
-
-  ErrorUnless sup sub fs
-    = TypeError
-        (     'Text "The type '"
-        ':<>: 'ShowType sub
-        ':<>: 'Text "' is not a subtype of '"
-        ':<>: 'ShowType sup ':<>: 'Text "'."
-        ':$$: 'Text "The following fields are missing from '"
-        ':<>: 'ShowType sub ':<>: 'Text "':"
-        ':$$: ShowSymbols fs
-        )

@@ -24,15 +24,13 @@ module Data.Generics.Internal.VL.Iso where
 
 import Data.Coerce (coerce)
 import Data.Functor.Identity (Identity(..))
-import Data.Profunctor (Profunctor(..))
+import Data.Profunctor
 import GHC.Generics
 import Data.Generics.Internal.GenericN (Rec (..), GenericN (..), Param (..))
 
-data Exchange a b s t = Exchange (s -> a) (b -> t)
+import qualified Data.Generics.Internal.Profunctor.Iso as P
 
-instance Functor (Exchange a b s) where
-  fmap f (Exchange sa bt) = Exchange sa (f . bt)
-  {-# INLINE fmap #-}
+data Exchange a b s t = Exchange (s -> a) (b -> t)
 
 instance Profunctor (Exchange a b) where
   dimap f g (Exchange sa bt) = Exchange (sa . f) (g . bt)
@@ -51,6 +49,10 @@ type Iso s t a b
 fromIso :: Iso s t a b -> Iso b a t s
 fromIso l = withIso l $ \ sa bt -> iso bt sa
 {-# inline fromIso #-}
+
+iso2isovl :: P.Iso s t a b -> Iso s t a b
+iso2isovl _iso = P.withIso _iso iso
+{-# INLINE iso2isovl #-}
 
 -- | Extract the two functions, one from @s -> a@ and
 -- one from @b -> t@ that characterize an 'Iso'.

@@ -39,7 +39,7 @@ import Data.Generics.Internal.VL.Prism
 -- >>> :set -XDataKinds
 -- >>> :set -XDeriveGeneric
 -- >>> import GHC.Generics
--- >>> :m +Data.Generics.Internal.VL.Prism
+-- >>> import Control.Lens
 -- >>> :{
 -- data Animal
 --   = Dog Dog

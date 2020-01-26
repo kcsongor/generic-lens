@@ -22,22 +22,22 @@
 -----------------------------------------------------------------------------
 module Data.Generics.Internal.Profunctor.Lens where
 
-import Data.Profunctor        (Profunctor(..), Strong(..))
+import Data.Profunctor.Indexed        (Profunctor(..), Strong(..))
 import Data.Bifunctor
 import GHC.Generics
 import Data.Generics.Internal.Profunctor.Iso
 
 type Lens s t a b
-  = forall p . (Strong p) => p a b -> p s t
+  = forall p i . (Strong p) => p i a b -> p i s t
 
 type LensLike p s t a b
   = p a b -> p s t
 
 
-ravel :: (ALens a b a b -> ALens a b s t) -> Lens s t a b
+ravel :: (ALens a b i a b -> ALens a b i s t) -> Lens s t a b
 ravel l pab = conv (l idLens) pab
   where
-    conv :: ALens a b s t -> Lens s t a b
+    conv :: ALens a b i s t -> Lens s t a b
     conv (ALens _get _set) = lens _get _set
 
 -- | Setting
@@ -58,7 +58,7 @@ withLensPrim l k =
  case l idLens of
    ALens _get _set -> k _get _set
 
-idLens :: ALens a b a b
+idLens :: ALens a b i a b
 idLens = ALens (fork (const ()) id) snd
 {-# INLINE idLens #-}
 
@@ -114,16 +114,23 @@ lens get _set = dimap get _set . second'
 
 ------------------------------------------------------------------------------
 
-data ALens a b s t = forall c . ALens (s -> (c,a)) ((c, b) -> t)
+data ALens a b i s t = forall c . ALens (s -> (c,a)) ((c, b) -> t)
 
-instance Functor (ALens a b s) where
+instance Functor (ALens a b i s) where
   fmap f (ALens _get _set) = ALens _get (f . _set)
 
 instance Profunctor (ALens a b) where
   dimap f g (ALens get _set) = ALens (get . f) (g . _set)
+  lmap f = dimap f id
+  rmap f = dimap id f
+
+swap :: (a, b) -> (b, a)
+swap (x, y) = (y, x)
 
 instance Strong (ALens a b) where
-  second' (ALens get _set) = ALens get' set' --(bimap id _set . assoc)
+  first' = dimap swap swap . second'
+  {-# INLINE first' #-}
+  second' (ALens get _set) = ALens get' set'
     where
       get' (c, a1) = let (c1, a) = get a1 in ((c, c1), a)
       set' ((c, c1), b) = (c, _set (c1, b))

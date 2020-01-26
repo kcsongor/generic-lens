@@ -22,16 +22,14 @@
 -----------------------------------------------------------------------------
 module Data.Generics.Internal.Profunctor.Iso where
 
-import Data.Profunctor        (Profunctor(..))
-import Data.Profunctor.Unsafe ((#.), (.#))
+import Data.Profunctor.Indexed
 import GHC.Generics           ((:*:)(..), (:+:)(..), Generic(..), M1(..), K1(..), Rep)
-import Data.Coerce
 import Data.Generics.Internal.GenericN (Rec (..))
 
-import qualified Data.Generics.Internal.VL.Iso as VL
+-- import qualified Data.Generics.Internal.VL.Iso as VL
 
 type Iso s t a b
-  = forall p. (Profunctor p) => p a b -> p s t
+  = forall p i. (Profunctor p) => p i a b -> p i s t
 
 type Iso' s a = Iso s s a a
 
@@ -78,10 +76,6 @@ iso :: (s -> a) -> (b -> t) -> Iso s t a b
 iso = dimap
 {-# INLINE iso #-}
 
-iso2isovl :: Iso s t a b -> VL.Iso s t a b
-iso2isovl _iso = withIso _iso VL.iso
-{-# INLINE iso2isovl #-}
-
 withIso :: Iso s t a b -> ((s -> a) -> (b -> t) -> r) -> r
 withIso ai k = case ai (Exchange id id) of
   Exchange sa bt -> k sa bt
@@ -90,22 +84,3 @@ pairing :: Iso s t a b -> Iso s' t' a' b' -> Iso (s, s') (t, t') (a, a') (b, b')
 pairing f g = withIso f $ \ sa bt -> withIso g $ \s'a' b't' ->
   iso (bmap sa s'a') (bmap bt b't')
   where bmap f' g' (a, b) = (f' a, g' b)
-
-data Exchange a b s t = Exchange (s -> a) (b -> t)
-
-instance Functor (Exchange a b s) where
-  fmap f (Exchange sa bt) = Exchange sa (f . bt)
-  {-# INLINE fmap #-}
-
-instance Profunctor (Exchange a b) where
-  dimap f g (Exchange sa bt) = Exchange (sa . f) (g . bt)
-  {-# INLINE dimap #-}
-  lmap f (Exchange sa bt) = Exchange (sa . f) bt
-  {-# INLINE lmap #-}
-  rmap f (Exchange sa bt) = Exchange sa (f . bt)
-  {-# INLINE rmap #-}
-  ( #. ) _ = coerce
-  {-# INLINE ( #. ) #-}
-  ( .# ) p _ = coerce p
-  {-# INLINE ( .# ) #-}
-

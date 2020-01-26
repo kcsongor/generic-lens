@@ -1,3 +1,4 @@
+{-# LANGUAGE PackageImports #-}
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MonoLocalBinds        #-}
@@ -28,12 +29,11 @@ module Data.Generics.Sum.Subtype
     AsSubtype (..)
   ) where
 
-import Data.Generics.Internal.Void
-import Data.Generics.Sum.Internal.Subtype
+import "this" Data.Generics.Internal.VL.Prism
 
-import GHC.Generics (Generic (Rep))
-import Data.Generics.Internal.VL.Prism
-import Data.Generics.Internal.Profunctor.Iso
+import "generic-lens-core" Data.Generics.Internal.Void
+import "generic-lens-core" Data.Generics.Sum.Internal.Subtype
+
 
 -- $setup
 -- == /Running example:/
@@ -42,7 +42,7 @@ import Data.Generics.Internal.Profunctor.Iso
 -- >>> :set -XDataKinds
 -- >>> :set -XDeriveGeneric
 -- >>> import GHC.Generics
--- >>> :m +Data.Generics.Internal.VL.Prism
+-- >>> import Control.Lens
 -- >>> :{
 -- data Animal
 --   = Dog Dog
@@ -104,13 +104,8 @@ class AsSubtype sub sup where
 
   {-# MINIMAL (injectSub, projectSub) | _Sub #-}
 
-instance
-  ( Generic sub
-  , Generic sup
-  , GAsSubtype (Rep sub) (Rep sup)
-  ) => AsSubtype sub sup where
-
-  _Sub f = prismRavel (repIso . _GSub . fromIso repIso) f
+instance Context sub sup => AsSubtype sub sup where
+  _Sub f = prism2prismvl derived f
   {-# INLINE[2] _Sub #-}
 
 -- | Reflexive case
@@ -132,8 +127,7 @@ instance {-# OVERLAPPING #-} AsSubtype a Void where
 -- | See Note [Uncluttering type signatures]
 -- >>> :t _Sub @Int
 -- _Sub @Int
---   :: (AsSubtype Int sup, Data.Profunctor.Choice.Choice p,
---       Applicative f) =>
+--   :: (AsSubtype Int sup, Choice p, Applicative f) =>
 --      p Int (f Int) -> p sup (f sup)
 instance {-# OVERLAPPING #-} AsSubtype Void a where
   injectSub = undefined

@@ -5,7 +5,7 @@
 {-# LANGUAGE NoMonomorphismRestriction #-}
 {-# LANGUAGE TypeApplications          #-}
 
-module Main where
+module Biscuits where
 
 import Control.Lens
 import           Data.Maybe (maybeToList)
@@ -18,9 +18,6 @@ import GHC.Generics (Generic)
 -- >>> :set -XTypeApplications
 -- >>> :set -XDataKinds
 -- >>> :set -XFlexibleContexts
-
-main :: IO ()
-main = putStrLn "hello"
 
 data Item = Item
  { name :: String

@@ -38,7 +38,7 @@ import GHC.TypeLits
 
 import Data.Kind    (Type)
 import GHC.Generics
-import Data.Profunctor
+import Data.Profunctor.Indexed
 import Data.Generics.Internal.Profunctor.Lens
 import Data.Generics.Internal.Profunctor.Iso
 

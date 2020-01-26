@@ -1,3 +1,4 @@
+{-# LANGUAGE PackageImports #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE AllowAmbiguousTypes    #-}
 {-# LANGUAGE DataKinds              #-}
@@ -30,25 +31,17 @@ module Data.Generics.Sum.Typed
     AsType (..)
   ) where
 
-import Data.Kind
-import GHC.Generics
-import GHC.TypeLits (TypeError, ErrorMessage (..), Symbol)
-import Data.Generics.Sum.Internal.Typed
-import Data.Generics.Internal.Errors
+import "this" Data.Generics.Internal.VL.Prism
 
-import Data.Generics.Internal.Families
-import Data.Generics.Internal.Void
-import Data.Generics.Product.Internal.HList
-import Data.Generics.Internal.VL.Prism
-import Data.Generics.Internal.Profunctor.Iso
-import Data.Generics.Internal.Profunctor.Prism (prismPRavel)
+import "generic-lens-core" Data.Generics.Sum.Internal.Typed
+import "generic-lens-core" Data.Generics.Internal.Void
 
 -- $setup
 -- >>> :set -XTypeApplications
 -- >>> :set -XDataKinds
 -- >>> :set -XDeriveGeneric
 -- >>> import GHC.Generics
--- >>> :m +Data.Generics.Internal.VL.Prism
+-- >>> import Control.Lens
 -- >>> :{
 -- data Animal
 --   = Dog Dog
@@ -104,23 +97,14 @@ class AsType a s where
 
   {-# MINIMAL (injectTyped, projectTyped) | _Typed #-}
 
-instance
-  ( Generic s
-  , ErrorUnlessOne a s (CollectPartialType (TupleToList a) (Rep s))
-  , GAsType (Rep s) a
-  , Defined (Rep s)
-    (NoGeneric s '[ 'Text "arising from a generic prism focusing on a constructor of type " ':<>: QuoteType a])
-    (() :: Constraint)
-  ) => AsType a s where
-
-  _Typed eta = prismRavel (prismPRavel (repIso . _GTyped)) eta
+instance Context a s => AsType a s where
+  _Typed eta = prism2prismvl derived eta
   {-# INLINE[2] _Typed #-}
 
 -- | See Note [Uncluttering type signatures]
 -- >>> :t _Typed
 -- _Typed
---   :: (AsType a s, Data.Profunctor.Choice.Choice p, Applicative f) =>
---      p a (f a) -> p s (f s)
+--   :: (AsType a s, Choice p, Applicative f) => p a (f a) -> p s (f s)
 instance {-# OVERLAPPING #-} AsType a Void where
   _Typed = undefined
   injectTyped = undefined
@@ -129,32 +113,10 @@ instance {-# OVERLAPPING #-} AsType a Void where
 -- | See Note [Uncluttering type signatures]
 -- >>> :t _Typed @Int
 -- _Typed @Int
---   :: (AsType Int s, Data.Profunctor.Choice.Choice p,
---       Applicative f) =>
+--   :: (AsType Int s, Choice p, Applicative f) =>
 --      p Int (f Int) -> p s (f s)
 instance {-# OVERLAPPING #-} AsType Void a where
   _Typed = undefined
   injectTyped = undefined
   projectTyped = undefined
 
-type family ErrorUnlessOne (a :: Type) (s :: Type) (ctors :: [Symbol]) :: Constraint where
-  ErrorUnlessOne _ _ '[_]
-    = ()
-
-  ErrorUnlessOne a s '[]
-    = TypeError
-        (     'Text "The type "
-        ':<>: 'ShowType s
-        ':<>: 'Text " does not contain a constructor whose field is of type "
-        ':<>: 'ShowType a
-        )
-
-  ErrorUnlessOne a s cs
-    = TypeError
-        (     'Text "The type "
-        ':<>: 'ShowType s
-        ':<>: 'Text " contains multiple constructors whose fields are of type "
-        ':<>: 'ShowType a ':<>: 'Text "."
-        ':$$: 'Text "The choice of constructor is thus ambiguous, could be any of:"
-        ':$$: ShowSymbols cs
-        )

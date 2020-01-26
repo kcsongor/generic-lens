@@ -23,45 +23,29 @@ flag dump-core
   default:     False
 
 library
-  exposed-modules:    Data.Generics.Wrapped
-                    , Data.Generics.Product
-                    , Data.Generics.Product.Any
-                    , Data.Generics.Product.Fields
-                    , Data.Generics.Product.Param
-                    , Data.Generics.Product.Positions
-                    , Data.Generics.Product.Subtype
-                    , Data.Generics.Product.Typed
-                    , Data.Generics.Product.Types
-                    , Data.Generics.Product.Constraints
-                    , Data.Generics.Product.HList
-                    , Data.Generics.Labels
-                    , Data.Generics.Internal.GenericN
+  exposed-modules:    Data.Generics.Internal.GenericN
 
-                    , Data.Generics.Sum
-                    , Data.Generics.Sum.Any
-                    , Data.Generics.Sum.Constructors
-                    , Data.Generics.Sum.Typed
-                    , Data.Generics.Sum.Subtype
                     , Data.Generics.Internal.Profunctor.Lens
                     , Data.Generics.Internal.Profunctor.Prism
                     , Data.Generics.Internal.Profunctor.Iso
-                    , Data.Generics.Internal.VL.Lens
-                    , Data.Generics.Internal.VL.Traversal
-                    , Data.Generics.Internal.VL.Prism
-                    , Data.Generics.Internal.VL.Iso
 
                     , Data.GenericLens.Internal
 
-  other-modules:      Data.Generics.Internal.Families
+                    , Data.Generics.Internal.Families
                     , Data.Generics.Internal.Families.Changing
                     , Data.Generics.Internal.Families.Collect
                     , Data.Generics.Internal.Families.Has
                     , Data.Generics.Internal.Errors
                     , Data.Generics.Internal.Void
 
+                    , Data.Generics.Internal.Wrapped
+
                     , Data.Generics.Sum.Internal.Constructors
                     , Data.Generics.Sum.Internal.Typed
                     , Data.Generics.Sum.Internal.Subtype
+
+                    , Data.Generics.Product.Internal.Param
+                    , Data.Generics.Product.Internal.Types
 
                     , Data.Generics.Product.Internal.Fields
                     , Data.Generics.Product.Internal.Typed
@@ -69,102 +53,17 @@ library
                     , Data.Generics.Product.Internal.GLens
                     , Data.Generics.Product.Internal.Subtype
 
-                    , Data.Generics.Product.Internal.Constraints
                     , Data.Generics.Product.Internal.HList
 
   build-depends:      base        >= 4.11 && < 5
-                    , profunctors >= 5.0 && < 6.0
-                    , tagged      >= 0.8 && < 1
                     , text        >= 1.2 && < 1.3
+                    , indexed-profunctors >= 0.1 && < 1.0
 
   hs-source-dirs:     src
   default-language:   Haskell2010
   ghc-options:        -Wall
---  if flag(dump-core)
---    build-depends: dump-core
---    ghc-options: -fplugin=DumpCore -fplugin-opt DumpCore:core-html
 
 source-repository head
   type:               git
   location:           https://github.com/kcsongor/generic-lens
 
-test-suite generic-lens-examples
-  type:               exitcode-stdio-1.0
-  hs-source-dirs:     examples
-  main-is:            Biscuits.hs
-
-  build-depends:      base          >= 4.11 && <= 5.0
-                    , generic-lens
-                    , lens
-                    , profunctors
-                    , HUnit
-
-  default-language:   Haskell2010
-
-test-suite generic-lens-test
-  type:               exitcode-stdio-1.0
-  hs-source-dirs:     test
-  main-is:            Spec.hs
-  other-modules:      Util Test24 Test88 Test25 Test40 Test62 Test63 CustomChildren
-
-  build-depends:      base          >= 4.11 && <= 5.0
-                    , generic-lens
-                    , lens
-                    , profunctors
-                    , inspection-testing >= 0.2
-                    , HUnit
-
-  default-language:   Haskell2010
-  ghc-options:        -Wall
-  if flag(dump-core)
-    build-depends: dump-core
-    ghc-options: -fplugin=DumpCore -fplugin-opt DumpCore:core-html
-
-test-suite generic-lens-bifunctor
-  type:               exitcode-stdio-1.0
-  hs-source-dirs:     test
-  main-is:            Bifunctor.hs
-
-  build-depends:      base          >= 4.11 && <= 5.0
-                    , generic-lens
-                    , lens
-                    , HUnit
-
-  default-language:   Haskell2010
-  ghc-options:        -Wall
-  if flag(dump-core)
-    build-depends: dump-core
-    ghc-options: -fplugin=DumpCore -fplugin-opt DumpCore:core-html
-
-test-suite generic-lens-syb-tree
-  type:               exitcode-stdio-1.0
-  hs-source-dirs:     test/syb
-  main-is:            Tree.hs
-
-  build-depends:      base          >= 4.11 && <= 5.0
-                    , generic-lens
-                    , lens
-                    , profunctors
-                    , HUnit
-
-  default-language:   Haskell2010
-  ghc-options:        -Wall
-  if flag(dump-core)
-    build-depends: dump-core
-    ghc-options: -fplugin=DumpCore -fplugin-opt DumpCore:core-html
-
-test-suite doctests
-  default-language:   Haskell2010
-  type:               exitcode-stdio-1.0
-  ghc-options:        -threaded
-  main-is:            doctest.hs
-  build-depends:      base >4 && <5, doctest
-  hs-source-dirs:     test
-
-test-suite examples-doctests
-  default-language:   Haskell2010
-  type:               exitcode-stdio-1.0
-  ghc-options:        -threaded
-  main-is:            doctest.hs
-  build-depends:      base >4 && <5, doctest
-  hs-source-dirs:     examples

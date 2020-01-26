@@ -37,6 +37,7 @@ type Context a s = ( Generic s
 
 derived :: forall a s. Context a s => Lens s s a a
 derived = repIso . glens @(HasTotalTypePSym a)
+{-# INLINE derived #-}
 
 type family ErrorUnlessOne (a :: Type) (s :: Type) (stat :: TypeStat) :: Constraint where
   ErrorUnlessOne a s ('TypeStat '[_] '[] '[])

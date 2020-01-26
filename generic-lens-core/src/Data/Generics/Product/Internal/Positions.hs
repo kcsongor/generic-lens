@@ -1,4 +1,3 @@
-{-# LANGUAGE QuantifiedConstraints #-}
 {-# LANGUAGE TypeInType #-}
 {-# LANGUAGE AllowAmbiguousTypes    #-}
 {-# LANGUAGE ConstraintKinds        #-}
@@ -82,8 +81,6 @@ type Context_ i s t a b =
   ( ErrorUnless i s (0 <? i && i <=? Size (Rep s))
   , UnifyHead s t
   , UnifyHead t s
-  , Coercible (CRep s) (Rep s)
-  , Coercible (CRep t) (Rep t)
   )
 
 type Context0 i s t a b
@@ -102,9 +99,11 @@ type Context0 i s t a b
 
 derived0 :: forall i s t a b. Context0 i s t a b => Lens s t a b
 derived0 = ravel (repIso . coerced @(CRep s) @(CRep t) . glens @(HasTotalPositionPSym i))
+{-# INLINE derived0 #-}
 
 derived' :: forall i s a. Context' i s a => Lens s s a a
 derived' = ravel (repIso . coerced @(CRep s) @(CRep s) . glens @(HasTotalPositionPSym i))
+{-# INLINE derived' #-}
 
 type family ErrorUnless (i :: Nat) (s :: Type) (hasP :: Bool) :: Constraint where
   ErrorUnless i s 'False
@@ -125,8 +124,8 @@ type instance Eval (HasTotalPositionPSym t) tt = HasTotalPositionP t tt
 -- We wouldn't need the universal 'x' here if we could express above that
 -- forall x. Coercible (cs x) (Rep s x), but this requires quantified
 -- constraints
-coerced :: forall s t s' t' x a b. (Coercible t t', Coercible s s')
-        => ALens a b (s x) (t x) -> ALens a b (s' x) (t' x)
+coerced :: forall s t s' t' x a b i. (Coercible t t', Coercible s s')
+        => ALens a b i (s x) (t x) -> ALens a b i (s' x) (t' x)
 coerced = coerce
 {-# INLINE coerced #-}
 

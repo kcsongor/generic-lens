@@ -1,3 +1,4 @@
+{-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE AllowAmbiguousTypes   #-}
 {-# LANGUAGE DataKinds             #-}
 {-# LANGUAGE FlexibleContexts      #-}
@@ -24,16 +25,57 @@
 -----------------------------------------------------------------------------
 
 module Data.Generics.Sum.Internal.Typed
-  ( GAsType (..)
+  ( Context
+  , derived
+  , GAsType (..)
   ) where
 
 import Data.Kind
 import GHC.Generics
 
+import GHC.TypeLits (TypeError, ErrorMessage (..), Symbol)
+import Data.Generics.Internal.Errors
 import Data.Generics.Internal.Families
 import Data.Generics.Product.Internal.HList
 import Data.Generics.Internal.Profunctor.Iso
 import Data.Generics.Internal.Profunctor.Prism
+
+type Context a s
+  = ( Generic s
+    , ErrorUnlessOne a s (CollectPartialType (TupleToList a) (Rep s))
+    , GAsType (Rep s) a
+    , Defined (Rep s)
+      (NoGeneric s '[ 'Text "arising from a generic prism focusing on a constructor of type " ':<>: QuoteType a])
+      (() :: Constraint)
+    )
+
+derived :: Context a s => Prism' s a
+derived = prismPRavel (repIso . _GTyped)
+{-# INLINE derived #-}
+
+type family ErrorUnlessOne (a :: Type) (s :: Type) (ctors :: [Symbol]) :: Constraint where
+  ErrorUnlessOne _ _ '[_]
+    = ()
+
+  ErrorUnlessOne a s '[]
+    = TypeError
+        (     'Text "The type "
+        ':<>: 'ShowType s
+        ':<>: 'Text " does not contain a constructor whose field is of type "
+        ':<>: 'ShowType a
+        )
+
+  ErrorUnlessOne a s cs
+    = TypeError
+        (     'Text "The type "
+        ':<>: 'ShowType s
+        ':<>: 'Text " contains multiple constructors whose fields are of type "
+        ':<>: 'ShowType a ':<>: 'Text "."
+        ':$$: 'Text "The choice of constructor is thus ambiguous, could be any of:"
+        ':$$: ShowSymbols cs
+        )
+
+-------------------------------------------------------------------------------- 
 
 -- |As 'AsType' but over generic representations as defined by "GHC.Generics".
 class GAsType (f :: Type -> Type) (as :: Type) where

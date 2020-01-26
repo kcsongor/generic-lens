@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE AllowAmbiguousTypes    #-}
 {-# LANGUAGE ConstraintKinds        #-}
 {-# LANGUAGE DataKinds              #-}
@@ -27,15 +28,80 @@
 module Data.Generics.Sum.Internal.Constructors
   ( GAsConstructor (..)
   , GAsConstructor'
+
+  , Context'
+  , Context
+  , Context_
+  , Context0
+
+  , derived0
   ) where
 
 import Data.Generics.Internal.Families
+import Data.Generics.Internal.Errors
 import Data.Generics.Product.Internal.HList
 
 import GHC.Generics
 import GHC.TypeLits (Symbol)
+import Data.Kind (Constraint, Type)
 import Data.Generics.Internal.Profunctor.Iso
 import Data.Generics.Internal.Profunctor.Prism
+
+import GHC.TypeLits (TypeError, ErrorMessage (..))
+
+derived0 :: forall ctor s t a b. Context0 ctor s t a b => Prism s t a b
+derived0 = prismPRavel (repIso . _GCtor @ctor)
+{-# INLINE derived0 #-}
+
+type Context' ctor s a
+  = ( Context0 ctor s s a a
+    , ErrorUnless ctor s (HasCtorP ctor (Rep s)))
+
+class Context (ctor :: Symbol) s t a b | ctor s -> a, ctor t -> b
+instance
+  ( ErrorUnless ctor s (HasCtorP ctor (Rep s))
+  , GAsConstructor' ctor (Rep s) a -- TODO: add a test similar to #62 for prisms
+  , GAsConstructor' ctor (Rep (Indexed s)) a'
+  , GAsConstructor ctor (Rep s) (Rep t) a b
+  , t ~ Infer s a' b
+  , GAsConstructor' ctor (Rep (Indexed t)) b'
+  , s ~ Infer t b' a
+  ) => Context ctor s t a b
+
+class Context_ (ctor :: Symbol) s t a b
+instance
+  ( ErrorUnless ctor s (HasCtorP ctor (Rep s))
+  , GAsConstructor' ctor (Rep s) a -- TODO: add a test similar to #62 for prisms
+  , GAsConstructor' ctor (Rep (Indexed s)) a'
+  , GAsConstructor ctor (Rep s) (Rep t) a b
+  , GAsConstructor' ctor (Rep (Indexed t)) b'
+  , UnifyHead s t
+  , UnifyHead t s
+  ) => Context_ ctor s t a b
+
+type Context0 ctor s t a b
+  = ( Generic s
+    , Generic t
+    , GAsConstructor ctor (Rep s) (Rep t) a b
+    , Defined (Rep s)
+      (NoGeneric s '[ 'Text "arising from a generic prism focusing on the "
+                      ':<>: QuoteType ctor ':<>: 'Text " constructor of type " ':<>: QuoteType a
+                    , 'Text "in " ':<>: QuoteType s])
+      (() :: Constraint)
+    ) 
+
+type family ErrorUnless (ctor :: Symbol) (s :: Type) (contains :: Bool) :: Constraint where
+  ErrorUnless ctor s 'False
+    = TypeError
+        (     'Text "The type "
+        ':<>: 'ShowType s
+        ':<>: 'Text " does not contain a constructor named "
+        ':<>: 'ShowType ctor
+        )
+
+  ErrorUnless _ _ 'True
+    = ()
+--------------------------------------------------------------------------------
 
 -- |As 'AsConstructor' but over generic representations as defined by
 --  "GHC.Generics".

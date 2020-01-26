@@ -27,8 +27,8 @@ module Data.Generics.Product.HList
 import Data.Generics.Product.Internal.HList
 import Data.Kind
 import GHC.Generics
-import Data.Generics.Internal.VL.Iso (Iso)
-import Data.Generics.Internal.Profunctor.Iso (repIso, iso2isovl)
+import Data.Generics.Internal.VL.Iso (Iso, iso2isovl)
+import Data.Generics.Internal.Profunctor.Iso (repIso)
 
 class IsList
   (f :: Type)

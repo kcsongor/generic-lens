@@ -52,14 +52,14 @@ set l x = l .~ x
 over :: ((a -> Identity b) -> s -> Identity t) -> (a -> b) -> s -> t
 over = coerce
 
-lens2lensvl :: ALens a b s t -> Lens s t a b
+lens2lensvl :: ALens a b i s t -> Lens s t a b
 lens2lensvl (ALens _get _set) =
   \f x ->
     case _get x of
       (c, a) -> _set . (c, ) <$> f a
 {-# INLINE lens2lensvl #-}
 
-ravel :: (ALens a b a b -> ALens a b s t)
+ravel :: (ALens a b i a b -> ALens a b i s t)
       ->  Lens s t a b
 ravel l pab = (lens2lensvl $ l idLens) pab
 

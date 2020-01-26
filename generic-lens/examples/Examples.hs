@@ -59,18 +59,15 @@ data MyRecord = MyRecord { field1 :: Int, field2 :: String } deriving Generic
 
 data Test a b = Test { fieldInt :: Int, fieldA :: a, fieldB :: b } deriving (Generic, Show)
 
--- changedA :: Test Int String
+-- | changedA :: Test Int String
 -- >>> changedA
 -- Test {fieldInt = 10, fieldA = 10, fieldB = "world"}
 changedA = Test 10 "hello" "world" & field @"fieldA" .~ (10 :: Int)
 
--- changedB :: Test String Int
+-- | changedB :: Test String Int
 -- >>> changedB
 -- Test {fieldInt = 10, fieldA = "hello", fieldB = 10}
 changedB = (Test 10 "hello" "world") & field @"fieldB" .~ (10 :: Int)
-
---changedInt = set (field @"fieldInt") ("hello") (Test 10 "hello" "world")
--- type error
 
 data Animal2 a
   = Dog (Dog a)
@@ -100,7 +97,9 @@ dog = Dog (MkDog "Shep" 3 30)
 --   }
 --   deriving (Generic, Show)
 
---dog' :: Animal2 String
+-- |
+-- >>> :t dog'
+-- dog' :: Animal2 [Char]
 dog' = dog & _Ctor @"Dog" . field @"fieldA" .~ "now it's a String"
 
 stuff ::

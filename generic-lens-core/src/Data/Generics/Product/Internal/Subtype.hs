@@ -1,3 +1,4 @@
+{-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE TypeInType #-}
 {-# LANGUAGE AllowAmbiguousTypes       #-}
 {-# LANGUAGE DataKinds                 #-}
@@ -27,8 +28,9 @@
 -----------------------------------------------------------------------------
 
 module Data.Generics.Product.Internal.Subtype
-  ( GUpcast (..)
-  , GSmash (..)
+  ( Context
+  , gsmash
+  , gupcast
   ) where
 
 import Data.Generics.Internal.Families
@@ -38,6 +40,49 @@ import Data.Kind (Type)
 import GHC.Generics
 import GHC.TypeLits (Symbol)
 import Data.Generics.Internal.Profunctor.Lens (view)
+
+import GHC.Generics (Generic (Rep))
+import GHC.TypeLits (TypeError, ErrorMessage (..))
+import Data.Kind (Constraint)
+import Data.Generics.Internal.Errors
+
+type Context a b
+  = ( Generic a
+    , Generic b
+    , GSmash (Rep a) (Rep b)
+    , GUpcast (Rep a) (Rep b)
+    , CustomError a b
+    )
+
+type family CustomError a b :: Constraint where
+  CustomError a b =
+    ( ErrorUnless b a (CollectFieldsOrdered (Rep b) \\ CollectFieldsOrdered (Rep a))
+    , Defined (Rep a)
+      (NoGeneric a '[ 'Text "arising from a generic lens focusing on " ':<>: QuoteType b
+                    , 'Text "as a supertype of " ':<>: QuoteType a
+                    ])
+      (() :: Constraint)
+    , Defined (Rep b)
+      (NoGeneric b '[ 'Text "arising from a generic lens focusing on " ':<>: QuoteType b
+                    , 'Text "as a supertype of " ':<>: QuoteType a
+                    ])
+      (() :: Constraint)
+    )
+
+type family ErrorUnless (sup :: Type) (sub :: Type) (diff :: [Symbol]) :: Constraint where
+  ErrorUnless _ _ '[]
+    = ()
+
+  ErrorUnless sup sub fs
+    = TypeError
+        (     'Text "The type '"
+        ':<>: 'ShowType sub
+        ':<>: 'Text "' is not a subtype of '"
+        ':<>: 'ShowType sup ':<>: 'Text "'."
+        ':$$: 'Text "The following fields are missing from '"
+        ':<>: 'ShowType sub ':<>: 'Text "':"
+        ':$$: ShowSymbols fs
+        )
 
 --------------------------------------------------------------------------------
 -- * Generic upcasting

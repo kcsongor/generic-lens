@@ -23,32 +23,16 @@
 -----------------------------------------------------------------------------
 module Data.Generics.Internal.VL.Traversal where
 
-import Data.Kind (Constraint)
-
 -- | Type alias for traversal
 type Traversal' s a
   = forall f. Applicative f => (a -> f a) -> s -> f s
 
-type TraversalC (c :: * -> * -> Constraint) s t
-  = forall f. Applicative f => (forall a b. c a b => a -> f b) -> s -> f t
-
-type TraversalC' (c :: * -> Constraint) s
-  = forall f. Applicative f => (forall a. c a => a -> f a) -> s -> f s
-
 type Traversal s t a b
   = forall f. Applicative f => (a -> f b) -> s -> f t
-
-type LensLikeC c f s
-  = (forall a. c a => a -> f a) -> s -> f s
 
 confusing :: Applicative f => Traversal s t a b -> (a -> f b) -> s -> f t
 confusing t = \f -> lowerYoneda . lowerCurried . t (liftCurriedYoneda . f)
 {-# INLINE confusing #-}
-
--- fuse constrained traversals
-confusingC :: forall c f s. Applicative f => TraversalC' c s -> LensLikeC c f s
-confusingC t = \f -> lowerYoneda . lowerCurried . t (liftCurriedYoneda . f)
-{-# INLINE confusingC #-}
 
 liftCurriedYoneda :: Applicative f => f a -> Curried (Yoneda f) a
 liftCurriedYoneda fa = Curried (`yap` fa)

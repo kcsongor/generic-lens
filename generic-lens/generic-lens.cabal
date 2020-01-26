@@ -1,0 +1,106 @@
+name:                 generic-lens
+version:              2.0.0.0
+synopsis:             Generically derive traversals, lenses and prisms.
+description:          This library uses GHC.Generics to derive efficient optics (traversals, lenses and prisms) for algebraic data types in a type-directed way, with a focus on good type inference and error messages when possible.
+
+homepage:             https://github.com/kcsongor/generic-lens
+license:              BSD3
+license-file:         LICENSE
+author:               Csongor Kiss
+maintainer:           kiss.csongor.kiss@gmail.com
+category:             Generics, Records, Lens
+build-type:           Simple
+cabal-version:        >= 1.10
+Tested-With:          GHC == 8.4.1, GHC == 8.4.4, GHC == 8.6.5, GHC == 8.8.1
+
+extra-source-files:   ChangeLog.md
+                    , examples/StarWars.hs
+                    , examples/Examples.hs
+                    , README.md
+
+library
+  exposed-modules:    Data.Generics.Wrapped
+                    , Data.Generics.Product
+                    , Data.Generics.Product.Any
+                    , Data.Generics.Product.Fields
+                    , Data.Generics.Product.Param
+                    , Data.Generics.Product.Positions
+                    , Data.Generics.Product.Subtype
+                    , Data.Generics.Product.Typed
+                    , Data.Generics.Product.Types
+                    , Data.Generics.Product.HList
+                    , Data.Generics.Labels
+
+                    , Data.Generics.Sum
+                    , Data.Generics.Sum.Any
+                    , Data.Generics.Sum.Constructors
+                    , Data.Generics.Sum.Typed
+                    , Data.Generics.Sum.Subtype
+
+                    , Data.Generics.Internal.VL
+                    , Data.Generics.Internal.VL.Lens
+                    , Data.Generics.Internal.VL.Traversal
+                    , Data.Generics.Internal.VL.Prism
+                    , Data.Generics.Internal.VL.Iso
+
+
+  build-depends:      base        >= 4.11 && < 5
+                    , generic-lens-core == 2.0.0.0
+                    , indexed-profunctors >= 0.1 && < 1.0
+                    , profunctors
+                    , text >= 1.2.3.1
+
+  hs-source-dirs:     src
+  default-language:   Haskell2010
+  ghc-options:        -Wall
+
+test-suite inspection-tests
+  type:               exitcode-stdio-1.0
+  hs-source-dirs:     test
+  main-is:            Spec.hs
+  other-modules:      Util Test24 Test88 Test25 Test40 Test62 Test63 CustomChildren
+
+  build-depends:      base          >= 4.11 && <= 5.0
+                    , generic-lens
+                    , lens
+                    , profunctors
+                    , inspection-testing >= 0.2
+                    , HUnit
+
+  default-language:   Haskell2010
+  ghc-options:        -Wall
+
+test-suite generic-lens-bifunctor
+  type:               exitcode-stdio-1.0
+  hs-source-dirs:     test
+  main-is:            Bifunctor.hs
+
+  build-depends:      base          >= 4.11 && <= 5.0
+                    , generic-lens
+                    , lens
+                    , HUnit
+
+  default-language:   Haskell2010
+  ghc-options:        -Wall
+
+test-suite generic-lens-syb-tree
+  type:               exitcode-stdio-1.0
+  hs-source-dirs:     test/syb
+  main-is:            Tree.hs
+
+  build-depends:      base          >= 4.11 && <= 5.0
+                    , generic-lens
+                    , lens
+                    , profunctors
+                    , HUnit
+
+  default-language:   Haskell2010
+  ghc-options:        -Wall
+
+test-suite doctests
+  default-language:   Haskell2010
+  type:               exitcode-stdio-1.0
+  ghc-options:        -threaded
+  main-is:            doctest.hs
+  build-depends:      base >4 && <5, doctest
+  hs-source-dirs:     examples
