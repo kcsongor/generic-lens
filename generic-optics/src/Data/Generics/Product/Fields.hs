@@ -38,8 +38,7 @@ module Data.Generics.Product.Fields
   , setField
   ) where
 
-import Optics.Core
-import Optics.Internal.Optic
+import "this" Data.Generics.Internal.Optics
 
 import "generic-lens-core" Data.Generics.Internal.Void
 import "generic-lens-core" Data.Generics.Product.Internal.Fields
@@ -146,9 +145,11 @@ setField = set (field' @f)
 
 instance Context' field s a => HasField' field s a where
   field' = field0 @field
+  {-# INLINE field' #-}
 
 instance (Context field s t a b , HasField0 field s t a b) => HasField field s t a b where
   field = field0 @field
+  {-# INLINE field #-}
 
 -- instance {-# OVERLAPPING #-} HasField' field s a => HasField field s s a a where
 --   field f s = field' @field f s
@@ -164,10 +165,11 @@ instance {-# OVERLAPPING #-} HasField' f (Void1 a) a where
 
 instance (Context_ field s t a b , HasField0 field s t a b) => HasField_ field s t a b where
   field_ = field0 @field
+  {-# INLINE field_ #-}
 
 instance {-# OVERLAPPING #-} HasField_ f (Void1 a) (Void1 b) a b where
   field_ = undefined
 
 instance Context0 field s t a b => HasField0 field s t a b where
-  field0 = Optic (derived @field)
+  field0 = normaliseLens (Optic (derived @field))
   {-# INLINE field0 #-}

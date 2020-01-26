@@ -99,7 +99,7 @@ class HasType a s where
   {-# MINIMAL typed | setTyped, getTyped #-}
 
 instance Context a s => HasType a s where
-  typed f s = VL.ravel derived f s
+  typed = VL.ravel derived
   {-# INLINE typed #-}
 
 instance {-# OVERLAPPING #-} HasType a a where

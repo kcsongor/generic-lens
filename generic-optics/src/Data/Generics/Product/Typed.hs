@@ -28,6 +28,7 @@ module Data.Generics.Product.Typed
 
 import Optics.Core
 import Optics.Internal.Optic
+import "this" Data.Generics.Internal.Optics
 
 import "generic-lens-core" Data.Generics.Product.Internal.Typed (Context, derived)
 import "generic-lens-core" Data.Generics.Internal.Void
@@ -99,7 +100,7 @@ class HasType a s where
   {-# MINIMAL typed | setTyped, getTyped #-}
 
 instance Context a s => HasType a s where
-  typed = Optic derived
+  typed = normaliseLens (Optic derived)
   {-# INLINE typed #-}
 
 instance {-# OVERLAPPING #-} HasType a a where

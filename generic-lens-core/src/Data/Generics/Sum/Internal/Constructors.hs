@@ -50,7 +50,7 @@ import Data.Generics.Internal.Profunctor.Prism
 import GHC.TypeLits (TypeError, ErrorMessage (..))
 
 derived0 :: forall ctor s t a b. Context0 ctor s t a b => Prism s t a b
-derived0 = prismPRavel (repIso . _GCtor @ctor)
+derived0 = repIso . _GCtor @ctor
 {-# INLINE derived0 #-}
 
 type Context' ctor s a
@@ -116,23 +116,23 @@ instance
   ) => GAsConstructor ctor (M1 C ('MetaCons ctor fixity fields) f) (M1 C ('MetaCons ctor fixity fields) g) a b where
 
   _GCtor = mIso . glist . tupled
-  {-# INLINE[0] _GCtor #-}
+  {-# INLINE _GCtor #-}
 
 instance GSumAsConstructor ctor (HasCtorP ctor l) l r l' r' a b => GAsConstructor ctor (l :+: r) (l' :+: r') a b where
   _GCtor = _GSumCtor @ctor @(HasCtorP ctor l)
-  {-# INLINE[0] _GCtor #-}
+  {-# INLINE _GCtor #-}
 
 instance GAsConstructor ctor f f' a b => GAsConstructor ctor (M1 D meta f) (M1 D meta f') a b where
   _GCtor = mIso . _GCtor @ctor
-  {-# INLINE[0] _GCtor #-}
+  {-# INLINE _GCtor #-}
 
 class GSumAsConstructor (ctor :: Symbol) (contains :: Bool) l r l' r' a b | ctor l r -> a, ctor l' r' -> b where
   _GSumCtor :: Prism ((l :+: r) x) ((l' :+: r') x) a b
 
 instance GAsConstructor ctor l l' a b => GSumAsConstructor ctor 'True l r l' r a b where
   _GSumCtor = left . _GCtor @ctor
-  {-# INLINE[0] _GSumCtor #-}
+  {-# INLINE _GSumCtor #-}
 
 instance GAsConstructor ctor r r' a b => GSumAsConstructor ctor 'False l r l r' a b where
   _GSumCtor = right . _GCtor @ctor
-  {-# INLINE[0] _GSumCtor #-}
+  {-# INLINE _GSumCtor #-}

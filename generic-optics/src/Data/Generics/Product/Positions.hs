@@ -42,8 +42,7 @@ module Data.Generics.Product.Positions
   , setPosition
   ) where
 
-import Optics.Core
-import Optics.Internal.Optic
+import "this" Data.Generics.Internal.Optics
 
 import "generic-lens-core" Data.Generics.Internal.Void
 import "generic-lens-core" Data.Generics.Product.Internal.Positions
@@ -141,5 +140,5 @@ instance {-# OVERLAPPING #-} HasPosition_ f (Void1 a) (Void1 b) a b where
   position_ = undefined
 
 instance Context0 i s t a b => HasPosition0 i s t a b where
-  position0 = Optic (derived0 @i)
+  position0 = normaliseLens (Optic (derived0 @i))
   {-# INLINE position0 #-}

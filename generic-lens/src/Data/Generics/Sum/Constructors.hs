@@ -123,11 +123,11 @@ class AsConstructor0 (ctor :: Symbol) s t a b where
 
 instance (Context' ctor s a, AsConstructor0 ctor s t a b) => AsConstructor' ctor s a where
   _Ctor' eta = _Ctor0 @ctor eta
-  {-# INLINE[2] _Ctor' #-}
+  {-# INLINE _Ctor' #-}
 
 instance (Context ctor s t a b, AsConstructor0 ctor s t a b) => AsConstructor ctor s t a b where
   _Ctor eta = _Ctor0 @ctor eta
-  {-# INLINE[2] _Ctor #-}
+  {-# INLINE _Ctor #-}
 
 -- | See Note [Uncluttering type signatures]
 -- >>> :t _Ctor
@@ -139,12 +139,12 @@ instance {-# OVERLAPPING #-} AsConstructor ctor (Void1 a) (Void1 b) a b where
 
 instance (Context_ ctor s t a b, AsConstructor0 ctor s t a b) => AsConstructor_ ctor s t a b where
   _Ctor_ = _Ctor0 @ctor
-  {-# INLINE[2] _Ctor_ #-}
+  {-# INLINE _Ctor_ #-}
 
 instance {-# OVERLAPPING #-} AsConstructor_ ctor (Void1 a) (Void1 b) a b where
   _Ctor_ = undefined
 
 instance Context0 ctor s t a b => AsConstructor0 ctor s t a b where
   _Ctor0 eta = prism2prismvl (derived0 @ctor) eta
-  {-# INLINE[2] _Ctor0 #-}
+  {-# INLINE _Ctor0 #-}
 

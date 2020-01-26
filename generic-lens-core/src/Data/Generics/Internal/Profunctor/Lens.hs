@@ -28,7 +28,7 @@ import GHC.Generics
 import Data.Generics.Internal.Profunctor.Iso
 
 type Lens s t a b
-  = forall p i . (Strong p) => p i a b -> p i s t
+  = forall p i . Strong p => p i a b -> p i s t
 
 type LensLike p s t a b
   = p a b -> p s t

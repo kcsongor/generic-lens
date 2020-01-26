@@ -1,7 +1,9 @@
+{-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -O -fplugin Test.Inspection.Plugin #-}
 {-# OPTIONS_GHC -dsuppress-all #-}
 
 {-# LANGUAGE AllowAmbiguousTypes             #-}
+{-# LANGUAGE CPP                             #-}
 {-# LANGUAGE DataKinds                       #-}
 {-# LANGUAGE DeriveGeneric                   #-}
 {-# LANGUAGE DuplicateRecordFields           #-}
@@ -22,14 +24,12 @@ import Test.HUnit
 import Util
 import System.Exit
 import Optics.Core
-import Optics.Operators
 
 -- This is sufficient at we only want to test that they typecheck
 import Test24 ()
 import Test25 ()
-import Test88 ()
 
-import CustomChildren (customTypesTest)
+-- import CustomChildren (customTypesTest)
 
 main :: IO ()
 main = do
@@ -67,7 +67,7 @@ data Record5 = MkRecord5
   } deriving Generic
 
 typeChangingManual :: Lens (Record3 a) (Record3 b) a b
-typeChangingManual = lens (\(MkRecord3 a b) -> a) (\(MkRecord3 _ b) a' -> MkRecord3 a' b)
+typeChangingManual = lens (\(MkRecord3 a _) -> a) (\(MkRecord3 _ b) a' -> MkRecord3 a' b)
 
 typeChangingManualCompose :: Lens (Record3 (Record3 a)) (Record3 (Record3 b)) a b
 typeChangingManualCompose = typeChangingManual % typeChangingManual
@@ -75,20 +75,18 @@ typeChangingManualCompose = typeChangingManual % typeChangingManual
 newtype L s a = L (Lens' s a)
 
 intTraversalManual :: Traversal' Record5 Int
-intTraversalManual = traversalVL (\f (MkRecord5 a b c d e f') ->
-    pure (\a1 a2 a3 a4 -> MkRecord5 a1 a2 c a3 e a4) <*> f a <*> f b <*> f d <*> f f')
+intTraversalManual = traversalVL $ \f (MkRecord5 a b c d e f') ->
+    pure (\a1 a2 a3 a4 -> MkRecord5 a1 a2 c a3 e a4) <*> f a <*> f b <*> f d <*> f f'
 
 intTraversalDerived :: Traversal' Record5 Int
 intTraversalDerived = types
 
 fieldALensManual :: Lens' Record Int
-fieldALensManual = lens (\(MkRecord a b) -> a) (\(MkRecord _ b) a' -> MkRecord a' b)
+fieldALensManual =
+    lens (\(MkRecord a _) -> a) $ \(MkRecord _ b) x -> MkRecord x b
 
--- subtypeLensManual :: Lens' Record Record2
--- subtypeLensManual f record
---   = fmap (\ds -> case record of
---                   MkRecord _ b -> MkRecord (case ds of {MkRecord2 g1 -> g1}) b
---          ) (f (MkRecord2 (case record of {MkRecord a _ -> a})))
+subtypeLensManual :: Lens' Record Record2
+subtypeLensManual = lens (\(MkRecord a _) -> MkRecord2 a) (\(MkRecord _ b) (MkRecord2 a) -> MkRecord a b)
 
 data Sum1 = A Char | B Int | C () | D () deriving (Generic, Show)
 data Sum2 = A2 Char | B2 Int deriving (Generic, Show)
@@ -102,26 +100,29 @@ data Sum3 a b c
 sum3Param0Derived :: Traversal (Sum3 a b xxx) (Sum3 a b yyy) xxx yyy
 sum3Param0Derived = param @0
 
--- sum3Param0Manual :: Traversal (Sum3 a b xxx) (Sum3 a b yyy) xxx yyy
--- sum3Param0Manual _ (A3 a1 a2)         = pure (A3 a1 a2)
--- sum3Param0Manual _ (B3 s b1 a1 a2 b2) = pure (B3 s b1 a1 a2 b2)
--- sum3Param0Manual f (C3 c a i)         = pure (\c' -> C3 c' a i) <*> f c
+sum3Param0Manual :: Traversal (Sum3 a b xxx) (Sum3 a b yyy) xxx yyy
+sum3Param0Manual = traversalVL go where
+    go _ (A3 a1 a2)         = pure (A3 a1 a2)
+    go _ (B3 s b1 a1 a2 b2) = pure (B3 s b1 a1 a2 b2)
+    go f (C3 c a i)         = pure (\c' -> C3 c' a i) <*> f c
 
 sum3Param1Derived :: Traversal (Sum3 a xxx c) (Sum3 a yyy c) xxx yyy
 sum3Param1Derived = param @1
 
--- sum3Param1Manual :: Traversal (Sum3 a xxx c) (Sum3 a yyy c) xxx yyy
--- sum3Param1Manual _ (A3 a1 a2)         = pure (A3 a1 a2)
--- sum3Param1Manual f (B3 s b1 a1 a2 b2) = pure (\b1' b2' -> B3 s b1' a1 a2 b2') <*> f b1 <*> f b2
--- sum3Param1Manual _ (C3 c a i)         = pure (C3 c a i)
+sum3Param1Manual :: Traversal (Sum3 a xxx c) (Sum3 a yyy c) xxx yyy
+sum3Param1Manual = traversalVL go where
+    go _ (A3 a1 a2)         = pure (A3 a1 a2)
+    go f (B3 s b1 a1 a2 b2) = pure (\b1' b2' -> B3 s b1' a1 a2 b2') <*> f b1 <*> f b2
+    go _ (C3 c a i)         = pure (C3 c a i)
 
 sum3Param2Derived :: Traversal (Sum3 xxx b c) (Sum3 yyy b c) xxx yyy
 sum3Param2Derived = param @2
 
--- sum3Param2Manual :: Traversal (Sum3 xxx b c) (Sum3 yyy b c) xxx yyy
--- sum3Param2Manual f (A3 a1 a2)         = pure (\a1' a2' -> A3 a1' a2') <*> f a1 <*> f a2
--- sum3Param2Manual f (B3 s b1 a1 a2 b2) = pure (\a1' a2' -> B3 s b1 a1' a2' b2) <*> f a1 <*> f a2
--- sum3Param2Manual f (C3 c a i)         = pure (\a' -> C3 c a' i) <*> f a
+sum3Param2Manual :: Traversal (Sum3 xxx b c) (Sum3 yyy b c) xxx yyy
+sum3Param2Manual = traversalVL go where
+    go f (A3 a1 a2)         = pure (\a1' a2' -> A3 a1' a2') <*> f a1 <*> f a2
+    go f (B3 s b1 a1 a2 b2) = pure (\a1' a2' -> B3 s b1 a1' a2' b2) <*> f a1 <*> f a2
+    go f (C3 c a i)         = pure (\a' -> C3 c a' i) <*> f a
 
 sum1PrismManual :: Prism Sum1 Sum1 Int Int
 sum1PrismManual = prism g f
@@ -234,12 +235,12 @@ data SumOfProducts =
 
 tests :: Test
 tests = TestList $ map mkHUnitTest
-  [ $(inspectTest $ 'fieldALensManual          === 'fieldALensName)
+  [$(inspectTest $ 'fieldALensManual          === 'fieldALensName)
   , $(inspectTest $ 'fieldALensManual          === 'fieldALensName_)
   , $(inspectTest $ 'fieldALensManual          === 'fieldALensType)
   , $(inspectTest $ 'fieldALensManual          === 'fieldALensPos)
   , $(inspectTest $ 'fieldALensManual          === 'fieldALensPos_)
-  -- , $(inspectTest $ 'subtypeLensManual         === 'subtypeLensGeneric)
+  , $(inspectTest $ 'subtypeLensManual         === 'subtypeLensGeneric)
   , $(inspectTest $ 'typeChangingManual        === 'typeChangingGeneric)
   , $(inspectTest $ 'typeChangingManual        === 'typeChangingGenericPos)
   , $(inspectTest $ 'typeChangingManualCompose === 'typeChangingGenericCompose)
@@ -251,20 +252,4 @@ tests = TestList $ map mkHUnitTest
   , $(inspectTest $ 'sum1PrismManualChar       === 'sum1TypePrismChar)
   , $(inspectTest $ 'sum2PrismManualChar       === 'sum2TypePrismChar)
   , $(inspectTest $ 'sum1PrismManual           === 'sum1TypePrism)
-  --, $(inspectTest $ 'intTraversalManual        === 'intTraversalDerived)
-  --, $(inspectTest $ 'sum3Param0Manual          === 'sum3Param0Derived)
-  -- TODO [1.0.0.0]: these tests pass with the new implementation
---  , $(inspectTest $ 'sum3Param1Manual          === 'sum3Param1Derived)
---  , $(inspectTest $ 'sum3Param2Manual          === 'sum3Param2Derived)
-  ]
-  -- Tests for overloaded labels
-  -- [ (valLabel ^. #_foo        ) ~=?  3
-  -- , (valLabel &  #_foo +~ 10  ) ~=? RecB 13 True
-  -- , (valLabel ^? #_RecB       ) ~=? Just (3, True)
-  -- , (valLabel ^? #_RecB % _1  ) ~=? Just 3
-  -- , (valLabel ^? #_RecC       ) ~=? Nothing
-  -- , customTypesTest
-  -- ]
-  -- where valLabel = RecB 3 True 
-
--- TODO: add test for traversals over multiple types
+  ] -- TODO: test traversals

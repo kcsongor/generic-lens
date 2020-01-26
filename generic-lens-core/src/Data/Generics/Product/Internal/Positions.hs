@@ -98,11 +98,11 @@ type Context0 i s t a b
     )
 
 derived0 :: forall i s t a b. Context0 i s t a b => Lens s t a b
-derived0 = ravel (repIso . coerced @(CRep s) @(CRep t) . glens @(HasTotalPositionPSym i))
+derived0 = (repIso . coerced @(CRep s) @(CRep t) . glens @(HasTotalPositionPSym i))
 {-# INLINE derived0 #-}
 
 derived' :: forall i s a. Context' i s a => Lens s s a a
-derived' = ravel (repIso . coerced @(CRep s) @(CRep s) . glens @(HasTotalPositionPSym i))
+derived' = (repIso . coerced @(CRep s) @(CRep s) . glens @(HasTotalPositionPSym i))
 {-# INLINE derived' #-}
 
 type family ErrorUnless (i :: Nat) (s :: Type) (hasP :: Bool) :: Constraint where
@@ -124,9 +124,9 @@ type instance Eval (HasTotalPositionPSym t) tt = HasTotalPositionP t tt
 -- We wouldn't need the universal 'x' here if we could express above that
 -- forall x. Coercible (cs x) (Rep s x), but this requires quantified
 -- constraints
-coerced :: forall s t s' t' x a b i. (Coercible t t', Coercible s s')
-        => ALens a b i (s x) (t x) -> ALens a b i (s' x) (t' x)
-coerced = coerce
+coerced :: forall s t s' t' x. (Coercible t t', Coercible s s')
+        => Iso (s' x) (t' x) (s x) (t x)
+coerced = iso coerce coerce
 {-# INLINE coerced #-}
 
 --------------------------------------------------------------------------------  

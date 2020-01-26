@@ -31,8 +31,7 @@ module Data.Generics.Sum.Typed
     AsType (..)
   ) where
 
-import Optics.Core
-import Optics.Internal.Optic
+import "this" Data.Generics.Internal.Optics
 
 import "generic-lens-core" Data.Generics.Sum.Internal.Typed
 import "generic-lens-core" Data.Generics.Internal.Void
@@ -84,7 +83,7 @@ class AsType a s where
   --  ...
   _Typed :: Prism' s a
   _Typed = prism injectTyped (\i -> maybe (Left i) Right (projectTyped i))
-  {-# INLINE[2] _Typed #-}
+  {-# INLINE _Typed #-}
 
   -- |Inject by type.
   injectTyped :: a -> s
@@ -99,8 +98,8 @@ class AsType a s where
   {-# MINIMAL (injectTyped, projectTyped) | _Typed #-}
 
 instance Context a s => AsType a s where
-  _Typed = Optic derived
-  {-# INLINE[2] _Typed #-}
+  _Typed = normalisePrism (Optic derived)
+  {-# INLINE _Typed #-}
 
 -- | See Note [Uncluttering type signatures]
 -- >>> :t _Typed

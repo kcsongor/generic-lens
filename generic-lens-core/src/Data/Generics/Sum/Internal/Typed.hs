@@ -50,7 +50,7 @@ type Context a s
     )
 
 derived :: Context a s => Prism' s a
-derived = prismPRavel (repIso . _GTyped)
+derived = repIso . _GTyped
 {-# INLINE derived #-}
 
 type family ErrorUnlessOne (a :: Type) (s :: Type) (ctors :: [Symbol]) :: Constraint where
@@ -86,23 +86,23 @@ instance
   , ListTuple a a as as
   ) => GAsType (M1 C meta f) a where
   _GTyped = mIso . glist . tupled
-  {-# INLINE[0] _GTyped #-}
+  {-# INLINE _GTyped #-}
 
 instance GSumAsType (HasPartialTypeP (TupleToList a) l) l r a => GAsType (l :+: r) a where
   _GTyped = _GSumTyped @(HasPartialTypeP (TupleToList a) l)
-  {-# INLINE[0] _GTyped #-}
+  {-# INLINE _GTyped #-}
 
 instance GAsType f a => GAsType (M1 D meta f) a where
   _GTyped = mIso . _GTyped
-  {-# INLINE[0] _GTyped #-}
+  {-# INLINE _GTyped #-}
 
 class GSumAsType (contains :: Bool) l r (a :: Type) where
   _GSumTyped :: Prism ((l :+: r) x) ((l :+: r) x) a a
 
 instance GAsType l a => GSumAsType 'True l r a where
   _GSumTyped = left . _GTyped
-  {-# INLINE[0] _GSumTyped #-}
+  {-# INLINE _GSumTyped #-}
 
 instance GAsType r a => GSumAsType 'False l r a where
   _GSumTyped = right . _GTyped
-  {-# INLINE[0] _GSumTyped #-}
+  {-# INLINE _GSumTyped #-}

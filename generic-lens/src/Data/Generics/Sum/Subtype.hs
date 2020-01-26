@@ -90,7 +90,7 @@ class AsSubtype sub sup where
   --  Nothing
   _Sub :: Prism' sup sub
   _Sub = prism injectSub (\i -> maybe (Left i) Right (projectSub i))
-  {-# INLINE[2] _Sub #-}
+  {-# INLINE _Sub #-}
 
   -- |Injects a subtype into a supertype (upcast).
   injectSub  :: sub -> sup
@@ -106,14 +106,14 @@ class AsSubtype sub sup where
 
 instance Context sub sup => AsSubtype sub sup where
   _Sub f = prism2prismvl derived f
-  {-# INLINE[2] _Sub #-}
+  {-# INLINE _Sub #-}
 
 -- | Reflexive case
 --  >>> _Sub # dog :: Animal
 --  Dog (MkDog {name = "Shep", age = 3})
 instance {-# OVERLAPPING #-} AsSubtype a a where
   _Sub = id
-  {-# INLINE[2] _Sub #-}
+  {-# INLINE _Sub #-}
 
 -- | See Note [Uncluttering type signatures]
 --_Sub

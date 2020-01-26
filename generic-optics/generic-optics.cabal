@@ -37,10 +37,11 @@ library
                     , Data.Generics.Sum.Typed
                     , Data.Generics.Sum.Subtype
 
+  other-modules:      Data.Generics.Internal.Optics
 
   build-depends:      base        >= 4.11 && < 5
                     , generic-lens-core == 2.0.0.0
-                    , optics-core >= 0.2 && < 1.
+                    , optics-core >= 0.2 && < 1.0
                     , text >= 1.2.3.1
 
   hs-source-dirs:     src

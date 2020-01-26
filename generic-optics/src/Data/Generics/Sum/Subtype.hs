@@ -29,8 +29,7 @@ module Data.Generics.Sum.Subtype
     AsSubtype (..)
   ) where
 
-import Optics.Core
-import Optics.Internal.Optic
+import "this" Data.Generics.Internal.Optics
 
 import "generic-lens-core" Data.Generics.Internal.Void
 import "generic-lens-core" Data.Generics.Sum.Internal.Subtype
@@ -91,7 +90,7 @@ class AsSubtype sub sup where
   --  Nothing
   _Sub :: Prism' sup sub
   _Sub = prism injectSub (\i -> maybe (Left i) Right (projectSub i))
-  {-# INLINE[2] _Sub #-}
+  {-# INLINE _Sub #-}
 
   -- |Injects a subtype into a supertype (upcast).
   injectSub  :: sub -> sup
@@ -106,15 +105,15 @@ class AsSubtype sub sup where
   {-# MINIMAL (injectSub, projectSub) | _Sub #-}
 
 instance Context sub sup => AsSubtype sub sup where
-  _Sub = Optic derived
-  {-# INLINE[2] _Sub #-}
+  _Sub = normalisePrism (Optic derived)
+  {-# INLINE _Sub #-}
 
 -- | Reflexive case
 --  >>> _Sub # dog :: Animal
 --  Dog (MkDog {name = "Shep", age = 3})
 instance {-# OVERLAPPING #-} AsSubtype a a where
   _Sub = Optic id
-  {-# INLINE[2] _Sub #-}
+  {-# INLINE _Sub #-}
 
 -- | See Note [Uncluttering type signatures]
 --_Sub

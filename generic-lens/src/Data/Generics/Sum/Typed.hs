@@ -83,7 +83,7 @@ class AsType a s where
   --  ...
   _Typed :: Prism' s a
   _Typed = prism injectTyped (\i -> maybe (Left i) Right (projectTyped i))
-  {-# INLINE[2] _Typed #-}
+  {-# INLINE _Typed #-}
 
   -- |Inject by type.
   injectTyped :: a -> s
@@ -99,7 +99,7 @@ class AsType a s where
 
 instance Context a s => AsType a s where
   _Typed eta = prism2prismvl derived eta
-  {-# INLINE[2] _Typed #-}
+  {-# INLINE _Typed #-}
 
 -- | See Note [Uncluttering type signatures]
 -- >>> :t _Typed

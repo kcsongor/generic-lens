@@ -29,7 +29,7 @@ module Data.Generics.Sum.Any
     AsAny (..)
   ) where
 
-import Optics.Prism
+import "this" Data.Generics.Internal.Optics
 import "this" Data.Generics.Sum.Constructors
 import "this" Data.Generics.Sum.Typed
 
