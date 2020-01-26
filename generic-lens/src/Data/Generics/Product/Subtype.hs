@@ -1,3 +1,4 @@
+{-# LANGUAGE PackageImports #-}
 {-# LANGUAGE AllowAmbiguousTypes       #-}
 {-# LANGUAGE DataKinds                 #-}
 {-# LANGUAGE FlexibleContexts          #-}
@@ -33,9 +34,10 @@ module Data.Generics.Product.Subtype
   ) where
 
 
-import Data.Generics.Internal.VL.Lens as VL
-import Data.Generics.Internal.Void
-import Data.Generics.Product.Internal.Subtype
+import "this" Data.Generics.Internal.VL.Lens as VL
+
+import "generic-lens-core" Data.Generics.Internal.Void
+import "generic-lens-core" Data.Generics.Product.Internal.Subtype
 
 import GHC.Generics (Generic (to, from) )
 

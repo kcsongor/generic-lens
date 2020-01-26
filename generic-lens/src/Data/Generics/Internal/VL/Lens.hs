@@ -1,4 +1,5 @@
 {-# OPTIONS_HADDOCK hide #-}
+{-# LANGUAGE PackageImports #-}
 {-# LANGUAGE GADTs                     #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
 {-# LANGUAGE Rank2Types                #-}
@@ -22,10 +23,11 @@
 -----------------------------------------------------------------------------
 module Data.Generics.Internal.VL.Lens where
 
+import "generic-lens-core" Data.Generics.Internal.Profunctor.Lens (ALens (..), idLens)
+
 import Control.Applicative    (Const(..))
 import Data.Coerce            (coerce)
 import Data.Functor.Identity  (Identity(..))
-import Data.Generics.Internal.Profunctor.Lens (ALens (..), idLens)
 
 -- | Type alias for lens
 type Lens' s a

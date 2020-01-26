@@ -1,3 +1,4 @@
+{-# LANGUAGE PackageImports #-}
 {-# LANGUAGE AllowAmbiguousTypes     #-}
 {-# LANGUAGE ConstraintKinds         #-}
 {-# LANGUAGE DataKinds               #-}
@@ -37,11 +38,12 @@ module Data.Generics.Product.Fields
   , setField
   ) where
 
-import Data.Generics.Internal.VL.Lens as VL
-import Data.Generics.Internal.Void
+import "this" Data.Generics.Internal.VL.Lens as VL
+
+import "generic-lens-core" Data.Generics.Internal.Void
+import "generic-lens-core" Data.Generics.Product.Internal.Fields
 
 import GHC.TypeLits (Symbol)
-import Data.Generics.Product.Internal.Fields
 
 -- $setup
 -- == /Running example:/

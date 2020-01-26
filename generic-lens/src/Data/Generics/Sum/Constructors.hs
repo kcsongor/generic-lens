@@ -1,3 +1,4 @@
+{-# LANGUAGE PackageImports #-}
 {-# LANGUAGE AllowAmbiguousTypes    #-}
 {-# LANGUAGE DataKinds              #-}
 {-# LANGUAGE FlexibleInstances      #-}
@@ -34,12 +35,12 @@ module Data.Generics.Sum.Constructors
   , AsConstructor0 (..)
   ) where
 
+import "this" Data.Generics.Internal.VL.Prism
 
-import Data.Generics.Internal.Void
-import Data.Generics.Sum.Internal.Constructors
+import "generic-lens-core" Data.Generics.Internal.Void
+import "generic-lens-core" Data.Generics.Sum.Internal.Constructors
 
 import GHC.TypeLits (Symbol)
-import Data.Generics.Internal.VL.Prism
 
 
 -- $setup

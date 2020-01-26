@@ -1,3 +1,5 @@
+{-# LANGUAGE PackageImports #-}
+
 module Data.Generics.Internal.VL
   ( module Lens
   , module Iso
@@ -5,8 +7,8 @@ module Data.Generics.Internal.VL
   , module Traversal
   ) where
 
-import Data.Generics.Internal.VL.Lens      as Lens
-import Data.Generics.Internal.VL.Iso       as Iso
-import Data.Generics.Internal.VL.Prism     as Prism
-import Data.Generics.Internal.VL.Traversal as Traversal
+import "this" Data.Generics.Internal.VL.Lens      as Lens
+import "this" Data.Generics.Internal.VL.Iso       as Iso
+import "this" Data.Generics.Internal.VL.Prism     as Prism
+import "this" Data.Generics.Internal.VL.Traversal as Traversal
 

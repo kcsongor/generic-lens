@@ -1,3 +1,4 @@
+{-# LANGUAGE PackageImports #-}
 {-# LANGUAGE AllowAmbiguousTypes    #-}
 {-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE FunctionalDependencies #-}
@@ -28,9 +29,9 @@ module Data.Generics.Sum.Any
     AsAny (..)
   ) where
 
-import Data.Generics.Sum.Constructors
-import Data.Generics.Sum.Typed
-import Data.Generics.Internal.VL.Prism
+import "this" Data.Generics.Internal.VL.Prism
+import "this" Data.Generics.Sum.Constructors
+import "this" Data.Generics.Sum.Typed
 
 -- $setup
 -- == /Running example:/

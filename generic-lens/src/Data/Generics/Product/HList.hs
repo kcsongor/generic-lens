@@ -1,3 +1,4 @@
+{-# LANGUAGE PackageImports #-}
 {-# LANGUAGE AllowAmbiguousTypes    #-}
 {-# LANGUAGE FlexibleContexts       #-}
 {-# LANGUAGE FlexibleInstances      #-}
@@ -24,11 +25,13 @@ module Data.Generics.Product.HList
   ( IsList (..)
   ) where
 
-import Data.Generics.Product.Internal.HList
+import "this" Data.Generics.Internal.VL.Iso (Iso, iso2isovl)
+
+import "generic-lens-core" Data.Generics.Internal.Profunctor.Iso (repIso)
+import "generic-lens-core" Data.Generics.Product.Internal.HList
+
 import Data.Kind
 import GHC.Generics
-import Data.Generics.Internal.VL.Iso (Iso, iso2isovl)
-import Data.Generics.Internal.Profunctor.Iso (repIso)
 
 class IsList
   (f :: Type)

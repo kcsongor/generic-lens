@@ -1,3 +1,4 @@
+{-# LANGUAGE PackageImports #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
@@ -25,9 +26,10 @@ module Data.Generics.Product.Typed
     HasType (..)
   ) where
 
-import Data.Generics.Product.Internal.Typed (Context, derived)
-import Data.Generics.Internal.VL.Lens as VL
-import Data.Generics.Internal.Void
+import "this" Data.Generics.Internal.VL.Lens as VL
+
+import "generic-lens-core" Data.Generics.Product.Internal.Typed (Context, derived)
+import "generic-lens-core" Data.Generics.Internal.Void
 
 -- $setup
 -- == /Running example:/

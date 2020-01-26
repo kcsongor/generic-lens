@@ -1,3 +1,4 @@
+{-# LANGUAGE PackageImports #-}
 {-# LANGUAGE TypeInType #-}
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# LANGUAGE AllowAmbiguousTypes    #-}
@@ -41,9 +42,10 @@ module Data.Generics.Product.Positions
   , setPosition
   ) where
 
-import Data.Generics.Internal.VL.Lens as VL
-import Data.Generics.Internal.Void
-import Data.Generics.Product.Internal.Positions
+import "this" Data.Generics.Internal.VL.Lens as VL
+
+import "generic-lens-core" Data.Generics.Internal.Void
+import "generic-lens-core" Data.Generics.Product.Internal.Positions
 
 import GHC.TypeLits   (Nat)
 

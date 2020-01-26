@@ -1,3 +1,4 @@
+{-# LANGUAGE PackageImports #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE TypeApplications #-}
 {-# language ConstraintKinds #-}
@@ -33,10 +34,12 @@ module Data.Generics.Wrapped
   )
 where
 
+import qualified "this" Data.Generics.Internal.VL.Iso as VL
+
+import "generic-lens-core" Data.Generics.Internal.Wrapped (Context, derived)
+
 import Control.Applicative    (Const(..))
 
-import qualified Data.Generics.Internal.VL.Iso as VL
-import Data.Generics.Internal.Wrapped (Context, derived)
 
 -- | @since 1.1.0.0
 _Unwrapped :: Wrapped s t a b => VL.Iso s t a b

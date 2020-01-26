@@ -1,3 +1,4 @@
+{-# LANGUAGE PackageImports #-}
 {-# LANGUAGE AllowAmbiguousTypes    #-}
 {-# LANGUAGE ConstraintKinds        #-}
 {-# LANGUAGE DataKinds              #-}
@@ -34,10 +35,11 @@ module Data.Generics.Labels
   , Constructor'
   ) where
 
-import Data.Generics.Product
-import Data.Generics.Sum
-import Data.Generics.Internal.VL.Lens  (Lens)
-import Data.Generics.Internal.VL.Prism (Prism)
+import "this" Data.Generics.Product
+import "this" Data.Generics.Sum
+
+import "this" Data.Generics.Internal.VL.Lens  (Lens)
+import "this" Data.Generics.Internal.VL.Prism (Prism)
 
 import Data.Profunctor    (Choice)
 import Data.Type.Bool     (type (&&))

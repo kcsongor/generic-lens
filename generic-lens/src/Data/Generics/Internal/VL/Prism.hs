@@ -1,4 +1,5 @@
 {-# OPTIONS_HADDOCK hide #-}
+{-# LANGUAGE PackageImports #-}
 {-# LANGUAGE GADTs                     #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
 {-# LANGUAGE Rank2Types                #-}
@@ -21,9 +22,10 @@
 -----------------------------------------------------------------------------
 module Data.Generics.Internal.VL.Prism where
 
-import Data.Functor.Identity (Identity (..))
-import qualified Data.Generics.Internal.Profunctor.Prism as P
+import qualified "generic-lens-core" Data.Generics.Internal.Profunctor.Prism as P
+
 import qualified Data.Profunctor as P
+import Data.Functor.Identity (Identity (..))
 import Data.Coerce (coerce)
 
 -- | Type alias for prism
