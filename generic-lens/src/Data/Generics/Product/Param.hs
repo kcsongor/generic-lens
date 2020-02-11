@@ -33,10 +33,10 @@ module Data.Generics.Product.Param
   , Param (..)
   ) where
 
-import "this" Data.Generics.Internal.VL.Traversal
 import "this" Data.Generics.Internal.VL.Iso
 import "this" Data.Generics.Product.Types
 
+import "generic-lens-core" Data.Generics.Internal.VL.Traversal
 import qualified "generic-lens-core" Data.Generics.Product.Internal.Param as Core
 import "generic-lens-core" Data.Generics.Internal.GenericN
 import "generic-lens-core" Data.Generics.Internal.Void

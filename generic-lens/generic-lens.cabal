@@ -37,9 +37,11 @@ library
 
                     , Data.Generics.Internal.VL
                     , Data.Generics.Internal.VL.Lens
-                    , Data.Generics.Internal.VL.Traversal
                     , Data.Generics.Internal.VL.Prism
                     , Data.Generics.Internal.VL.Iso
+
+  reexported-modules:
+                      generic-lens-core:Data.Generics.Internal.VL.Traversal
 
 
   build-depends:      base        >= 4.11 && < 5

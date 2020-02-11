@@ -259,9 +259,8 @@ tests = TestList $ map mkHUnitTest
   , $(inspectTest $ 'sum1PrismManualChar       === 'sum1TypePrismChar)
   , $(inspectTest $ 'sum2PrismManualChar       === 'sum2TypePrismChar)
   , $(inspectTest $ 'sum1PrismManual           === 'sum1TypePrism)
-  -- TODO(2.0.0.0): use 'confusing' on the traversals to fuse these properly
-  -- , $(inspectTest $ 'intTraversalManual        === 'intTraversalDerived)
-  -- , $(inspectTest $ 'sum3Param0Manual          === 'sum3Param0Derived)
-  -- , $(inspectTest $ 'sum3Param1Manual          === 'sum3Param1Derived)
-  -- , $(inspectTest $ 'sum3Param2Manual          === 'sum3Param2Derived)
-  ] -- TODO: test traversals
+  , $(inspectTest $ 'intTraversalManual        === 'intTraversalDerived)
+  , $(inspectTest $ 'sum3Param0Manual          === 'sum3Param0Derived)
+  , $(inspectTest $ 'sum3Param1Manual          === 'sum3Param1Derived)
+  , $(inspectTest $ 'sum3Param2Manual          === 'sum3Param2Derived)
+  ]

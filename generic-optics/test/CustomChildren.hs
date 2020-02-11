@@ -38,7 +38,7 @@ type family ChildrenCustom (a :: Type) where
 
 -- We define the traversal of Opaque like so:
 instance HasTypesCustom Custom Opaque Opaque String String where
-  typesCustom = traversalVL (\f (Opaque str) -> Opaque <$> f str)
+  typesCustom f (Opaque str) = Opaque <$> f str
 
 customTypesTest1 :: Test
 customTypesTest1

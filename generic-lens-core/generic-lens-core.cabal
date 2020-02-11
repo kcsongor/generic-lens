@@ -22,6 +22,8 @@ library
                     , Data.Generics.Internal.Profunctor.Prism
                     , Data.Generics.Internal.Profunctor.Iso
 
+                    , Data.Generics.Internal.VL.Traversal
+
                     , Data.GenericLens.Internal
 
                     , Data.Generics.Internal.Families

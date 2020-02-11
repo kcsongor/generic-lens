@@ -10,5 +10,5 @@ module Data.Generics.Internal.VL
 import "this" Data.Generics.Internal.VL.Lens      as Lens
 import "this" Data.Generics.Internal.VL.Iso       as Iso
 import "this" Data.Generics.Internal.VL.Prism     as Prism
-import "this" Data.Generics.Internal.VL.Traversal as Traversal
+import "generic-lens-core" Data.Generics.Internal.VL.Traversal as Traversal
 

@@ -33,9 +33,10 @@ module Data.Generics.Product.Param
   , Param (..)
   ) where
 
-import Optics.Core
+import Data.Generics.Internal.Optics
 import "this" Data.Generics.Product.Types
 
+import qualified "generic-lens-core" Data.Generics.Internal.VL.Traversal as VL
 import qualified "generic-lens-core" Data.Generics.Product.Internal.Param as Core
 import "generic-lens-core" Data.Generics.Internal.GenericN
 import "generic-lens-core" Data.Generics.Internal.Void
@@ -50,14 +51,16 @@ instance
   , GHasTypes ChGeneric (RepN s) (RepN t) (Param n a) (Param n b)
   ) => HasParam n s t a b where
 
-  param = {-TODO: confusing-} (repIsoN % (gtypes_ @ChGeneric) % paramIso @n)
+  param = traversalVL (VL.confusing (repIsoN . (gtypes_ @ChGeneric) . paramIso @n))
   {-# INLINE param #-}
 
-repIsoN :: (GenericN a, GenericN b) => Iso a b (RepN a x) (RepN b x)
-repIsoN = iso fromN toN
+-- this could be an iso but since we're operating on a VL traversal it's easier this way.
+repIsoN :: (GenericN a, GenericN b) => VL.Traversal a b (RepN a x) (RepN b x)
+repIsoN f a = toN <$> f (fromN a)
 
-paramIso :: Iso (Param n a) (Param n b) a b
-paramIso = iso getStarParam StarParam
+-- this could be an iso but since we're operating on a VL traversal it's easier this way.
+paramIso :: VL.Traversal (Param n a) (Param n b) a b
+paramIso f a = StarParam <$> f (getStarParam a)
 
 instance {-# OVERLAPPING #-} HasParam p (Void1 a) (Void1 b) a b where
   param = undefined
