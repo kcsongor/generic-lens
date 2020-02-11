@@ -266,9 +266,8 @@ tests = TestList $ map mkHUnitTest
   [ (valLabel ^. #_foo        ) ~=?  3
   , (valLabel &  #_foo +~ 10  ) ~=? RecB 13 True
   , (valLabel ^? #_RecB . _1  ) ~=? Just 3
-  -- TODO(2.0.0.0): work these out before the release
-  -- , (valLabel ^? #_RecB       ) ~=? Just (3, True)
-  -- , (valLabel ^? #_RecC       ) ~=? Nothing
+  , (valLabel ^? #_RecB       ) ~=? Just (3, True)
+  , (valLabel ^? #_RecC       ) ~=? Nothing
   , customTypesTest
   ]
   where valLabel = RecB 3 True 

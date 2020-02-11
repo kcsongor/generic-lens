@@ -120,7 +120,7 @@ class AsConstructor' (ctor :: Symbol) s a | ctor s -> a where
 class AsConstructor0 (ctor :: Symbol) s t a b where
   _Ctor0 :: Prism s t a b
 
-instance (Core.Context' ctor s a, AsConstructor0 ctor s t a b) => AsConstructor' ctor s a where
+instance (Core.Context' ctor s a, AsConstructor0 ctor s s a a) => AsConstructor' ctor s a where
   _Ctor' = _Ctor0 @ctor
   {-# INLINE _Ctor' #-}
 
