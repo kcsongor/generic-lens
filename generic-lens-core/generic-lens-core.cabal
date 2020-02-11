@@ -10,7 +10,7 @@ author:               Csongor Kiss
 maintainer:           kiss.csongor.kiss@gmail.com
 category:             Generics, Records, Lens
 build-type:           Simple
-cabal-version:        >= 1.22
+cabal-version:        >= 1.10
 Tested-With:          GHC == 8.4.1, GHC == 8.4.4, GHC == 8.6.5, GHC == 8.8.1, GHC == 8.10.1
 
 extra-source-files:   ChangeLog.md

@@ -40,10 +40,6 @@ library
                     , Data.Generics.Internal.VL.Prism
                     , Data.Generics.Internal.VL.Iso
 
-  reexported-modules:
-                      generic-lens-core:Data.Generics.Internal.VL.Traversal
-
-
   build-depends:      base        >= 4.11 && < 5
                     , generic-lens-core == 2.0.0.0
                     , indexed-profunctors >= 0.1 && < 1.0
