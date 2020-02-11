@@ -15,6 +15,7 @@ Tested-With:          GHC == 8.4.1, GHC == 8.4.4, GHC == 8.6.5, GHC == 8.8.1, GH
 
 extra-source-files:   examples/StarWars.hs
                     , examples/Examples.hs
+                    , ChangeLog.md
 
 library
   exposed-modules:    Data.Generics.Wrapped
