@@ -23,9 +23,7 @@ import Test.Inspection
 import Test.HUnit
 import Util
 import System.Exit
-import Data.Generics.Internal.VL.Lens
-import Data.Generics.Internal.VL.Prism
-import Data.Generics.Internal.VL.Traversal
+import Data.Generics.Internal.VL
 import Control.Lens (_1, (+~), (^?))
 import Data.Function ((&))
 import Data.Generics.Labels ()

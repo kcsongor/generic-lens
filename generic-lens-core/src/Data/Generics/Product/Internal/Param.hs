@@ -1,3 +1,7 @@
+{-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE TypeFamilies #-}
@@ -5,7 +9,13 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE DataKinds #-}
 
-module Data.Generics.Product.Internal.Param where
+module Data.Generics.Product.Internal.Param
+  ( Context
+  , derived
+  ) where
+
+import Data.Generics.Product.Internal.Types
+import Data.Generics.Internal.VL.Traversal
 
 import GHC.Generics
 import Data.Kind
@@ -29,7 +39,19 @@ type Context n s t a b
      , Error ((ArgCount s) <=? n) n (ArgCount s) s
      , a ~ ArgAt s n
      , b ~ ArgAt t n
+     , GHasTypes ChGeneric (RepN s) (RepN t) (Param n a) (Param n b)
      )
+
+derived :: forall n s t a b. Context n s t a b => Traversal s t a b
+derived = repIsoN . gtypes_ @ChGeneric . paramIso @n
+
+-- this could be an iso but since we're operating on a VL traversal it's easier this way.
+repIsoN :: (GenericN a, GenericN b) => Traversal a b (RepN a x) (RepN b x)
+repIsoN f a = toN <$> f (fromN a)
+
+-- this could be an iso but since we're operating on a VL traversal it's easier this way.
+paramIso :: Traversal (Param n a) (Param n b) a b
+paramIso f a = StarParam <$> f (getStarParam a)
 
 type family Error (b :: Bool) (expected :: Nat) (actual :: Nat) (s :: Type) :: Constraint where
   Error 'False _ _ _

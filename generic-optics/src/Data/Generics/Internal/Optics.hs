@@ -1,3 +1,4 @@
+{-# OPTIONS_HADDOCK hide #-}
 module Data.Generics.Internal.Optics
   ( module Optics.Core
   , module Optics.Internal.Optic

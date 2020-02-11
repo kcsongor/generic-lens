@@ -43,9 +43,6 @@ module Data.Generics.Product.Types
   , typesUsing
 
   , Core.HasTypesCustom (typesCustom)
-
-  , Core.GHasTypes (..)
-  , Core.typesUsing_
   ) where
 
 import qualified "generic-lens-core" Data.Generics.Internal.VL.Traversal as VL

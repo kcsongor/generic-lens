@@ -44,9 +44,6 @@ module Data.Generics.Product.Types
   , typesUsing
 
   , Core.HasTypesCustom (typesCustom)
-
-  , Core.GHasTypes (..)
-  , Core.typesUsing_
   ) where
 
 import Data.Generics.Internal.Optics hiding (to, QuoteType)
