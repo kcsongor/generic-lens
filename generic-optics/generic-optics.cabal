@@ -2,6 +2,9 @@ name:                 generic-optics
 version:              2.0.0.0
 synopsis:             Generically derive traversals, lenses and prisms.
 description:          This library uses GHC.Generics to derive efficient optics (traversals, lenses and prisms) for algebraic data types in a type-directed way, with a focus on good type inference and error messages when possible.
+                      .
+                      The library exposes an @<https://hackage.haskell.org/package/optics optics>@ interface. For a van Laarhoven interface, see
+                      @<https://hackage.haskell.org/package/generic-lens generic-lens>@.
 
 homepage:             https://github.com/kcsongor/generic-lens
 license:              BSD3
