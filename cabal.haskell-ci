@@ -1,5 +1,1 @@
--- inspection tests fail
-tests: <8.6
-
--- blocked on vector-th-unbox
-benchmarks: <8.8
+doctest: True

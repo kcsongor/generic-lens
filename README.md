@@ -297,30 +297,6 @@ instance Functor (WTree a) where
   fmap = over (param @0)
 ```
 
-### By constraint
-The most general type of traversal: we can apply a given function to every
-value in a structure, by requiring that all values have an instance for some
-type class.
-
-```haskell
-constraints   :: HasConstraints c s t => Applicative g => (forall a b . c a b => a -> g b) -> s -> g t
-constraints'  :: HasConstraints' c s  => Applicative g => (forall a . c a => a -> g a) -> s -> g s
-```
-
-Consider the `Numbers` type, which contains three different numeric types:
-```haskell
-data Numbers = Numbers Int Float Double
-  deriving (Show, Generic)
-
-numbers = Numbers 10 20.0 30.0
-```
-
-With `constraints'`, we can uniformly add 20 to each number in one go:
-```haskell
->>> constraints' @Num (\x -> pure (x + 20)) numbers
-Numbers 30 40.0 50.0
-```
-
 ## Prisms
 
 A prism focuses on one part of a sum type (which might not be present). Other
