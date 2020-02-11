@@ -41,7 +41,7 @@ module Data.Generics.Product.Fields
 import "this" Data.Generics.Internal.VL.Lens as VL
 
 import "generic-lens-core" Data.Generics.Internal.Void
-import "generic-lens-core" Data.Generics.Product.Internal.Fields
+import qualified "generic-lens-core" Data.Generics.Product.Internal.Fields as Core
 
 import GHC.TypeLits (Symbol)
 
@@ -145,10 +145,10 @@ getField = VL.view (field' @f)
 setField :: forall f s a. HasField' f s a => a -> s -> s
 setField = VL.set (field' @f)
 
-instance Context' field s a => HasField' field s a where
+instance Core.Context' field s a => HasField' field s a where
   field' f s = field0 @field f s
 
-instance (Context field s t a b , HasField0 field s t a b) => HasField field s t a b where
+instance (Core.Context field s t a b , HasField0 field s t a b) => HasField field s t a b where
   field f s = field0 @field f s
 
 -- instance {-# OVERLAPPING #-} HasField' field s a => HasField field s s a a where
@@ -164,12 +164,12 @@ instance {-# OVERLAPPING #-} HasField f (Void1 a) (Void1 b) a b where
 instance {-# OVERLAPPING #-} HasField' f (Void1 a) a where
   field' = undefined
 
-instance (Context_ field s t a b , HasField0 field s t a b) => HasField_ field s t a b where
+instance (Core.Context_ field s t a b , HasField0 field s t a b) => HasField_ field s t a b where
   field_ f s = field0 @field f s
 
 instance {-# OVERLAPPING #-} HasField_ f (Void1 a) (Void1 b) a b where
   field_ = undefined
 
-instance Context0 field s t a b => HasField0 field s t a b where
-  field0 = VL.ravel (derived @field)
+instance Core.Context0 field s t a b => HasField0 field s t a b where
+  field0 = VL.ravel (Core.derived @field)
   {-# INLINE field0 #-}

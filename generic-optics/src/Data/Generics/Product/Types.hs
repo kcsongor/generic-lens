@@ -37,8 +37,8 @@ module Data.Generics.Product.Types
 
     -- * Custom traversal strategies
     -- $custom
-  , Children
-  , ChGeneric
+  , Core.Children
+  , Core.ChGeneric
 
   , HasTypesUsing
   , typesUsing
@@ -52,7 +52,7 @@ module Data.Generics.Product.Types
 import Optics.Core hiding (to)
 
 import "generic-lens-core" Data.Generics.Internal.Errors
-import "generic-lens-core" Data.Generics.Product.Internal.Types
+import qualified "generic-lens-core" Data.Generics.Product.Internal.Types as Core
 
 import Data.Kind
 import GHC.Generics
@@ -103,9 +103,9 @@ class HasTypes s a where
   {-# INLINE types_ #-}
 
 instance
-  ( HasTypesUsing ChGeneric s s a a
+  ( HasTypesUsing Core.ChGeneric s s a a
   ) => HasTypes s a where
-  types_ = typesUsing_ @ChGeneric
+  types_ = typesUsing_ @Core.ChGeneric
   {-# INLINE types_ #-}
 
 --------------------------------------------------------------------------------
@@ -156,9 +156,9 @@ class HasTypesUsing (ch :: Type) s t a b where
   typesUsing_ :: Traversal s t a b
 
 instance {-# OVERLAPPABLE #-}
-  ( HasTypesOpt ch (Interesting ch a s) s t a b
+  ( HasTypesOpt ch (Core.Interesting ch a s) s t a b
   ) => HasTypesUsing ch s t a b where
-  typesUsing_ = typesOpt @ch @(Interesting ch a s)
+  typesUsing_ = typesOpt @ch @(Core.Interesting ch a s)
   {-# INLINE typesUsing_ #-}
 
 instance {-# OVERLAPPABLE #-} HasTypesUsing ch a b a b where
@@ -249,7 +249,7 @@ instance {-# INCOHERENT #-} HasTypesUsing ch s t a b => GHasTypes ch (Rec0 s) (R
 -- However, there might be overlapping instances defined for
 -- 'HasTypes' directly, in which case we want to prefer those
 -- instances (even though the custom instances should always be added to 'HasTypesCustom')
-instance {-# OVERLAPPING #-} HasTypes b a => GHasTypes ChGeneric (Rec0 b) (Rec0 b) a a where
+instance {-# OVERLAPPING #-} HasTypes b a => GHasTypes Core.ChGeneric (Rec0 b) (Rec0 b) a a where
   gtypes_ = traversalVL (\f (K1 x) -> K1 <$> traverseOf (types_ @b @a) f x)
   {-# INLINE gtypes_ #-}
 

@@ -28,7 +28,7 @@ module Data.Generics.Product.Typed
 
 import "this" Data.Generics.Internal.VL.Lens as VL
 
-import "generic-lens-core" Data.Generics.Product.Internal.Typed (Context, derived)
+import qualified "generic-lens-core" Data.Generics.Product.Internal.Typed as Core
 import "generic-lens-core" Data.Generics.Internal.Void
 
 -- $setup
@@ -98,8 +98,8 @@ class HasType a s where
 
   {-# MINIMAL typed | setTyped, getTyped #-}
 
-instance Context a s => HasType a s where
-  typed = VL.ravel derived
+instance Core.Context a s => HasType a s where
+  typed = VL.ravel Core.derived
   {-# INLINE typed #-}
 
 instance {-# OVERLAPPING #-} HasType a a where

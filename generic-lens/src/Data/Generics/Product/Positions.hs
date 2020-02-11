@@ -45,7 +45,7 @@ module Data.Generics.Product.Positions
 import "this" Data.Generics.Internal.VL.Lens as VL
 
 import "generic-lens-core" Data.Generics.Internal.Void
-import "generic-lens-core" Data.Generics.Product.Internal.Positions
+import qualified "generic-lens-core" Data.Generics.Product.Internal.Positions as Core
 
 import GHC.TypeLits   (Nat)
 
@@ -120,11 +120,11 @@ getPosition s = s ^. position' @i
 setPosition :: forall i s a. HasPosition' i s a => a -> s -> s
 setPosition = VL.set (position' @i)
 
-instance Context' i s a => HasPosition' i s a where
-  position' f s = VL.ravel (derived' @i) f s
+instance Core.Context' i s a => HasPosition' i s a where
+  position' f s = VL.ravel (Core.derived' @i) f s
   {-# INLINE position' #-}
 
-instance (Context i s t a b , HasPosition0 i s t a b) => HasPosition i s t a b where
+instance (Core.Context i s t a b , HasPosition0 i s t a b) => HasPosition i s t a b where
   position = position0 @i
   {-# INLINE position #-}
 
@@ -135,13 +135,13 @@ instance (Context i s t a b , HasPosition0 i s t a b) => HasPosition i s t a b w
 instance {-# OVERLAPPING #-} HasPosition f (Void1 a) (Void1 b) a b where
   position = undefined
 
-instance (Context_ i s t a b, HasPosition0 i s t a b) => HasPosition_ i s t a b where
+instance (Core.Context_ i s t a b, HasPosition0 i s t a b) => HasPosition_ i s t a b where
   position_ = position0 @i
   {-# INLINE position_ #-}
 
 instance {-# OVERLAPPING #-} HasPosition_ f (Void1 a) (Void1 b) a b where
   position_ = undefined
 
-instance Context0 i s t a b => HasPosition0 i s t a b where
-  position0 f s = VL.ravel (derived0 @i) f s
+instance Core.Context0 i s t a b => HasPosition0 i s t a b where
+  position0 f s = VL.ravel (Core.derived0 @i) f s
   {-# INLINE position0 #-}

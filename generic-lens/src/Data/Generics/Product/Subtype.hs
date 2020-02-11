@@ -37,7 +37,7 @@ module Data.Generics.Product.Subtype
 import "this" Data.Generics.Internal.VL.Lens as VL
 
 import "generic-lens-core" Data.Generics.Internal.Void
-import "generic-lens-core" Data.Generics.Product.Internal.Subtype
+import qualified "generic-lens-core" Data.Generics.Product.Internal.Subtype as Core
 
 import GHC.Generics (Generic (to, from) )
 
@@ -110,9 +110,9 @@ class Subtype sup sub where
 
   {-# MINIMAL super | smash, upcast #-}
 
-instance Context a b => Subtype b a where
-    smash p b = to $ gsmash (from p) (from b)
-    upcast    = to . gupcast . from
+instance Core.Context a b => Subtype b a where
+    smash p b = to $ Core.gsmash (from p) (from b)
+    upcast    = to . Core.gupcast . from
 
 instance {-# OVERLAPPING #-} Subtype a a where
   super = id

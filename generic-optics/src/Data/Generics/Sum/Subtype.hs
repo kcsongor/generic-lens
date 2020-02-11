@@ -32,7 +32,7 @@ module Data.Generics.Sum.Subtype
 import "this" Data.Generics.Internal.Optics
 
 import "generic-lens-core" Data.Generics.Internal.Void
-import "generic-lens-core" Data.Generics.Sum.Internal.Subtype
+import qualified "generic-lens-core" Data.Generics.Sum.Internal.Subtype as Core
 
 
 -- $setup
@@ -104,8 +104,8 @@ class AsSubtype sub sup where
 
   {-# MINIMAL (injectSub, projectSub) | _Sub #-}
 
-instance Context sub sup => AsSubtype sub sup where
-  _Sub = normalisePrism (Optic derived)
+instance Core.Context sub sup => AsSubtype sub sup where
+  _Sub = normalisePrism (Optic Core.derived)
   {-# INLINE _Sub #-}
 
 -- | Reflexive case

@@ -38,7 +38,7 @@ module Data.Generics.Sum.Constructors
 import "this" Data.Generics.Internal.Optics
 
 import "generic-lens-core" Data.Generics.Internal.Void
-import "generic-lens-core" Data.Generics.Sum.Internal.Constructors
+import qualified "generic-lens-core" Data.Generics.Sum.Internal.Constructors as Core
 
 import GHC.TypeLits (Symbol)
 
@@ -120,11 +120,11 @@ class AsConstructor' (ctor :: Symbol) s a | ctor s -> a where
 class AsConstructor0 (ctor :: Symbol) s t a b where
   _Ctor0 :: Prism s t a b
 
-instance (Context' ctor s a, AsConstructor0 ctor s t a b) => AsConstructor' ctor s a where
+instance (Core.Context' ctor s a, AsConstructor0 ctor s t a b) => AsConstructor' ctor s a where
   _Ctor' = _Ctor0 @ctor
   {-# INLINE _Ctor' #-}
 
-instance (Context ctor s t a b, AsConstructor0 ctor s t a b) => AsConstructor ctor s t a b where
+instance (Core.Context ctor s t a b, AsConstructor0 ctor s t a b) => AsConstructor ctor s t a b where
   _Ctor = _Ctor0 @ctor
   {-# INLINE _Ctor #-}
 
@@ -134,14 +134,14 @@ instance (Context ctor s t a b, AsConstructor0 ctor s t a b) => AsConstructor ct
 instance {-# OVERLAPPING #-} AsConstructor ctor (Void1 a) (Void1 b) a b where
   _Ctor = undefined
 
-instance (Context_ ctor s t a b, AsConstructor0 ctor s t a b) => AsConstructor_ ctor s t a b where
+instance (Core.Context_ ctor s t a b, AsConstructor0 ctor s t a b) => AsConstructor_ ctor s t a b where
   _Ctor_ = _Ctor0 @ctor
   {-# INLINE _Ctor_ #-}
 
 instance {-# OVERLAPPING #-} AsConstructor_ ctor (Void1 a) (Void1 b) a b where
   _Ctor_ = undefined
 
-instance Context0 ctor s t a b => AsConstructor0 ctor s t a b where
-  _Ctor0 = normalisePrism (Optic (derived0 @ctor))
+instance Core.Context0 ctor s t a b => AsConstructor0 ctor s t a b where
+  _Ctor0 = normalisePrism (Optic (Core.derived0 @ctor))
   {-# INLINE _Ctor0 #-}
 

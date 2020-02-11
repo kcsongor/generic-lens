@@ -33,7 +33,7 @@ module Data.Generics.Sum.Typed
 
 import "this" Data.Generics.Internal.VL.Prism
 
-import "generic-lens-core" Data.Generics.Sum.Internal.Typed
+import qualified "generic-lens-core" Data.Generics.Sum.Internal.Typed as Core
 import "generic-lens-core" Data.Generics.Internal.Void
 
 -- $setup
@@ -97,8 +97,8 @@ class AsType a s where
 
   {-# MINIMAL (injectTyped, projectTyped) | _Typed #-}
 
-instance Context a s => AsType a s where
-  _Typed eta = prism2prismvl derived eta
+instance Core.Context a s => AsType a s where
+  _Typed eta = prism2prismvl Core.derived eta
   {-# INLINE _Typed #-}
 
 -- | See Note [Uncluttering type signatures]

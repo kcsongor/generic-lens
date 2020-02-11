@@ -36,7 +36,7 @@ module Data.Generics.Product.Param
 import Optics.Core
 import "this" Data.Generics.Product.Types
 
-import "generic-lens-core" Data.Generics.Product.Internal.Param
+import qualified "generic-lens-core" Data.Generics.Product.Internal.Param as Core
 import "generic-lens-core" Data.Generics.Internal.GenericN
 import "generic-lens-core" Data.Generics.Internal.Void
 
@@ -46,7 +46,7 @@ class HasParam (p :: Nat) s t a b | p t a -> s, p s b -> t, p s -> a, p t -> b w
   param :: Traversal s t a b
 
 instance
-  ( Context n s t a b
+  ( Core.Context n s t a b
   , GHasTypes ChGeneric (RepN s) (RepN t) (Param n a) (Param n b)
   ) => HasParam n s t a b where
 

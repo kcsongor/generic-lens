@@ -28,7 +28,7 @@ module Data.Generics.Product.HList
 import "this" Data.Generics.Internal.Optics
 
 import "generic-lens-core" Data.Generics.Internal.Profunctor.Iso (repIso)
-import "generic-lens-core" Data.Generics.Product.Internal.HList
+import qualified "generic-lens-core" Data.Generics.Product.Internal.HList as Core
 
 import Data.Kind
 import GHC.Generics
@@ -38,12 +38,12 @@ class IsList
   (g :: Type)
   (as :: [Type])
   (bs :: [Type]) | f -> as, g -> bs where
-  list  :: Iso f g (HList as) (HList bs)
+  list  :: Iso f g (Core.HList as) (Core.HList bs)
 
 instance
   ( Generic f
   , Generic g
-  , GIsList (Rep f) (Rep g) as bs
+  , Core.GIsList (Rep f) (Rep g) as bs
   ) => IsList f g as bs where
-  list = normaliseIso (Optic (repIso . glist))
+  list = normaliseIso (Optic (repIso . Core.glist))
   {-# INLINE list #-}
