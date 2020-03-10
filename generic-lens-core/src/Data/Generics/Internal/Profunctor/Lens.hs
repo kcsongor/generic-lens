@@ -107,6 +107,7 @@ choosing l r = withLensPrim l (\getl setl ->
                                         Right v -> let (c, v') = getr v in (Right c, v')
                                 s = bimap setl setr . stron
                             in lens g s))
+{-# INLINE choosing #-}
 
 lens :: (s -> (c,a)) -> ((c,b) -> t) -> Lens s t a b
 lens get _set = dimap get _set . second'
