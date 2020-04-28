@@ -1,0 +1,12 @@
+cradle:
+    cabal:
+        - path: "./generic-lens/src"
+          component: "generic-lens"
+        - path: "./generic-lens/perf"
+          component: "generic-lens:perf"
+        - path: "./generic-optics/src"
+          component: "generic-optics"
+        - path: "./generic-optics/perf"
+          component: "generic-optics:perf"
+        - path: "./generic-lens-core/src"
+          component: "generic-lens-core"
