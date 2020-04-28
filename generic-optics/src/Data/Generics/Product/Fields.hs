@@ -143,7 +143,7 @@ getField = view (field' @f)
 setField :: forall f s a. HasField' f s a => a -> s -> s
 setField = set (field' @f)
 
-instance Core.Context' field s a => HasField' field s a where
+instance Core.Context0 field s s a a => HasField' field s a where
   field' = field0 @field
   {-# INLINE field' #-}
 

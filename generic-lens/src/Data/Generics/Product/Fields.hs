@@ -144,14 +144,11 @@ getField = VL.view (field' @f)
 setField :: forall f s a. HasField' f s a => a -> s -> s
 setField = VL.set (field' @f)
 
-instance Core.Context' field s a => HasField' field s a where
+instance Core.Context0 field s s a a => HasField' field s a where
   field' f s = field0 @field f s
 
 instance (Core.Context field s t a b , HasField0 field s t a b) => HasField field s t a b where
   field f s = field0 @field f s
-
--- instance {-# OVERLAPPING #-} HasField' field s a => HasField field s s a a where
---   field f s = field' @field f s
 
 -- | See Note [Uncluttering type signatures]
 -- >>> :t field

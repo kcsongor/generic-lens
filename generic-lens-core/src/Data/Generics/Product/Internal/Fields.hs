@@ -15,7 +15,6 @@
 
 module Data.Generics.Product.Internal.Fields
   ( Context_
-  , Context'
   , Context0
   , Context
   , derived
@@ -46,18 +45,6 @@ type Context_ field s t a b
     , HasTotalFieldP field (Rep t) ~ 'Just b
     , UnifyHead s t
     , UnifyHead t s
-    )
-
--- Monomorphic
-type Context' field s a
-  = ( Generic s
-    , ErrorUnless field s (CollectField field (Rep s))
-    , GLens' (HasTotalFieldPSym field) (Rep s) a
-    , Defined (Rep s)
-      (NoGeneric s '[ 'Text "arising from a generic lens focusing on the "
-                      ':<>: QuoteType field ':<>: 'Text " field of type " ':<>: QuoteType a
-                    , 'Text "in " ':<>: QuoteType s])
-      (() :: Constraint)
     )
 
 -- No inference
