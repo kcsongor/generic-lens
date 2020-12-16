@@ -41,7 +41,6 @@ import GHC.Generics
 import GHC.TypeLits (Symbol)
 import Data.Generics.Internal.Profunctor.Lens (view)
 
-import GHC.Generics (Generic (Rep))
 import GHC.TypeLits (TypeError, ErrorMessage (..))
 import Data.Kind (Constraint)
 import Data.Generics.Internal.Errors

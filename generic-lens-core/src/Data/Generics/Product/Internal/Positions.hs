@@ -40,7 +40,6 @@ module Data.Generics.Product.Internal.Positions
   , derived'
   ) where
 
-import Data.Generics.Internal.Families.Has (Pos)
 import Data.Kind      (Type, Constraint)
 import Data.Type.Bool (If, Not, type (&&))
 import GHC.Generics
