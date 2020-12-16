@@ -26,6 +26,8 @@ module Data.GenericLens.Internal
   , module Data.Generics.Internal.Profunctor.Iso
   , module Data.Generics.Internal.Profunctor.Lens
   , module Data.Generics.Internal.Profunctor.Prism
+
+  , module Data.Generics.Product.Internal.Subtype
   ) where
 
 import Data.Generics.Internal.Families
@@ -40,3 +42,5 @@ import Data.Generics.Internal.GenericN
 import Data.Generics.Internal.Profunctor.Iso
 import Data.Generics.Internal.Profunctor.Lens
 import Data.Generics.Internal.Profunctor.Prism
+
+import Data.Generics.Product.Internal.Subtype
