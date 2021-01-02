@@ -64,10 +64,10 @@ match k = withPrism k $ \_ _match -> _match
 -- Prism stuff
 
 without' :: Prism s t a b -> Prism s t c d -> Prism s t (Either a c) (Either b d)
-without' k =
-  withPrism k  $ \bt _ k' ->
-  withPrism k' $ \dt setc ->
-    prism (either bt dt) $ \s -> fmap Right (setc s)
+without' k p =
+  (withPrism k  $ \bt _ k' ->
+   withPrism k' $ \dt setc ->
+     prism (either bt dt) $ \s -> fmap Right (setc s)) p
 {-# INLINE without' #-}
 
 withPrism :: APrism s t a b -> ((b -> t) -> (s -> Either t a) -> r) -> r

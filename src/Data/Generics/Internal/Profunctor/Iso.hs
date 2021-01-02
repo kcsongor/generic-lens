@@ -75,11 +75,11 @@ fromIso l = withIso l $ \ sa bt -> iso bt sa
 {-# INLINE fromIso #-}
 
 iso :: (s -> a) -> (b -> t) -> Iso s t a b
-iso = dimap
+iso sa bt = dimap sa bt
 {-# INLINE iso #-}
 
 iso2isovl :: Iso s t a b -> VL.Iso s t a b
-iso2isovl _iso = withIso _iso VL.iso
+iso2isovl _iso = withIso _iso $ \ sa bt -> VL.iso sa bt
 {-# INLINE iso2isovl #-}
 
 withIso :: Iso s t a b -> ((s -> a) -> (b -> t) -> r) -> r

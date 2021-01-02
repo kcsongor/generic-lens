@@ -59,7 +59,7 @@ instance
   gconstraints' f (R1 r) = R1 <$> gconstraints' @c f r
 
 instance c a => GHasConstraints' c (Rec0 a) where
-  gconstraints' = kIso
+  gconstraints' f = kIso f
 
 instance GHasConstraints' c f
   => GHasConstraints' c (M1 m meta f) where
@@ -98,7 +98,7 @@ instance GHasConstraints c V1 V1 where
   gconstraints _ = pure
 
 instance c a b => GHasConstraints c (Rec0 a) (Rec0 b) where
-  gconstraints = kIso
+  gconstraints f = kIso f
 
 --------------------------------------------------------------------------------
 

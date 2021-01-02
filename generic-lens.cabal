@@ -1,5 +1,5 @@
 name:                 generic-lens
-version:              1.2.0.1
+version:              1.2.0.2
 synopsis:             Generically derive traversals, lenses and prisms.
 description:          This library uses GHC.Generics to derive efficient optics (traversals, lenses and prisms) for algebraic data types in a type-directed way, with a focus on good type inference and error messages when possible.
 
@@ -11,7 +11,7 @@ maintainer:           kiss.csongor.kiss@gmail.com
 category:             Generics, Records, Lens
 build-type:           Simple
 cabal-version:        >= 1.10
-Tested-With:          GHC == 8.0.2, GHC == 8.2.2, GHC == 8.4.1, GHC == 8.4.4, GHC == 8.6.5, GHC == 8.8.1
+Tested-With:          GHC == 8.0.2, GHC == 8.2.2, GHC == 8.4.1, GHC == 8.4.4, GHC == 8.6.5, GHC == 8.8.1, GHC == 8.10.3, GHC == 9.0.1
 
 extra-source-files:   ChangeLog.md
                     , examples/StarWars.hs
