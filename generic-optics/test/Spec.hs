@@ -25,7 +25,6 @@ import Test.HUnit
 import Util
 import System.Exit
 import Optics.Core
-import Data.Generics.Labels ()
 
 -- This is sufficient at we only want to test that they typecheck
 import Test24 ()
@@ -264,12 +263,4 @@ tests = TestList $ map mkHUnitTest
   , $(inspectTest $ 'sum3Param0Manual          === 'sum3Param0Derived)
   , $(inspectTest $ 'sum3Param1Manual          === 'sum3Param1Derived)
   , $(inspectTest $ 'sum3Param2Manual          === 'sum3Param2Derived)
-  ] ++
-  -- Tests for overloaded labels
-  [ (valLabel ^. #_foo         ) ~=?  3
-  , (valLabel &  #_foo %~ (+10)) ~=? RecB 13 True
-  , (valLabel ^? #_RecB % _1   ) ~=? Just 3
-  , (valLabel ^? #_RecB        ) ~=? Just (3, True)
-  , (valLabel ^? #_RecC        ) ~=? Nothing
   ]
-  where valLabel = RecB 3 True
