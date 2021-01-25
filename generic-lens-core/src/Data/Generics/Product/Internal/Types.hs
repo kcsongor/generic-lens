@@ -18,7 +18,7 @@ module Data.Generics.Product.Internal.Types where
 
 import Data.Kind
 import Data.Int (Int8, Int16, Int32, Int64)
-import Data.Word (Word, Word8, Word16, Word32, Word64)
+import Data.Word (Word8, Word16, Word32, Word64)
 import qualified Data.Text as T
 
 import GHC.Generics
