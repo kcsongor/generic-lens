@@ -1,3 +1,6 @@
+## generic-lens-2.1.0.0 (2021-01-25)
+- Bump to generic-lens-core-2.1.0.0
+
 ## generic-lens-2.0.0.0 (2020-02-11)
 - Drop support for GHC < 8.4
 - Better inference for `field'`

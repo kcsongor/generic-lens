@@ -1,2 +1,5 @@
+## generic-optics-2.1.0.0 (2021-01-25)
+- Bump to generic-lens-core-2.1.0.0
+
 ## generic-optics-2.0.0.0 (2020-02-11)
 - Initial release
