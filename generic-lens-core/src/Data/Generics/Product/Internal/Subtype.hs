@@ -29,8 +29,8 @@
 
 module Data.Generics.Product.Internal.Subtype
   ( Context
-  , gsmash
-  , gupcast
+  , GSmash (..)
+  , GUpcast (..)
   ) where
 
 import Data.Generics.Internal.Families
