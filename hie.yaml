@@ -1,12 +1,40 @@
 cradle:
-    cabal:
-        - path: "./generic-lens/src"
-          component: "generic-lens"
-        - path: "./generic-lens/perf"
-          component: "generic-lens:perf"
-        - path: "./generic-optics/src"
-          component: "generic-optics"
-        - path: "./generic-optics/perf"
-          component: "generic-optics:perf"
-        - path: "./generic-lens-core/src"
-          component: "generic-lens-core"
+  cabal:
+    - path: "generic-lens/src"
+      component: "lib:generic-lens"
+
+    - path: "generic-lens/perf/Main.hs"
+      component: "generic-lens:bench:perf"
+
+    - path: "generic-lens/test"
+      component: "generic-lens:test:inspection-tests"
+
+    - path: "generic-lens/test"
+      component: "generic-lens:test:generic-lens-bifunctor"
+
+    - path: "generic-lens/test/syb"
+      component: "generic-lens:test:generic-lens-syb-tree"
+
+    - path: "generic-lens/examples"
+      component: "generic-lens:test:doctests"
+
+    - path: "generic-lens-core/src"
+      component: "lib:generic-lens-core"
+
+    - path: "generic-optics/src"
+      component: "lib:generic-optics"
+
+    - path: "generic-optics/perf/Main.hs"
+      component: "generic-optics:bench:perf"
+
+    - path: "generic-optics/test"
+      component: "generic-optics:test:inspection-tests"
+
+    - path: "generic-optics/test"
+      component: "generic-optics:test:bifunctor"
+
+    - path: "generic-optics/test/syb"
+      component: "generic-optics:test:syb-tree"
+
+    - path: "generic-optics/examples"
+      component: "generic-optics:test:doctests"

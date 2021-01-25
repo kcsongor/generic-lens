@@ -143,8 +143,9 @@ getField = view (field' @f)
 setField :: forall f s a. HasField' f s a => a -> s -> s
 setField = set (field' @f)
 
-instance Core.Context0 field s s a a => HasField' field s a where
-  field' = field0 @field
+instance Core.Context' field s a => HasField' field s a where
+  -- field' = field0 @field
+  field' = normaliseLens (lensVL (Core.derived' @field))
   {-# INLINE field' #-}
 
 instance (Core.Context field s t a b , HasField0 field s t a b) => HasField field s t a b where

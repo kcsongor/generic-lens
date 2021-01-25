@@ -16,8 +16,10 @@
 module Data.Generics.Product.Internal.Fields
   ( Context_
   , Context0
+  , Context'
   , Context
   , derived
+  , derived'
   ) where
 
 import Data.Generics.Internal.Families
@@ -38,6 +40,8 @@ instance
   , t ~ Infer s a' b
   , s ~ Infer t b' a
   ) => Context field s t a b
+
+-- instance {-# INCOHERENT #-} Context0 field s s a a => Context field s s a a
 
 -- Alternative type inference
 type Context_ field s t a b
@@ -60,9 +64,24 @@ type Context0 field s t a b
       (() :: Constraint)
     )
 
+type Context' field s a
+  = ( Generic s
+    , GLens' (HasTotalFieldPSym field) (Rep s) a
+    , ErrorUnless field s (CollectField field (Rep s))
+    , Defined (Rep s)
+      (NoGeneric s '[ 'Text "arising from a generic lens focusing on the "
+                      ':<>: QuoteType field ':<>: 'Text " field of type " ':<>: QuoteType a
+                    , 'Text "in " ':<>: QuoteType s])
+      (() :: Constraint)
+    )
+
 derived :: forall field s t a b. Context0 field s t a b => Lens s t a b
 derived = lensRep . glens @(HasTotalFieldPSym field)
 {-# INLINE derived #-}
+
+derived' :: forall field s a. Context' field s a => Lens s s a a
+derived' = lensRep . glens' @(HasTotalFieldPSym field)
+{-# INLINE derived' #-}
 
 type family ErrorUnless (field :: Symbol) (s :: Type) (stat :: TypeStat) :: Constraint where
   ErrorUnless field s ('TypeStat _ _ '[])

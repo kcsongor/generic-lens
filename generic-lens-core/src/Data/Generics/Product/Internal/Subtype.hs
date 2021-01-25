@@ -96,7 +96,7 @@ instance
   GLens' (HasTotalFieldPSym field) sub t
   => GUpcast sub (S1 ('MetaSel ('Just field) p f b) (Rec0 t)) where
 
-  gupcast r = M1 (K1 (view (glens @(HasTotalFieldPSym field)) r))
+  gupcast r = M1 (K1 (view (glens' @(HasTotalFieldPSym field)) r))
 
 instance GUpcast sub sup => GUpcast sub (C1 c sup) where
   gupcast = M1 . gupcast
@@ -132,7 +132,7 @@ class GSmashLeaf sub sup (w :: Maybe Type) where
 instance
   GLens' (HasTotalFieldPSym field) sup t
   => GSmashLeaf (S1 ('MetaSel ('Just field) p f b) (Rec0 t)) sup ('Just t) where
-  gsmashLeaf sup _ = M1 (K1 (view (glens @(HasTotalFieldPSym field)) sup))
+  gsmashLeaf sup _ = M1 (K1 (view (glens' @(HasTotalFieldPSym field)) sup))
 
 instance GSmashLeaf (S1 ('MetaSel ('Just field) p f b) (Rec0 t)) sup 'Nothing where
   gsmashLeaf _ = id

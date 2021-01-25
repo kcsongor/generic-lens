@@ -100,7 +100,7 @@ derived0 = (lensRep . coerced @(CRep s) @(CRep t) . glens @(HasTotalPositionPSym
 {-# INLINE derived0 #-}
 
 derived' :: forall i s a. Context' i s a => Lens s s a a
-derived' = (lensRep . coerced @(CRep s) @(CRep s) . glens @(HasTotalPositionPSym i))
+derived' = (lensRep . coerced @(CRep s) @(CRep s) . glens' @(HasTotalPositionPSym i))
 {-# INLINE derived' #-}
 
 type family ErrorUnless (i :: Nat) (s :: Type) (hasP :: Bool) :: Constraint where

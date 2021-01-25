@@ -29,7 +29,7 @@
 
 module Data.Generics.Product.Internal.GLens
   ( GLens (..)
-  , GLens'
+  , GLens' (..)
   , TyFun
   , Eval
   ) where
@@ -47,8 +47,6 @@ type family Eval (f :: TyFun a b) (x :: a) :: b
 -- A generic lens that uses some predicate to determine which field to focus on
 class GLens (pred :: Pred) (s :: Type -> Type) (t :: Type -> Type) a b | s pred -> a, t pred -> b where
   glens :: Lens (s x) (t x) a b
-
-type GLens' pred s a = GLens pred s s a a
 
 instance GProductLens (Eval pred l) pred l r l' r' a b
       => GLens pred (l :*: r) (l' :*: r') a b where
@@ -78,3 +76,36 @@ instance GLens pred l l' a b => GProductLens ('Just x) pred l r l' r a b where
 instance GLens pred r r' a b => GProductLens 'Nothing pred l r l r' a b where
   gproductLens = second . glens @pred
   {-# INLINE gproductLens #-}
+
+-- A generic lens that uses some predicate to determine which field to focus on
+class GLens' (pred :: Pred) (s :: Type -> Type) a | s pred -> a where
+  glens' :: Lens (s x) (s x) a a
+
+instance GProductLens' (Eval pred l) pred l r a
+      => GLens' pred (l :*: r) a where
+
+  glens' = gproductLens' @(Eval pred l) @pred
+  {-# INLINE glens' #-}
+
+instance (GLens' pred l a, GLens' pred r a) =>  GLens' pred (l :+: r) a where
+  glens' = choosing (glens' @pred) (glens' @pred)
+  {-# INLINE glens' #-}
+
+instance GLens' pred (K1 r a) a where
+  glens' = lensK1
+  {-# INLINE glens' #-}
+
+instance (GLens' pred f a) => GLens' pred (M1 m meta f) a where
+  glens' = lensM1 . glens' @pred
+  {-# INLINE glens' #-}
+
+class GProductLens' (left :: Maybe Type) (pred :: Pred) l r a | pred l r -> a where
+  gproductLens' :: Lens ((l :*: r) x) ((l :*: r) x) a a
+
+instance GLens' pred l a => GProductLens' ('Just x) pred l r a where
+  gproductLens' = first . glens' @pred
+  {-# INLINE gproductLens' #-}
+
+instance GLens' pred r a => GProductLens' 'Nothing pred l r a where
+  gproductLens' = second . glens' @pred
+  {-# INLINE gproductLens' #-}
