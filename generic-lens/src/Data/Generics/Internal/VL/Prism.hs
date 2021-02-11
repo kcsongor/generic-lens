@@ -50,7 +50,7 @@ prism bt seta eta = P.dimap (\x -> P.left' pure (seta x)) (either id (\x -> fmap
 {-# INLINE prism #-}
 
 prism2prismvl :: P.APrism i s t a b -> Prism s t a b
-prism2prismvl  _prism = P.withPrism _prism prism
+prism2prismvl  _prism = P.withPrism _prism $ \ bt sta -> prism bt sta
 {-# INLINE prism2prismvl #-}
 
 --------------------------------------------------------------------------------

@@ -55,7 +55,7 @@ fromIso l = withIso l $ \ sa bt -> iso bt sa
 {-# inline fromIso #-}
 
 iso2isovl :: P.Iso s t a b -> Iso s t a b
-iso2isovl _iso = P.withIso _iso iso
+iso2isovl _iso = P.withIso _iso $ \ sa bt -> iso sa bt
 {-# INLINE iso2isovl #-}
 
 -- | Extract the two functions, one from @s -> a@ and
