@@ -1,3 +1,6 @@
+## generic-lens-2.2.0.0 (2021-07-13)
+- GHC 9.0 compatibility
+
 ## generic-lens-2.1.0.0 (2021-01-25)
 - Bump to generic-lens-core-2.1.0.0
 

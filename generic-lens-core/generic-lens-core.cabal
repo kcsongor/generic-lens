@@ -1,5 +1,5 @@
 name:                 generic-lens-core
-version:              2.1.0.0
+version:              2.2.0.0
 synopsis:             Generically derive traversals, lenses and prisms.
 description:          This library uses GHC.Generics to derive efficient optics (traversals, lenses and prisms) for algebraic data types in a type-directed way, with a focus on good type inference and error messages when possible.
                       .
