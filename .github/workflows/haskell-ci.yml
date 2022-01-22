@@ -8,9 +8,9 @@
 #
 # For more information, see https://github.com/haskell-CI/haskell-ci
 #
-# version: 0.11.20210111
+# version: 0.14
 #
-# REGENDATA ("0.11.20210111",["--config=cabal.haskell-ci","github","cabal.project"])
+# REGENDATA ("0.14",["--config=cabal.haskell-ci","github","cabal.project"])
 #
 name: Haskell-CI
 on:
@@ -18,54 +18,81 @@ on:
   - pull_request
 jobs:
   linux:
-    name: Haskell-CI Linux - GHC ${{ matrix.ghc }}
+    name: Haskell-CI - Linux - ${{ matrix.compiler }}
     runs-on: ubuntu-18.04
+    timeout-minutes:
+      60
     container:
       image: buildpack-deps:bionic
     continue-on-error: ${{ matrix.allow-failure }}
     strategy:
       matrix:
         include:
-          - ghc: 8.10.3
+          - compiler: ghc-8.10.3
+            compilerKind: ghc
+            compilerVersion: 8.10.3
+            setup-method: hvr-ppa
             allow-failure: false
-          - ghc: 8.8.4
+          - compiler: ghc-8.8.4
+            compilerKind: ghc
+            compilerVersion: 8.8.4
+            setup-method: hvr-ppa
             allow-failure: false
-          - ghc: 8.6.5
+          - compiler: ghc-8.6.5
+            compilerKind: ghc
+            compilerVersion: 8.6.5
+            setup-method: hvr-ppa
             allow-failure: false
-          - ghc: 8.4.4
+          - compiler: ghc-8.4.4
+            compilerKind: ghc
+            compilerVersion: 8.4.4
+            setup-method: hvr-ppa
             allow-failure: false
-          - ghc: 8.4.1
+          - compiler: ghc-8.4.1
+            compilerKind: ghc
+            compilerVersion: 8.4.1
+            setup-method: hvr-ppa
             allow-failure: false
       fail-fast: false
     steps:
       - name: apt
         run: |
           apt-get update
-          apt-get install -y --no-install-recommends gnupg ca-certificates dirmngr curl git software-properties-common
+          apt-get install -y --no-install-recommends gnupg ca-certificates dirmngr curl git software-properties-common libtinfo5
           apt-add-repository -y 'ppa:hvr/ghc'
           apt-get update
-          apt-get install -y ghc-$GHC_VERSION cabal-install-3.2
+          apt-get install -y "$HCNAME"
+          mkdir -p "$HOME/.ghcup/bin"
+          curl -sL https://downloads.haskell.org/ghcup/0.1.17.3/x86_64-linux-ghcup-0.1.17.3 > "$HOME/.ghcup/bin/ghcup"
+          chmod a+x "$HOME/.ghcup/bin/ghcup"
+          "$HOME/.ghcup/bin/ghcup" install cabal 3.6.2.0
         env:
-          GHC_VERSION: ${{ matrix.ghc }}
+          HCKIND: ${{ matrix.compilerKind }}
+          HCNAME: ${{ matrix.compiler }}
+          HCVER: ${{ matrix.compilerVersion }}
       - name: Set PATH and environment variables
         run: |
           echo "$HOME/.cabal/bin" >> $GITHUB_PATH
-          echo "LANG=C.UTF-8" >> $GITHUB_ENV
-          echo "CABAL_DIR=$HOME/.cabal" >> $GITHUB_ENV
-          echo "CABAL_CONFIG=$HOME/.cabal/config" >> $GITHUB_ENV
-          HC=/opt/ghc/$GHC_VERSION/bin/ghc
-          echo "HC=$HC" >> $GITHUB_ENV
-          echo "HCPKG=/opt/ghc/$GHC_VERSION/bin/ghc-pkg" >> $GITHUB_ENV
-          echo "HADDOCK=/opt/ghc/$GHC_VERSION/bin/haddock" >> $GITHUB_ENV
-          echo "CABAL=/opt/cabal/3.2/bin/cabal -vnormal+nowrap" >> $GITHUB_ENV
+          echo "LANG=C.UTF-8" >> "$GITHUB_ENV"
+          echo "CABAL_DIR=$HOME/.cabal" >> "$GITHUB_ENV"
+          echo "CABAL_CONFIG=$HOME/.cabal/config" >> "$GITHUB_ENV"
+          HCDIR=/opt/$HCKIND/$HCVER
+          HC=$HCDIR/bin/$HCKIND
+          echo "HC=$HC" >> "$GITHUB_ENV"
+          echo "HCPKG=$HCDIR/bin/$HCKIND-pkg" >> "$GITHUB_ENV"
+          echo "HADDOCK=$HCDIR/bin/haddock" >> "$GITHUB_ENV"
+          echo "CABAL=$HOME/.ghcup/bin/cabal-3.6.2.0 -vnormal+nowrap" >> "$GITHUB_ENV"
           HCNUMVER=$(${HC} --numeric-version|perl -ne '/^(\d+)\.(\d+)\.(\d+)(\.(\d+))?$/; print(10000 * $1 + 100 * $2 + ($3 == 0 ? $5 != 1 : $3))')
-          echo "HCNUMVER=$HCNUMVER" >> $GITHUB_ENV
-          echo "ARG_TESTS=--enable-tests" >> $GITHUB_ENV
-          echo "ARG_BENCH=--enable-benchmarks" >> $GITHUB_ENV
-          echo "ARG_COMPILER=--ghc --with-compiler=/opt/ghc/$GHC_VERSION/bin/ghc" >> $GITHUB_ENV
-          echo "GHCJSARITH=0" >> $GITHUB_ENV
+          echo "HCNUMVER=$HCNUMVER" >> "$GITHUB_ENV"
+          echo "ARG_TESTS=--enable-tests" >> "$GITHUB_ENV"
+          echo "ARG_BENCH=--enable-benchmarks" >> "$GITHUB_ENV"
+          echo "HEADHACKAGE=false" >> "$GITHUB_ENV"
+          echo "ARG_COMPILER=--$HCKIND --with-compiler=$HC" >> "$GITHUB_ENV"
+          echo "GHCJSARITH=0" >> "$GITHUB_ENV"
         env:
-          GHC_VERSION: ${{ matrix.ghc }}
+          HCKIND: ${{ matrix.compilerKind }}
+          HCNAME: ${{ matrix.compiler }}
+          HCVER: ${{ matrix.compilerVersion }}
       - name: env
         run: |
           env
@@ -88,6 +115,10 @@ jobs:
           repository hackage.haskell.org
             url: http://hackage.haskell.org/
           EOF
+          cat >> $CABAL_CONFIG <<EOF
+          program-default-options
+            ghc-options: $GHCJOBS +RTS -M3G -RTS
+          EOF
           cat $CABAL_CONFIG
       - name: versions
         run: |
@@ -100,7 +131,7 @@ jobs:
       - name: cache (tools)
         uses: actions/cache@v2
         with:
-          key: ${{ runner.os }}-${{ matrix.ghc }}-tools-ec34c04f
+          key: ${{ runner.os }}-${{ matrix.compiler }}-tools-322fd510
           path: ~/.haskell-ci-tools
       - name: install cabal-plan
         run: |
@@ -113,16 +144,22 @@ jobs:
           cabal-plan --version
       - name: install doctest
         run: |
-          $CABAL --store-dir=$HOME/.haskell-ci-tools/store v2-install $ARG_COMPILER --ignore-project -j2 doctest --constraint='doctest ^>=0.17'
+          $CABAL --store-dir=$HOME/.haskell-ci-tools/store v2-install $ARG_COMPILER --ignore-project -j2 doctest --constraint='doctest ^>=0.20'
           doctest --version
       - name: checkout
         uses: actions/checkout@v2
         with:
           path: source
+      - name: initial cabal.project for sdist
+        run: |
+          touch cabal.project
+          echo "packages: $GITHUB_WORKSPACE/source/generic-lens-core" >> cabal.project
+          echo "packages: $GITHUB_WORKSPACE/source/generic-lens" >> cabal.project
+          echo "packages: $GITHUB_WORKSPACE/source/generic-optics" >> cabal.project
+          cat cabal.project
       - name: sdist
         run: |
           mkdir -p sdist
-          cd source || false
           $CABAL sdist all --output-dir $GITHUB_WORKSPACE/sdist
       - name: unpack
         run: |
@@ -131,11 +168,12 @@ jobs:
       - name: generate cabal.project
         run: |
           PKGDIR_generic_lens_core="$(find "$GITHUB_WORKSPACE/unpacked" -maxdepth 1 -type d -regex '.*/generic-lens-core-[0-9.]*')"
-          echo "PKGDIR_generic_lens_core=${PKGDIR_generic_lens_core}" >> $GITHUB_ENV
+          echo "PKGDIR_generic_lens_core=${PKGDIR_generic_lens_core}" >> "$GITHUB_ENV"
           PKGDIR_generic_lens="$(find "$GITHUB_WORKSPACE/unpacked" -maxdepth 1 -type d -regex '.*/generic-lens-[0-9.]*')"
-          echo "PKGDIR_generic_lens=${PKGDIR_generic_lens}" >> $GITHUB_ENV
+          echo "PKGDIR_generic_lens=${PKGDIR_generic_lens}" >> "$GITHUB_ENV"
           PKGDIR_generic_optics="$(find "$GITHUB_WORKSPACE/unpacked" -maxdepth 1 -type d -regex '.*/generic-optics-[0-9.]*')"
-          echo "PKGDIR_generic_optics=${PKGDIR_generic_optics}" >> $GITHUB_ENV
+          echo "PKGDIR_generic_optics=${PKGDIR_generic_optics}" >> "$GITHUB_ENV"
+          rm -f cabal.project cabal.project.local
           touch cabal.project
           touch cabal.project.local
           echo "packages: ${PKGDIR_generic_lens_core}" >> cabal.project
@@ -159,9 +197,9 @@ jobs:
       - name: cache
         uses: actions/cache@v2
         with:
-          key: ${{ runner.os }}-${{ matrix.ghc }}-${{ github.sha }}
+          key: ${{ runner.os }}-${{ matrix.compiler }}-${{ github.sha }}
           path: ~/.cabal/store
-          restore-keys: ${{ runner.os }}-${{ matrix.ghc }}-
+          restore-keys: ${{ runner.os }}-${{ matrix.compiler }}-
       - name: install dependencies
         run: |
           $CABAL v2-build $ARG_COMPILER --disable-tests --disable-benchmarks --dependencies-only -j2 all
