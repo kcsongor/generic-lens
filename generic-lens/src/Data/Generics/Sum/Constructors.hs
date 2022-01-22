@@ -130,7 +130,7 @@ instance (Core.Context ctor s t a b, AsConstructor0 ctor s t a b) => AsConstruct
   {-# INLINE _Ctor #-}
 
 -- | See Note [Uncluttering type signatures]
--- >>> :t _Ctor
+-- >>> :t +d _Ctor
 -- _Ctor
 --   :: (AsConstructor ctor s t a b, Choice p, Applicative f) =>
 --      p a (f b) -> p s (f t)

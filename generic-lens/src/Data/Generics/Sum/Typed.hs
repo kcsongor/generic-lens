@@ -101,8 +101,9 @@ instance Core.Context a s => AsType a s where
   _Typed eta = prism2prismvl Core.derived eta
   {-# INLINE _Typed #-}
 
+-- TODO
 -- | See Note [Uncluttering type signatures]
--- >>> :t _Typed
+-- >>> :t +d _Typed
 -- _Typed
 --   :: (AsType a s, Choice p, Applicative f) => p a (f a) -> p s (f s)
 instance {-# OVERLAPPING #-} AsType a Void where
@@ -111,7 +112,7 @@ instance {-# OVERLAPPING #-} AsType a Void where
   projectTyped = undefined
 
 -- | See Note [Uncluttering type signatures]
--- >>> :t _Typed @Int
+-- >>> :t +d _Typed @Int
 -- _Typed @Int
 --   :: (AsType Int s, Choice p, Applicative f) =>
 --      p Int (f Int) -> p s (f s)

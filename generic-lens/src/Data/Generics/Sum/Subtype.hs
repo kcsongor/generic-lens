@@ -125,7 +125,7 @@ instance {-# OVERLAPPING #-} AsSubtype a Void where
   projectSub = undefined
 
 -- | See Note [Uncluttering type signatures]
--- >>> :t _Sub @Int
+-- >>> :t +d _Sub @Int
 -- _Sub @Int
 --   :: (AsSubtype Int sup, Choice p, Applicative f) =>
 --      p Int (f Int) -> p sup (f sup)
