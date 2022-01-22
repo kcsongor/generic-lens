@@ -1,3 +1,6 @@
+## generic-optics-2.2.1.0 (2022-01-22)
+- GHC 9.2 compatibility
+
 ## generic-optics-2.2.0.0 (2021-07-13)
 - GHC 9.0 compatibility
 
