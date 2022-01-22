@@ -101,7 +101,6 @@ instance Core.Context a s => AsType a s where
   _Typed eta = prism2prismvl Core.derived eta
   {-# INLINE _Typed #-}
 
--- TODO
 -- | See Note [Uncluttering type signatures]
 -- >>> :t +d _Typed
 -- _Typed
