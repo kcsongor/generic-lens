@@ -118,14 +118,14 @@ instance {-# OVERLAPPING #-} Subtype a a where
   super = id
 
 -- | See Note [Uncluttering type signatures]
--- >>> :t super
+-- >>> :t +d super
 -- super
 --   :: (Subtype sup sub, Functor f) => (sup -> f sup) -> sub -> f sub
 instance {-# OVERLAPPING #-} Subtype a Void where
   super = undefined
 
 -- | See Note [Uncluttering type signatures]
--- >>> :t super @Int
+-- >>> :t +d super @Int
 -- super @Int
 --   :: (Subtype Int sub, Functor f) => (Int -> f Int) -> sub -> f sub
 instance {-# OVERLAPPING #-} Subtype Void a where
