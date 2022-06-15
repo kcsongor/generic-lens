@@ -127,6 +127,7 @@ instance (Core.Context i s t a b , HasPosition0 i s t a b) => HasPosition i s t 
   {-# INLINE position #-}
 
 -- | See Note [Uncluttering type signatures]
+--
 -- >>> :t position
 -- position :: HasPosition i s t a b => Lens s t a b
 instance {-# OVERLAPPING #-} HasPosition f (Void1 a) (Void1 b) a b where

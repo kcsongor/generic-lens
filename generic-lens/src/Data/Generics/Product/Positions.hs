@@ -129,6 +129,7 @@ instance (Core.Context i s t a b , HasPosition0 i s t a b) => HasPosition i s t 
   {-# INLINE position #-}
 
 -- | See Note [Uncluttering type signatures]
+--
 -- >>> :t +d position
 -- position
 --   :: (HasPosition i s t a b, Functor f) => (a -> f b) -> s -> f t

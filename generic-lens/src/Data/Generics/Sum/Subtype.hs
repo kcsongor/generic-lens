@@ -109,6 +109,7 @@ instance Core.Context sub sup => AsSubtype sub sup where
   {-# INLINE _Sub #-}
 
 -- | Reflexive case
+--
 --  >>> _Sub # dog :: Animal
 --  Dog (MkDog {name = "Shep", age = 3})
 instance {-# OVERLAPPING #-} AsSubtype a a where
@@ -116,15 +117,17 @@ instance {-# OVERLAPPING #-} AsSubtype a a where
   {-# INLINE _Sub #-}
 
 -- | See Note [Uncluttering type signatures]
---_Sub
---  :: (AsSubtype sub sup, Data.Profunctor.Choice.Choice p,
---      Applicative f) =>
---     p sub (f sub) -> p sup (f sup)
+--
+-- >>> :t +d _Sub
+-- _Sub
+--   :: (AsSubtype sub sup, Choice p, Applicative f) =>
+--      p sub (f sub) -> p sup (f sup)
 instance {-# OVERLAPPING #-} AsSubtype a Void where
   injectSub = undefined
   projectSub = undefined
 
 -- | See Note [Uncluttering type signatures]
+--
 -- >>> :t +d _Sub @Int
 -- _Sub @Int
 --   :: (AsSubtype Int sup, Choice p, Applicative f) =>

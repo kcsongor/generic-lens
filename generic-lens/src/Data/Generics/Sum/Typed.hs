@@ -102,6 +102,7 @@ instance Core.Context a s => AsType a s where
   {-# INLINE _Typed #-}
 
 -- | See Note [Uncluttering type signatures]
+--
 -- >>> :t +d _Typed
 -- _Typed
 --   :: (AsType a s, Choice p, Applicative f) => p a (f a) -> p s (f s)
@@ -111,6 +112,7 @@ instance {-# OVERLAPPING #-} AsType a Void where
   projectTyped = undefined
 
 -- | See Note [Uncluttering type signatures]
+--
 -- >>> :t +d _Typed @Int
 -- _Typed @Int
 --   :: (AsType Int s, Choice p, Applicative f) =>
