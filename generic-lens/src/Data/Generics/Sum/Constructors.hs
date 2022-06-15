@@ -129,7 +129,7 @@ instance (Core.Context ctor s t a b, AsConstructor0 ctor s t a b) => AsConstruct
   _Ctor eta = _Ctor0 @ctor eta
   {-# INLINE _Ctor #-}
 
--- | See Note [Uncluttering type signatures]
+-- | Uncluttering type signatures (see 'Void')
 --
 -- >>> :t +d _Ctor
 -- _Ctor

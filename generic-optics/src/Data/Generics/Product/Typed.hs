@@ -110,7 +110,7 @@ instance {-# OVERLAPPING #-} HasType a a where
     setTyped a _ = a
     {-# INLINE setTyped #-}
 
--- | See Note [Uncluttering type signatures]
+-- | Uncluttering type signatures (see 'Void')
 --
 -- >>> :t typed
 -- typed :: HasType a s => Lens s s a a

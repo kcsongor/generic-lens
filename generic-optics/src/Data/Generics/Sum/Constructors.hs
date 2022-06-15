@@ -128,7 +128,7 @@ instance (Core.Context ctor s t a b, AsConstructor0 ctor s t a b) => AsConstruct
   _Ctor = _Ctor0 @ctor
   {-# INLINE _Ctor #-}
 
--- | See Note [Uncluttering type signatures]
+-- | Uncluttering type signatures (see 'Void')
 --
 -- >>> :t _Ctor
 -- _Ctor :: AsConstructor ctor s t a b => Prism s t a b

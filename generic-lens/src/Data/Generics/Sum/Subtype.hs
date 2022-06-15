@@ -116,7 +116,7 @@ instance {-# OVERLAPPING #-} AsSubtype a a where
   _Sub = id
   {-# INLINE _Sub #-}
 
--- | See Note [Uncluttering type signatures]
+-- | Uncluttering type signatures (see 'Void')
 --
 -- >>> :t +d _Sub
 -- _Sub
@@ -126,7 +126,7 @@ instance {-# OVERLAPPING #-} AsSubtype a Void where
   injectSub = undefined
   projectSub = undefined
 
--- | See Note [Uncluttering type signatures]
+-- | Uncluttering type signatures (see 'Void')
 --
 -- >>> :t +d _Sub @Int
 -- _Sub @Int

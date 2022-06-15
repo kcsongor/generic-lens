@@ -115,7 +115,7 @@ instance {-# OVERLAPPING #-} AsSubtype a a where
   _Sub = Optic id
   {-# INLINE _Sub #-}
 
--- | See Note [Uncluttering type signatures]
+-- | Uncluttering type signatures (see 'Void')
 --
 -- >>> :t _Sub
 --_Sub :: AsSubtype sub sup => Prism' sup sub
@@ -123,7 +123,7 @@ instance {-# OVERLAPPING #-} AsSubtype a Void where
   injectSub = undefined
   projectSub = undefined
 
--- | See Note [Uncluttering type signatures]
+-- | Uncluttering type signatures (see 'Void')
 --
 -- >>> :t _Sub @Int
 -- _Sub @Int :: AsSubtype Int sup => Prism' sup Int

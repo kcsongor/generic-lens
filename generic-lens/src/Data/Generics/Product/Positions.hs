@@ -128,7 +128,7 @@ instance (Core.Context i s t a b , HasPosition0 i s t a b) => HasPosition i s t 
   position = position0 @i
   {-# INLINE position #-}
 
--- | See Note [Uncluttering type signatures]
+-- | Uncluttering type signatures (see 'Void')
 --
 -- >>> :t +d position
 -- position

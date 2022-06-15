@@ -155,7 +155,7 @@ instance (Core.Context field s t a b , HasField0 field s t a b) => HasField fiel
 -- instance {-# OVERLAPPING #-} HasField' field s a => HasField field s s a a where
 --   field f s = field' @field f s
 
--- | See Note [Uncluttering type signatures]
+-- | Uncluttering type signatures (see 'Void')
 --
 -- >>> :t field
 -- field :: HasField field s t a b => Lens s t a b
