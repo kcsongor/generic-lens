@@ -24,6 +24,7 @@ library
   exposed-modules:    Data.Generics.Wrapped
                     , Data.Generics.Product
                     , Data.Generics.Product.Any
+                    , Data.Generics.Product.Constraints
                     , Data.Generics.Product.Fields
                     , Data.Generics.Product.Param
                     , Data.Generics.Product.Positions
@@ -43,6 +44,8 @@ library
                     , Data.Generics.Internal.VL.Lens
                     , Data.Generics.Internal.VL.Prism
                     , Data.Generics.Internal.VL.Iso
+
+                    , Data.Generics.Product.Internal.Constraints
 
   build-depends:      base        >= 4.11 && < 5
                     , generic-lens-core == 2.2.1.0
