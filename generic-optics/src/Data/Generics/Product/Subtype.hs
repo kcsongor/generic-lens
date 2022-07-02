@@ -118,13 +118,15 @@ instance Core.Context a b => Subtype b a where
 instance {-# OVERLAPPING #-} Subtype a a where
   super = Optic id
 
--- | See Note [Uncluttering type signatures]
+-- | Uncluttering type signatures (see 'Void')
+--
 -- >>> :t super
 -- super :: Subtype sup sub => Lens sub sub sup sup
 instance {-# OVERLAPPING #-} Subtype a Void where
   super = undefined
 
--- | See Note [Uncluttering type signatures]
+-- | Uncluttering type signatures (see 'Void')
+--
 -- >>> :t super @Int
 -- super @Int :: Subtype Int sub => Lens sub sub Int Int
 instance {-# OVERLAPPING #-} Subtype Void a where

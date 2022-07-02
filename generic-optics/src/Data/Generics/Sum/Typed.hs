@@ -101,7 +101,8 @@ instance Core.Context a s => AsType a s where
   _Typed = normalisePrism (Optic Core.derived)
   {-# INLINE _Typed #-}
 
--- | See Note [Uncluttering type signatures]
+-- | Uncluttering type signatures (see 'Void')
+--
 -- >>> :t _Typed
 -- _Typed :: AsType a s => Prism' s a
 instance {-# OVERLAPPING #-} AsType a Void where
@@ -109,7 +110,8 @@ instance {-# OVERLAPPING #-} AsType a Void where
   injectTyped = undefined
   projectTyped = undefined
 
--- | See Note [Uncluttering type signatures]
+-- | Uncluttering type signatures (see 'Void')
+--
 -- >>> :t _Typed @Int
 -- _Typed @Int :: AsType Int s => Prism' s Int
 instance {-# OVERLAPPING #-} AsType Void a where

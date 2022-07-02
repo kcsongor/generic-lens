@@ -101,5 +101,7 @@ test-suite doctests
   type:               exitcode-stdio-1.0
   ghc-options:        -threaded
   main-is:            doctest.hs
-  build-depends:      base >4 && <5, doctest
+  build-depends:      base >4 && <5
+                    , doctest
+                    , lens
   hs-source-dirs:     examples
