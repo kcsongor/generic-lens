@@ -42,7 +42,7 @@ import "this" Data.Generics.Internal.VL.Lens  (Lens)
 import "this" Data.Generics.Internal.VL.Prism (Prism)
 
 import Data.Profunctor    (Choice)
-import Data.Type.Bool     (type (&&))
+import Data.Type.Bool     (type (&&), If)
 import Data.Type.Equality (type (==))
 
 import GHC.OverloadedLabels
@@ -50,10 +50,10 @@ import GHC.TypeLits
 
 -- $sec1
 -- An instance for creating lenses and prisms with @#identifiers@ from the
--- @OverloadedLabels@ extension.  Note that since overloaded labels do not
+-- @OverloadedLabels@ extension.  Note that since overloaded labels did not
 -- support symbols starting with capital letters, all prisms (which come from
 -- constructor names, which are capitalized) must be prefixed with an underscore
--- (e.g. @#_ConstructorName@).
+-- (e.g. @#_ConstructorName@) when you use a GHC older than 9.6.
 --
 -- Morally:
 --
@@ -107,28 +107,40 @@ instance {-# INCOHERENT #-} AsConstructor name s t a b => Constructor name s t a
 instance {-# INCOHERENT #-} AsConstructor' name s a => Constructor name s s a a where
   constructorPrism = _Ctor' @name
 
-type family BeginsWithCapital (name :: Symbol) :: Bool where
-  BeginsWithCapital name = CmpSymbol "_@" name == 'LT && CmpSymbol "_[" name == 'GT
+data LabelType = FieldType | LegacyConstrType | ConstrType
 
-instance ( capital ~ BeginsWithCapital name
-         , IsLabelHelper capital name p f s t a b
+type family ClassifyLabel (name :: Symbol) :: LabelType where
+  ClassifyLabel name =
+    If (CmpSymbol "_@" name == 'LT && CmpSymbol "_[" name == 'GT)
+      'LegacyConstrType
+      ( If (CmpSymbol "@" name == 'LT && CmpSymbol "[" name == 'GT)
+          'ConstrType
+          'FieldType
+      )
+
+instance ( labelType ~ ClassifyLabel name
+         , IsLabelHelper labelType name p f s t a b
          , pafb ~ p a (f b), psft ~ p s (f t)) => IsLabel name (pafb -> psft) where
-  fromLabel = labelOutput @capital @name @p @f
+  fromLabel = labelOutput @labelType @name @p @f
 
 -- | This helper class allows us to customize the output type of the lens to be
 -- either 'Prism' or 'Lens' (by choosing appropriate @p@ and @f@) as well as to
 -- choose between whether we're dealing with a lens or a prism.  The choice is
--- made by whether the @capital@ argument is true or false, which is determined by
--- whether the symbol starts with an underscore followed by a capital letter
--- (a check done in the 'IsLabel' instance above).  If so, then we're dealing
--- with a constructor name, which should be a prism, and otherwise, it's a field
--- name, so we have a lens.
-class IsLabelHelper capital name p f s t a b where
+-- made by the @labelType@ argument, which is determined by whether the symbol
+-- starts with a capital letter, optionally preceded by an underscore (a check
+-- done in the 'IsLabel' instance above).  If so, then we're dealing with a
+-- constructor name, which should be a prism, and otherwise, it's a field name,
+-- so we have a lens.
+class IsLabelHelper labelType name p f s t a b where
   labelOutput :: p a (f b) -> p s (f t)
 
-instance (Functor f, Field name s t a b) => IsLabelHelper 'False name (->) f s t a b where
+instance (Functor f, Field name s t a b) => IsLabelHelper 'FieldType name (->) f s t a b where
   labelOutput = fieldLens @name
 
 instance ( Applicative f, Choice p, Constructor name s t a b
-         , name' ~ AppendSymbol "_" name) => IsLabelHelper 'True name' p f s t a b where
+         , name' ~ AppendSymbol "_" name) => IsLabelHelper 'LegacyConstrType name' p f s t a b where
+  labelOutput = constructorPrism @name
+
+instance ( Applicative f, Choice p, Constructor name s t a b
+         ) => IsLabelHelper 'ConstrType name p f s t a b where
   labelOutput = constructorPrism @name
