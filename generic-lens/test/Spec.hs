@@ -4,6 +4,7 @@
 {-# OPTIONS_GHC -funfolding-use-threshold=150 #-}
 
 {-# LANGUAGE AllowAmbiguousTypes             #-}
+{-# LANGUAGE CPP                             #-}
 {-# LANGUAGE DataKinds                       #-}
 {-# LANGUAGE DeriveGeneric                   #-}
 {-# LANGUAGE DuplicateRecordFields           #-}
@@ -266,6 +267,11 @@ tests = TestList $ map mkHUnitTest
   , (valLabel ^? #_RecB . _1  ) ~=? Just 3
   , (valLabel ^? #_RecB       ) ~=? Just (3, True)
   , (valLabel ^? #_RecC       ) ~=? Nothing
+#if MIN_VERSION_base(4,18,0)
+  , (valLabel ^? #RecB . _1  ) ~=? Just 3
+  , (valLabel ^? #RecB       ) ~=? Just (3, True)
+  , (valLabel ^? #RecC       ) ~=? Nothing
+#endif
   , customTypesTest
   ]
   where valLabel = RecB 3 True 
