@@ -1,3 +1,6 @@
+## generic-lens-2.2.2.0 (2023-04-15)
+- Support unprefixed constructor prisms on GHC 9.6 (#152)
+
 ## generic-lens-2.2.1.0 (2022-01-22)
 - GHC 9.2 compatibility
 
