@@ -1,10 +1,14 @@
 {-# LANGUAGE PackageImports #-}
 {-# LANGUAGE AllowAmbiguousTypes    #-}
 {-# LANGUAGE ConstraintKinds        #-}
+{-# LANGUAGE CPP                    #-}
 {-# LANGUAGE DataKinds              #-}
 {-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE MultiParamTypeClasses  #-}
+#if MIN_VERSION_base(4,12,0)
+{-# LANGUAGE NoStarIsType           #-}
+#endif
 {-# LANGUAGE PolyKinds              #-}
 {-# LANGUAGE ScopedTypeVariables    #-}
 {-# LANGUAGE TypeApplications       #-}
@@ -22,7 +26,8 @@
 -- Stability   : experimental
 -- Portability : non-portable
 --
--- Provides an (orphan) IsLabel instance for field lenses and constructor prisms.
+-- Provides an (orphan) IsLabel instance for field lenses and constructor
+-- prisms, as well as positional lenses on GHC >=9.6.
 -- Use at your own risk.
 --------------------------------------------------------------------------------
 
@@ -66,6 +71,14 @@ import GHC.TypeLits
 -- instance (AsConstructor name s t a b) => IsLabel name (Prism s t a b) where ...
 -- @
 --
+-- Starting with GHC 9.6, you can also write e.g. @#2@ and @#15@ instead of
+-- @position \@1@ and @position \@15@, so we morally have
+--
+-- @
+-- instance (HasPosition i s t a b) => IsLabel (Show i) (Lens s t a b) where ...
+-- @
+--
+--
 -- Remember:
 --
 -- @
@@ -107,16 +120,22 @@ instance {-# INCOHERENT #-} AsConstructor name s t a b => Constructor name s t a
 instance {-# INCOHERENT #-} AsConstructor' name s a => Constructor name s s a a where
   constructorPrism = _Ctor' @name
 
-data LabelType = FieldType | LegacyConstrType | ConstrType
+data LabelType = FieldType | LegacyConstrType | ConstrType | PositionType
 
 type family ClassifyLabel (name :: Symbol) :: LabelType where
   ClassifyLabel name =
-    If (CmpSymbol "_@" name == 'LT && CmpSymbol "_[" name == 'GT)
-      'LegacyConstrType
-      ( If (CmpSymbol "@" name == 'LT && CmpSymbol "[" name == 'GT)
-          'ConstrType
-          'FieldType
+    If (StartsWithDigit name)
+      'PositionType
+      ( If (CmpSymbol "_@" name == 'LT && CmpSymbol "_[" name == 'GT)
+          'LegacyConstrType
+          ( If (CmpSymbol "@" name == 'LT && CmpSymbol "[" name == 'GT)
+              'ConstrType
+              'FieldType
+          )
       )
+
+type StartsWithDigit name =
+  CmpSymbol "/" name == 'LT && CmpSymbol ":" name == 'GT
 
 instance ( labelType ~ ClassifyLabel name
          , IsLabelHelper labelType name p f s t a b
@@ -131,6 +150,9 @@ instance ( labelType ~ ClassifyLabel name
 -- done in the 'IsLabel' instance above).  If so, then we're dealing with a
 -- constructor name, which should be a prism, and otherwise, it's a field name,
 -- so we have a lens.
+--
+-- On GHC >=9.6, we also check whether the symbol starts with a digit, in which
+-- case we are dealing with an index for a positional lens.
 class IsLabelHelper labelType name p f s t a b where
   labelOutput :: p a (f b) -> p s (f t)
 
@@ -144,3 +166,37 @@ instance ( Applicative f, Choice p, Constructor name s t a b
 instance ( Applicative f, Choice p, Constructor name s t a b
          ) => IsLabelHelper 'ConstrType name p f s t a b where
   labelOutput = constructorPrism @name
+
+class Position (i :: Nat) s t a b | s i -> a, t i -> b, s i b -> t, t i a -> s where
+  positionLens :: Lens s t a b
+
+instance {-# INCOHERENT #-} HasPosition i s t a b => Position i s t a b where
+  positionLens = position @i
+
+instance {-# INCOHERENT #-} HasPosition' i s a => Position i s s a a where
+  positionLens = position' @i
+
+instance ( Functor f, Position i s t a b, i ~ ParseNat name
+         ) => IsLabelHelper 'PositionType name (->) f s t a b where
+  labelOutput = positionLens @i
+
+-- 'ParseNat' is only necessary for positional lenses, which can only actually
+-- be used with OverloadedLabels since GHC 9.6. Therefore, it is fine that this
+-- code only compiles with GHC >=9.4 due to the use of newer GHC features (such
+-- as 'UnconsSymbol').
+#if MIN_VERSION_base(4,17,0)
+type ParseNat name = ParseNat' 0 (UnconsSymbol name)
+
+type family ParseNat' acc m where
+  ParseNat' acc ('Just '(hd, tl)) =
+    ParseNat' (10 * acc + DigitToNat hd) (UnconsSymbol tl)
+  ParseNat' acc 'Nothing = acc
+
+type DigitToNat c =
+  If ('0' <=? c && c <=? '9')
+    (CharToNat c - CharToNat '0')
+    (TypeError ('Text "Invalid position number"))
+#else
+type family ParseNat name where
+  ParseNat name = TypeError ('Text "Positional lenses not supported")
+#endif
