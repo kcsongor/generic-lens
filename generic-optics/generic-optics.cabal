@@ -58,6 +58,7 @@ library
 
   hs-source-dirs:     src
   default-language:   Haskell2010
+  default-extensions: TypeOperators
   ghc-options:        -Wall
 
 test-suite generic-optics-inspection-tests
