@@ -1,3 +1,6 @@
+## Unreleased
+- Add `instance AsType a a`
+
 ## generic-lens-2.2.2.0 (2023-04-15)
 - Support unprefixed constructor prisms on GHC 9.6 (#152)
 

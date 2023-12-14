@@ -97,6 +97,10 @@ class AsType a s where
 
   {-# MINIMAL (injectTyped, projectTyped) | _Typed #-}
 
+instance {-# OVERLAPPING #-} AsType a a where
+  injectTyped = id
+  projectTyped = Just
+
 instance Core.Context a s => AsType a s where
   _Typed = normalisePrism (Optic Core.derived)
   {-# INLINE _Typed #-}
