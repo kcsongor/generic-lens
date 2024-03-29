@@ -126,9 +126,9 @@ type family ClassifyLabel (name :: Symbol) :: LabelType where
   ClassifyLabel name =
     If (StartsWithDigit name)
       'PositionType
-      ( If (CmpSymbol "_@" name == 'LT && CmpSymbol "_[" name == 'GT)
+      ( If (StartsWithUnderscoreAndUpperCase name)
           'LegacyConstrType
-          ( If (CmpSymbol "@" name == 'LT && CmpSymbol "[" name == 'GT)
+          ( If (StartsWithUpperCase name)
               'ConstrType
               'FieldType
           )
@@ -136,6 +136,12 @@ type family ClassifyLabel (name :: Symbol) :: LabelType where
 
 type StartsWithDigit name =
   CmpSymbol "/" name == 'LT && CmpSymbol ":" name == 'GT
+
+type StartsWithUnderscoreAndUpperCase name =
+  CmpSymbol "_@" name == 'LT && CmpSymbol "_[" name == 'GT
+
+type StartsWithUpperCase name =
+  CmpSymbol "@" name == 'LT && CmpSymbol "[" name == 'GT
 
 instance ( labelType ~ ClassifyLabel name
          , IsLabelHelper labelType name p f s t a b
