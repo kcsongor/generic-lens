@@ -1,3 +1,7 @@
+## Unreleased
+- Add `OverloadedLabels` support for positional lenses, e.g. `#3` as an
+  abbreviation for `position @3`, starting with GHC 9.6.
+
 ## generic-lens-2.2.2.0 (2023-04-15)
 - Support unprefixed constructor prisms on GHC 9.6 (#152)
 
