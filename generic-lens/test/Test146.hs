@@ -15,5 +15,3 @@ poly = undefined
 
 mono :: ExceptT Error IO ()
 mono = poly
-
-
