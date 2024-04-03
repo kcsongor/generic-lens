@@ -272,6 +272,14 @@ tests = TestList $ map mkHUnitTest
   , (valLabel ^? #RecB . _1  ) ~=? Just 3
   , (valLabel ^? #RecB       ) ~=? Just (3, True)
   , (valLabel ^? #RecC       ) ~=? Nothing
+
+  , (valLabel ^. #1          ) ~=? 3
+  , let
+      i x = x :: Int
+      largeTuple  = (i 1, i 2, i 3, i 4, i 5, i 6, i 7, i 8, i 9, i 10, i 11, i 12, i 13, i 14, i 15)
+      largeTuple' = (i 1, i 2, i 3, i 4, i 5, i 6, i 7, i 8, i 9, i 10, i 11, i 13, i 13, i 14, i 15)
+    in
+      (largeTuple ^. #13, largeTuple & #12 +~ 1) ~=? (13, largeTuple')
 #endif
   , customTypesTest
   ]
