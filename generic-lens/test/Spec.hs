@@ -33,6 +33,7 @@ import Data.Generics.Labels ()
 import Test24 ()
 import Test25 ()
 import Test88 ()
+import Test146 ()
 
 import CustomChildren (customTypesTest)
 

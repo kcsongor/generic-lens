@@ -64,7 +64,8 @@ import "generic-lens-core" Data.Generics.Internal.Void
 -- :}
 
 
--- |Sums that have a constructor with a field of the given type.
+-- |Types that can represent another type, either by being a sum with a
+-- constructor containing that type, or by actually being that type.
 class AsType a s where
   -- |A prism that projects a constructor uniquely identifiable by the type of
   --  its field. Compatible with the lens package's 'Control.Lens.Prism' type.
@@ -96,6 +97,11 @@ class AsType a s where
     = either (const Nothing) Just . match _Typed
 
   {-# MINIMAL (injectTyped, projectTyped) | _Typed #-}
+
+-- |Every type can be treated 'as' itself.
+instance {-# OVERLAPPING #-} AsType a a where
+  injectTyped = id
+  projectTyped = Just
 
 instance Core.Context a s => AsType a s where
   _Typed eta = prism2prismvl Core.derived eta

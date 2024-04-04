@@ -1,3 +1,9 @@
+## Unreleased
+
+### Breaking API changes:
+- `AsType` now includes a reflexive case for consistency with `HasType`: every
+  type can be treated 'as' itself.
+
 ## generic-optics-2.2.1.0 (2022-01-22)
 - GHC 9.2 compatibility
 

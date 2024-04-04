@@ -59,7 +59,8 @@ import "generic-lens-core" Data.Generics.Internal.Void
 -- human = Human "Tunyasz" 50 "London" False
 -- :}
 
--- |Records that have a field with a unique type.
+-- |Types that contain another type, either by being a record with a field
+-- with that type, or by actually being that type.
 class HasType a s where
   -- |A lens that focuses on a field with a unique type in its parent type.
   --
@@ -103,6 +104,7 @@ instance Core.Context a s => HasType a s where
   typed = normaliseLens (Optic Core.derived)
   {-# INLINE typed #-}
 
+-- |Every type 'has' itself.
 instance {-# OVERLAPPING #-} HasType a a where
     getTyped = id
     {-# INLINE getTyped #-}

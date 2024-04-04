@@ -69,11 +69,12 @@ test-suite inspection-tests
   type:               exitcode-stdio-1.0
   hs-source-dirs:     test
   main-is:            Spec.hs
-  other-modules:      Util Test24 Test88 Test25 Test40 Test62 Test63 CustomChildren
+  other-modules:      Util Test24 Test88 Test25 Test40 Test62 Test63 Test146 CustomChildren
 
   build-depends:      base
                     , generic-lens
                     , lens
+                    , mtl
                     , profunctors
                     , inspection-testing >= 0.2
                     , HUnit

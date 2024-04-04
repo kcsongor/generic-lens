@@ -29,6 +29,7 @@ import Optics.Core
 -- This is sufficient at we only want to test that they typecheck
 import Test24 ()
 import Test25 ()
+import Test146 ()
 
 -- import CustomChildren (customTypesTest)
 
