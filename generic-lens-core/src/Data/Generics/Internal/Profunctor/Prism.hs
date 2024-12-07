@@ -34,27 +34,35 @@ type Prism' s a = forall p i . (Choice p) => p i a a -> p i s s
 
 left :: Prism ((a :+: c) x) ((b :+: c) x) (a x) (b x)
 left = prism L1 $ gsum Right (Left . R1)
+{-# INLINE left #-}
 
 right :: Prism ((a :+: b) x) ((a :+: c) x) (b x) (c x)
 right = prism R1 $ gsum (Left . L1) Right
+{-# INLINE right #-}
 
 prism :: (b -> t) -> (s -> Either t a) -> Prism s t a b
 prism bt seta eta = dimap seta (either id bt) (right' eta)
+{-# INLINE prism #-}
 
 _Left :: Prism (Either a c) (Either b c) a b
 _Left = left'
+{-# INLINE _Left #-}
 
 _Right :: Prism (Either c a) (Either c b) a b
 _Right = right'
+{-# INLINE _Right #-}
 
 prismPRavel :: APrism i s t a b -> Prism s t a b
 prismPRavel l pab = (prism2prismp $ l idPrism) pab
+{-# INLINE prismPRavel #-}
 
 build :: (Tagged i b b -> Tagged i t t) -> b -> t
 build p = unTagged #. p .# Tagged
+{-# INLINE build #-}
 
 match :: Prism s t a b -> s -> Either t a
 match k = withPrism k $ \_ _match -> _match
+{-# INLINE match #-}
 
 --------------------------------------------------------------------------------
 -- Prism stuff
@@ -69,13 +77,17 @@ without' k k' =
 withPrism :: APrism i s t a b -> ((b -> t) -> (s -> Either t a) -> r) -> r
 withPrism k f = case k idPrism of
   Market bt seta -> f bt seta
+{-# INLINE withPrism #-}
 
 prism2prismp :: Market a b i s t -> Prism s t a b
 prism2prismp (Market bt seta) = prism bt seta
+{-# INLINE prism2prismp #-}
 
 idPrism :: Market a b i a b
 idPrism = Market id Right
+{-# INLINE idPrism #-}
 
 gsum :: (a x -> c) -> (b x -> c) -> ((a :+: b) x) -> c
 gsum f _ (L1 x) =  f x
 gsum _ g (R1 y) =  g y
+{-# INLINE gsum #-}

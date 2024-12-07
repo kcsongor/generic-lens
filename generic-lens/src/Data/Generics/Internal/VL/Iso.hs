@@ -68,25 +68,32 @@ withIso ai k = case ai (Exchange id Identity) of
 -- | A type and its generic representation are isomorphic
 repIso :: (Generic a, Generic b) => Iso a b (Rep a x) (Rep b x)
 repIso = iso from to
+{-# INLINE repIso #-}
 
 repIsoN :: (GenericN a, GenericN b) => Iso a b (RepN a x) (RepN b x)
 repIsoN = iso fromN toN
+{-# INLINE repIsoN #-}
 
 paramIso :: Iso (Param n a) (Param n b) a b
 paramIso = iso getStarParam StarParam
+{-# INLINE paramIso #-}
 
 -- | 'M1' is just a wrapper around `f p`
 mIso :: Iso (M1 i c f p) (M1 i c g p) (f p) (g p)
 mIso = iso unM1 M1
+{-# INLINE mIso #-}
 
 kIso :: Iso (K1 r a p) (K1 r b p) a b
 kIso = iso unK1 K1
+{-# INLINE kIso #-}
 
 recIso :: Iso (Rec r a p) (Rec r b p) a b
 recIso = iso (unK1 . unRec) (Rec . K1)
+{-# INLINE recIso #-}
 
 prodIso :: Iso ((a :*: b) x) ((a' :*: b') x) (a x, b x) (a' x, b' x)
 prodIso = iso (\(a :*: b) -> (a, b)) (\(a, b) -> (a :*: b))
+{-# INLINE prodIso #-}
 
 iso :: (s -> a) -> (b -> t) -> Iso s t a b
 iso sa bt = dimap sa (fmap bt)

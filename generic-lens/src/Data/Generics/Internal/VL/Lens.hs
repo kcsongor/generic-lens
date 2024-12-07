@@ -38,21 +38,26 @@ type Lens s t a b
 
 view :: ((a -> Const a a) -> s -> Const a s) -> s -> a
 view l s = (^.) s l
+{-# INLINE view #-}
 
 -- | Getting
 (^.) :: s -> ((a -> Const a a) -> s -> Const a s) -> a
 s ^. l = getConst (l Const s)
 infixl 8 ^.
+{-# INLINE (^.) #-}
 
 infixr 4 .~
 (.~) :: ((a -> Identity b) -> s -> Identity t) -> b -> s -> t
 (.~) f b = runIdentity . f (Identity . const b)
+{-# INLINE (.~) #-}
 
 set :: Lens s t a b -> b -> s -> t
 set l x = l .~ x
+{-# INLINE set #-}
 
 over :: ((a -> Identity b) -> s -> Identity t) -> (a -> b) -> s -> t
 over = coerce
+{-# INLINE over #-}
 
 lens2lensvl :: ALens a b i s t -> Lens s t a b
 lens2lensvl (ALens _get _set) =
@@ -64,6 +69,7 @@ lens2lensvl (ALens _get _set) =
 ravel :: (ALens a b i a b -> ALens a b i s t)
       ->  Lens s t a b
 ravel l pab = (lens2lensvl $ l idLens) pab
+{-# INLINE ravel #-}
 
 
 lens :: (s -> a) -> (s -> b -> t) -> Lens s t a b

@@ -39,14 +39,17 @@ ravel l pab = conv (l idLens) pab
   where
     conv :: ALens a b i s t -> Lens s t a b
     conv (ALens _get _set) = lens _get _set
+{-# INLINE ravel #-}
 
 -- | Setting
 set :: ((a -> b) -> s -> t) -> (s, b) -> t
 set f (s, b)
   = f  (const b) s
+{-# INLINE set #-}
 
 view :: Lens s s a a -> s -> a
 view l = withLensPrim l (\get _ -> snd . get)
+{-# INLINE view #-}
 
 --withLens :: Lens s t a b -> ((s -> a) -> ((s, b) -> t) -> r) -> r
 --ithLens l k =
@@ -57,6 +60,7 @@ withLensPrim :: Lens s t a b -> (forall c . (s -> (c,a)) -> ((c, b) -> t) -> r) 
 withLensPrim l k =
  case l idLens of
    ALens _get _set -> k _get _set
+{-# INLINE withLensPrim #-}
 
 idLens :: ALens a b i a b
 idLens = ALens (fork (const ()) id) snd
@@ -66,14 +70,17 @@ idLens = ALens (fork (const ()) id) snd
 first :: Lens ((a :*: b) x) ((a' :*: b) x) (a x) (a' x)
 first
   = lens (\(a :*: b) -> (b,a)) (\(b, a') -> a' :*: b)
+{-# INLINE first #-}
 
 -- | Lens focusing on the second element of a product
 second :: Lens ((a :*: b) x) ((a :*: b') x) (b x) (b' x)
 second
   = lens (\(a :*: b) -> (a,b)) (\(a, b') -> a :*: b')
+{-# INLINE second #-}
 
 fork :: (a -> b) -> (a -> c) -> a -> (b, c)
 fork f g a = (f a, g a)
+{-# INLINE fork #-}
 
 --------------------------------------------------------------------------------
 
@@ -82,21 +89,27 @@ data Coyoneda f b = forall a. Coyoneda (a -> b) (f a)
 instance Functor (Coyoneda f) where
   fmap f (Coyoneda g fa)
     = Coyoneda (f . g) fa
+  {-# INLINE fmap #-}
 
 inj :: Functor f => Coyoneda f a -> f a
 inj (Coyoneda f a) = fmap f a
+{-# INLINE inj #-}
 
 proj :: Functor f => f a -> Coyoneda f a
 proj fa = Coyoneda id fa
+{-# INLINE proj #-}
 
 (??) :: Functor f => f (a -> b) -> a -> f b
 fab ?? a = fmap ($ a) fab
+{-# INLINE (??) #-}
 
 assoc3L :: Lens ((a, b), c) ((a', b'), c') (a, (b, c)) (a', (b', c'))
 assoc3L f = assoc3 f
+{-# INLINE assoc3L #-}
 
 stron :: (Either s s', b) -> Either (s, b) (s', b)
 stron (e, b) =  bimap (,b) (, b) e
+{-# INLINE stron #-}
 
 choosing :: forall s t a b s' t' . Lens s t a b -> Lens s' t' a b -> Lens (Either s s') (Either t t') a b
 choosing l r = withLensPrim l (\getl setl ->
@@ -118,14 +131,19 @@ data ALens a b i s t = forall c . ALens (s -> (c,a)) ((c, b) -> t)
 
 instance Functor (ALens a b i s) where
   fmap f (ALens _get _set) = ALens _get (f . _set)
+  {-# INLINE fmap #-}
 
 instance Profunctor (ALens a b) where
   dimap f g (ALens get _set) = ALens (get . f) (g . _set)
+  {-# INLINE dimap #-}
   lmap f = dimap f id
+  {-# INLINE lmap #-}
   rmap f = dimap id f
+  {-# INLINE rmap #-}
 
 swap :: (a, b) -> (b, a)
 swap (x, y) = (y, x)
+{-# INLINE swap #-}
 
 instance Strong (ALens a b) where
   first' = dimap swap swap . second'

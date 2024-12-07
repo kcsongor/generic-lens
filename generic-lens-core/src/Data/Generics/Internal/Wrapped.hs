@@ -50,6 +50,8 @@ class GWrapped s t a b | s -> a, t -> b, s b -> t, t a -> s where
 
 instance GWrapped s t a b => GWrapped (M1 i k s) (M1 i k t) a b where
   gWrapped = mIso . gWrapped
+  {-# INLINE gWrapped #-}
 
 instance (a ~ c, b ~ d) => GWrapped (K1 i a) (K1 i b) c d where
   gWrapped = kIso
+  {-# INLINE gWrapped #-}

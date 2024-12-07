@@ -57,20 +57,28 @@ instance (Functor f) => Applicative (Curried f) where
 
 liftCurried :: Applicative f => f a -> Curried f a
 liftCurried fa = Curried (<*> fa)
+{-# INLINE liftCurried #-}
 
 lowerCurried :: Applicative f => Curried f a -> f a
 lowerCurried (Curried f) = f (pure id)
+{-# INLINE lowerCurried #-}
+
 newtype Yoneda f a = Yoneda { runYoneda :: forall b. (a -> b) -> f b }
 
 liftYoneda :: Functor f => f a -> Yoneda f a
 liftYoneda a = Yoneda (\f -> fmap f a)
+{-# INLINE liftYoneda #-}
 
 lowerYoneda :: Yoneda f a -> f a
 lowerYoneda (Yoneda f) = f id
+{-# INLINE lowerYoneda #-}
 
 instance Functor (Yoneda f) where
   fmap f m = Yoneda (\k -> runYoneda m (k . f))
+  {-# INLINE fmap #-}
 
 instance Applicative f => Applicative (Yoneda f) where
   pure a = Yoneda (\f -> pure (f a))
+  {-# INLINE pure #-}
   Yoneda m <*> Yoneda n = Yoneda (\f -> m (f .) <*> n id)
+  {-# INLINE (<*>) #-}
