@@ -27,7 +27,7 @@
 module Data.Generics.Sum.Typed
   ( -- *Prisms
     --
-    --  $setup
+    -- $setup
     AsType (..)
   ) where
 
