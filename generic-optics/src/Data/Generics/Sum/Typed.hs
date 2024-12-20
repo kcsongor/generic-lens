@@ -86,12 +86,31 @@ class AsType a s where
   _Typed = prism injectTyped (\i -> maybe (Left i) Right (projectTyped i))
   {-# INLINE _Typed #-}
 
+
   -- |Inject by type.
+  --
+  --
+  --  >>> :{
+  --  dog :: Dog
+  --  dog = MkDog "Fido" (Age 11)
+  --  dogAsAnimal :: Animal
+  --  dogAsAnimal = injectTyped dog
+  --  dogAsItself :: Dog
+  --  dogAsItself = injectTyped dog
+  -- >>> :}
   injectTyped :: a -> s
   injectTyped
-    = review _Typed
+    = build _Typed
 
   -- |Project by type.
+  --
+  --
+  -- >>> :{
+  -- dogAsAnimal :: Animal
+  -- dogAsAnimal = Dog (MkDog "Fido (Age 11)")
+  -- mDog :: Maybe Dog
+  -- mDog = projectTyped dogAsAnimal
+  -- >>> :}
   projectTyped :: s -> Maybe a
   projectTyped
     = either (const Nothing) Just . matching _Typed
