@@ -27,7 +27,7 @@
 module Data.Generics.Sum.Typed
   ( -- *Prisms
     --
-    --  $setup
+    -- $setup
     AsType (..)
   ) where
 
@@ -61,7 +61,7 @@ import "generic-lens-core" Data.Generics.Internal.Void
 -- dog = Dog (MkDog "Shep" (Age 3))
 -- cat = Cat "Mog" (Age 5)
 -- duck = Duck (Age 2)
--- :}
+-- >>> :}
 
 
 -- |Types that can represent another type, either by being a sum with a
@@ -87,11 +87,29 @@ class AsType a s where
   {-# INLINE _Typed #-}
 
   -- |Inject by type.
+  --
+  --
+  --  >>> :{
+  --  dog :: Dog
+  --  dog = MkDog "Fido" (Age 11)
+  --  dogAsAnimal :: Animal
+  --  dogAsAnimal = injectTyped dog
+  --  dogAsItself :: Dog
+  --  dogAsItself = injectTyped dog
+  -- >>> :}
   injectTyped :: a -> s
   injectTyped
     = build _Typed
 
   -- |Project by type.
+  --
+  --
+  -- >>> :{
+  -- dogAsAnimal :: Animal
+  -- dogAsAnimal = Dog (MkDog "Fido (Age 11)")
+  -- mDog :: Maybe Dog
+  -- mDog = projectTyped dogAsAnimal
+  -- >>> :}
   projectTyped :: s -> Maybe a
   projectTyped
     = either (const Nothing) Just . match _Typed
