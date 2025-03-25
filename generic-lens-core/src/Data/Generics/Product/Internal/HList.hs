@@ -58,14 +58,12 @@ instance Semigroup (HList '[]) where
 
 instance Monoid (HList '[]) where
   mempty  = Nil
-  mappend _ _ = Nil
 
 instance (Semigroup a, Semigroup (HList as)) => Semigroup (HList (a ': as)) where
   (x :> xs) <> (y :> ys) = (x <> y) :> (xs <> ys)
 
 instance (Monoid a, Monoid (HList as)) => Monoid (HList (a ': as)) where
   mempty = mempty :> mempty
-  mappend (x :> xs) (y :> ys) = mappend x y :> mappend xs ys
 
 class Elem (as :: [(k, Type)]) (key :: k) (i :: Nat) a | as key -> i a
 instance {-# OVERLAPPING #-} pos ~ 0 => Elem (a ': xs) key pos a
