@@ -106,7 +106,7 @@ class AsType a s where
   --
   -- >>> :{
   -- dogAsAnimal :: Animal
-  -- dogAsAnimal = Dog (MkDog "Fido (Age 11)")
+  -- dogAsAnimal = Dog (MkDog "Fido" (Age 11))
   -- mDog :: Maybe Dog
   -- mDog = projectTyped dogAsAnimal
   -- >>> :}

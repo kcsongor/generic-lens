@@ -100,14 +100,14 @@ class AsType a s where
   -- >>> :}
   injectTyped :: a -> s
   injectTyped
-    = build _Typed
+    = review _Typed
 
   -- |Project by type.
   --
   --
   -- >>> :{
   -- dogAsAnimal :: Animal
-  -- dogAsAnimal = Dog (MkDog "Fido (Age 11)")
+  -- dogAsAnimal = Dog (MkDog "Fido" (Age 11))
   -- mDog :: Maybe Dog
   -- mDog = projectTyped dogAsAnimal
   -- >>> :}
