@@ -118,5 +118,4 @@ test-suite doctests
   main-is:            doctest.hs
   build-depends:      base >= 4 && <5
                     , doctest
-                    , lens
   hs-source-dirs:     examples

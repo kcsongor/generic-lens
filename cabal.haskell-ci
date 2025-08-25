@@ -1,2 +1,4 @@
 branches: master
-doctest: True
+-- doctest does not work with GHC 9.14 alpha yet
+doctest: <9.14
+doctest-version: >= 0.24

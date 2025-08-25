@@ -202,7 +202,7 @@ jobs:
       - name: cache (tools)
         uses: actions/cache/restore@v4
         with:
-          key: ${{ runner.os }}-${{ matrix.compiler }}-tools-9d25091b
+          key: ${{ runner.os }}-${{ matrix.compiler }}-tools-fdd43094
           path: ~/.haskell-ci-tools
       - name: install cabal-plan
         run: |
@@ -215,13 +215,13 @@ jobs:
           cabal-plan --version
       - name: install doctest
         run: |
-          $CABAL --store-dir=$HOME/.haskell-ci-tools/store v2-install $ARG_COMPILER --ignore-project -j2 doctest --constraint='doctest ^>=0.22.0'
-          doctest --version
+          if [ $((HCNUMVER < 91400)) -ne 0 ] ; then $CABAL --store-dir=$HOME/.haskell-ci-tools/store v2-install $ARG_COMPILER --ignore-project -j2 doctest --constraint='doctest >=0.24' ; fi
+          if [ $((HCNUMVER < 91400)) -ne 0 ] ; then doctest --version ; fi
       - name: save cache (tools)
         if: always()
         uses: actions/cache/save@v4
         with:
-          key: ${{ runner.os }}-${{ matrix.compiler }}-tools-9d25091b
+          key: ${{ runner.os }}-${{ matrix.compiler }}-tools-fdd43094
           path: ~/.haskell-ci-tools
       - name: checkout
         uses: actions/checkout@v4
@@ -307,12 +307,12 @@ jobs:
           $CABAL v2-test $ARG_COMPILER $ARG_TESTS $ARG_BENCH all --test-show-details=direct
       - name: doctest
         run: |
-          cd ${PKGDIR_generic_lens_core} || false
-          doctest  -XHaskell2010 -XTypeOperators src
-          cd ${PKGDIR_generic_lens} || false
-          doctest  -XHaskell2010 -XTypeOperators src
-          cd ${PKGDIR_generic_optics} || false
-          doctest  -XHaskell2010 -XTypeOperators src
+          if [ $((HCNUMVER < 91400)) -ne 0 ] ; then cd ${PKGDIR_generic_lens_core} || false ; fi
+          if [ $((HCNUMVER < 91400)) -ne 0 ] ; then doctest  -XHaskell2010 -XTypeOperators src ; fi
+          if [ $((HCNUMVER < 91400)) -ne 0 ] ; then cd ${PKGDIR_generic_lens} || false ; fi
+          if [ $((HCNUMVER < 91400)) -ne 0 ] ; then doctest  -XHaskell2010 -XTypeOperators src ; fi
+          if [ $((HCNUMVER < 91400)) -ne 0 ] ; then cd ${PKGDIR_generic_optics} || false ; fi
+          if [ $((HCNUMVER < 91400)) -ne 0 ] ; then doctest  -XHaskell2010 -XTypeOperators src ; fi
       - name: cabal check
         run: |
           cd ${PKGDIR_generic_lens_core} || false
