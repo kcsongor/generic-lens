@@ -16,8 +16,11 @@ category:             Generics, Records, Lens
 build-type:           Simple
 
 tested-with:
-  GHC == 9.8.1
-  GHC == 9.6.3
+  GHC == 9.14.1
+  GHC == 9.12.2
+  GHC == 9.10.2
+  GHC == 9.8.4
+  GHC == 9.6.7
   GHC == 9.4.8
   GHC == 9.2.8
   GHC == 9.0.2
@@ -114,7 +117,7 @@ test-suite doctests
   type:               exitcode-stdio-1.0
   ghc-options:        -threaded
   main-is:            doctest.hs
-  build-depends:      base >4 && <5
+  build-depends:      base >= 4 && <5
                     , doctest
                     , lens
   hs-source-dirs:     examples
