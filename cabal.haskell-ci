@@ -1,4 +1,8 @@
 branches: master
 -- doctest does not work with GHC 9.14 alpha yet
-doctest: <9.14
+doctest: < 9.14
 doctest-version: >= 0.24
+
+-- haddock chokes on commented out Template Haskell, e.g.
+-- @-- $(...) ...@
+haddock: >= 9

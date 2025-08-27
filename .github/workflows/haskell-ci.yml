@@ -323,7 +323,7 @@ jobs:
           ${CABAL} -vnormal check
       - name: haddock
         run: |
-          $CABAL v2-haddock --disable-documentation --haddock-all $ARG_COMPILER --with-haddock $HADDOCK $ARG_TESTS $ARG_BENCH all
+          if [ $((HCNUMVER >= 90000)) -ne 0 ] ; then $CABAL v2-haddock --disable-documentation --haddock-all $ARG_COMPILER --with-haddock $HADDOCK $ARG_TESTS $ARG_BENCH all ; fi
       - name: unconstrained build
         run: |
           rm -f cabal.project.local
