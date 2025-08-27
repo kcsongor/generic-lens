@@ -1,6 +1,6 @@
-cabal-version:        >= 1.10
+cabal-version:        2.0
 name:                 generic-lens
-version:              2.2.2.0
+version:              2.3.0.0
 synopsis:             Generically derive traversals, lenses and prisms.
 description:          This library uses GHC.Generics to derive efficient optics (traversals, lenses and prisms) for algebraic data types in a type-directed way, with a focus on good type inference and error messages when possible.
                       .
@@ -32,7 +32,8 @@ tested-with:
 
 extra-source-files:   examples/StarWars.hs
                     , examples/Examples.hs
-                    , ChangeLog.md
+
+extra-doc-files:      ChangeLog.md
 
 library
   exposed-modules:    Data.Generics.Wrapped
@@ -59,7 +60,7 @@ library
                     , Data.Generics.Internal.VL.Iso
 
   build-depends:      base        >= 4.11 && < 5
-                    , generic-lens-core == 2.2.1.0
+                    , generic-lens-core ^>= 2.3.0.0
                     , profunctors
 
   hs-source-dirs:     src

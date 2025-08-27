@@ -1,10 +1,14 @@
-## Unreleased
+## generic-lens-2.3.0.0 (2025-08-27)
+
+Tested with GHC 8.4 - 9.14 alpha1.
+
 - Add `OverloadedLabels` support for positional lenses, e.g. `#3` as an
   abbreviation for `position @3`, starting with GHC 9.6.
 
 ### Breaking API changes:
 - `AsType` now includes a reflexive case for consistency with `HasType`: every
   type can be treated 'as' itself.
+
 
 ## generic-lens-2.2.2.0 (2023-04-15)
 - Support unprefixed constructor prisms on GHC 9.6 (#152)
@@ -81,7 +85,7 @@
 
 - The type parameters of the classes have been changed to accommodate
   the type-changing update:
-  
+
   `class HasField name a s` -> `class HasField name s t a b` etc.
-  
+
   Accordingly, `field :: Lens' s a` -> `field :: Lens s t a b`
