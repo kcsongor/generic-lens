@@ -1,4 +1,4 @@
-## generic-lens-core-2.2.1.1 (2025-08-27)
+## generic-lens-core-2.3.0.0 (2025-08-27)
 - GHC 9.14 compatibility
 
 ## generic-lens-core-2.2.1.0 (2022-01-22)
