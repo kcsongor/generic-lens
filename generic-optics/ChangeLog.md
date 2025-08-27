@@ -1,4 +1,6 @@
-## Unreleased
+## generic-optics-2.3.0.0 (2025-08-27)
+
+Tested with GHC 8.4 - 9.14 alpha1.
 
 ### Breaking API changes:
 - `AsType` now includes a reflexive case for consistency with `HasType`: every
